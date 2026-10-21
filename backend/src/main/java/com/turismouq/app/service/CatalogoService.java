@@ -50,7 +50,7 @@ public class CatalogoService {
 
     public List<CatalogoItemDto> listarClientes() {
         return clienteRepository.findTop50ByOrderByApellidosAscNombresAsc().stream()
-                .map(c -> new CatalogoItemDto(c.getIdCliente(), c.getNombreCompleto(), c.getIdentificacion() + " - " + c.getEmail()))
+                .map(c -> new CatalogoItemDto(c.getIdCliente(), c.getNombreCompleto(), c.getDocumento() + " - " + c.getCorreo()))
                 .toList();
     }
 

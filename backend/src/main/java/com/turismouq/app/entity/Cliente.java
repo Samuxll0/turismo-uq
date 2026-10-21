@@ -14,8 +14,8 @@ public class Cliente {
     @Column(name = "ID_CLIENTE")
     private Long idCliente;
 
-    @Column(name = "IDENTIFICACION", nullable = false, length = 30)
-    private String identificacion;
+    @Column(name = "DOCUMENTO", nullable = false, length = 25)
+    private String documento;
 
     @Column(name = "NOMBRES", nullable = false, length = 80)
     private String nombres;
@@ -23,14 +23,31 @@ public class Cliente {
     @Column(name = "APELLIDOS", nullable = false, length = 80)
     private String apellidos;
 
-    @Column(name = "EMAIL", length = 120)
-    private String email;
+    @Column(name = "CORREO", length = 120)
+    private String correo;
 
-    @Column(name = "TELEFONO", length = 30)
+    @Column(name = "TELEFONO", length = 25)
     private String telefono;
 
     @Transient
     public String getNombreCompleto() {
         return nombres + " " + apellidos;
+    }
+
+    // Métodos de compatibilidad hacia atrás
+    public String getIdentificacion() {
+        return documento;
+    }
+
+    public void setIdentificacion(String identificacion) {
+        this.documento = identificacion;
+    }
+
+    public String getEmail() {
+        return correo;
+    }
+
+    public void setEmail(String email) {
+        this.correo = email;
     }
 }

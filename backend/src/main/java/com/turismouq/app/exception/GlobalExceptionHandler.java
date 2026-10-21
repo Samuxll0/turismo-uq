@@ -1,6 +1,7 @@
 package com.turismouq.app.exception;
 
 import jakarta.servlet.http.HttpServletRequest;
+import org.springframework.dao.DataAccessException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -9,9 +10,13 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import java.sql.SQLException;
 import java.time.LocalDateTime;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
+
+    private static final Pattern ORA_PATTERN = Pattern.compile("ORA-\\d{4,5}:\\s*([^\\r\\n]+)");
 
     @ExceptionHandler(ApiException.class)
     public ResponseEntity<ErrorResponse> handleApiException(ApiException ex, HttpServletRequest request) {
@@ -26,6 +31,15 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(body, ex.getStatus());
     }
 
+    @ExceptionHandler(DataAccessException.class)
+    public ResponseEntity<ErrorResponse> handleDataAccessException(DataAccessException ex, HttpServletRequest request) {
+        Throwable root = ex.getMostSpecificCause();
+        if (root instanceof SQLException sqlEx) {
+            return handleSQLException(sqlEx, request);
+        }
+        return handleGeneralException(ex, request);
+    }
+
     @ExceptionHandler(SQLException.class)
     public ResponseEntity<ErrorResponse> handleSQLException(SQLException ex, HttpServletRequest request) {
         int errorCode = ex.getErrorCode();
@@ -33,17 +47,11 @@ public class GlobalExceptionHandler {
         HttpStatus status = HttpStatus.INTERNAL_SERVER_ERROR;
         String code = "ORA_ERROR_" + errorCode;
 
-        // Limpiar el mensaje de Oracle para la UI
-        if (message != null && message.contains(":")) {
-            int firstColon = message.indexOf(':');
-            int secondColon = message.indexOf(':', firstColon + 1);
-            if (secondColon != -1) {
-                int nextOra = message.indexOf("ORA-", secondColon);
-                if (nextOra != -1) {
-                    message = message.substring(firstColon + 1, nextOra).trim();
-                } else {
-                    message = message.substring(firstColon + 1).trim();
-                }
+        // Limpiar el mensaje de Oracle para la UI extrayendo el mensaje sin traza de línea ORA-06512
+        if (message != null) {
+            Matcher matcher = ORA_PATTERN.matcher(message);
+            if (matcher.find()) {
+                message = matcher.group(1).trim();
             }
         }
 
@@ -107,6 +115,15 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorResponse> handleGeneralException(Exception ex, HttpServletRequest request) {
+        // Si la causa raíz es SQLException, delegar a handleSQLException
+        Throwable cause = ex;
+        while (cause != null) {
+            if (cause instanceof SQLException sqlEx) {
+                return handleSQLException(sqlEx, request);
+            }
+            cause = cause.getCause();
+        }
+
         ErrorResponse body = new ErrorResponse(
                 LocalDateTime.now(),
                 HttpStatus.INTERNAL_SERVER_ERROR.value(),

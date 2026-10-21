@@ -18,6 +18,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.sql.CallableStatement;
 import java.sql.Date;
 import java.sql.ResultSet;
@@ -47,8 +48,9 @@ public class PlsqlEngineService {
     /**
      * Invoca la función PL/SQL PKG_TURISMO_RESERVAS.fn_valor_estadia
      */
+    @Transactional(readOnly = true)
     public CotizacionResponseDto cotizarEstadia(CotizarRequestDto dto) {
-        Habitacion hab = habitacionRepository.findById(dto.idHabitacion())
+        Habitacion hab = habitacionRepository.findByIdWithDetails(dto.idHabitacion())
                 .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "ERR_HABITACION_NO_EXISTE",
                         "No se encontró la habitación con ID " + dto.idHabitacion()));
 
@@ -92,7 +94,7 @@ public class PlsqlEngineService {
      */
     @Transactional
     public ReservaResponseDto crearReserva(CrearReservaRequestDto dto) {
-        Habitacion hab = habitacionRepository.findById(dto.idHabitacion())
+        Habitacion hab = habitacionRepository.findByIdWithDetails(dto.idHabitacion())
                 .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "ERR_HABITACION_NO_EXISTE",
                         "No se encontró la habitación con ID " + dto.idHabitacion()));
 
@@ -154,17 +156,31 @@ public class PlsqlEngineService {
                 try (ResultSet rs = (ResultSet) cs.getObject(4)) {
                     if (rs != null) {
                         while (rs.next()) {
+                            BigDecimal totalHospedaje = rs.getBigDecimal("TOTAL_HOSPEDAJE") != null 
+                                    ? rs.getBigDecimal("TOTAL_HOSPEDAJE") 
+                                    : BigDecimal.ZERO;
+                            BigDecimal totalServicios = rs.getBigDecimal("TOTAL_SERVICIOS") != null 
+                                    ? rs.getBigDecimal("TOTAL_SERVICIOS") 
+                                    : BigDecimal.ZERO;
+                            BigDecimal totalIngresos = rs.getBigDecimal("TOTAL_INGRESOS") != null 
+                                    ? rs.getBigDecimal("TOTAL_INGRESOS") 
+                                    : BigDecimal.ZERO;
+                            BigDecimal comision = totalIngresos.multiply(new BigDecimal("0.10"))
+                                    .setScale(2, RoundingMode.HALF_UP);
+                            BigDecimal neto = totalIngresos.multiply(new BigDecimal("0.90"))
+                                    .setScale(2, RoundingMode.HALF_UP);
+
                             resultado.add(new LiquidacionItemDto(
                                     rs.getInt("ANIO"),
                                     rs.getInt("MES"),
                                     rs.getLong("ID_ALOJAMIENTO"),
                                     rs.getString("NOMBRE_ALOJAMIENTO"),
                                     rs.getLong("TOTAL_RESERVAS"),
-                                    rs.getBigDecimal("INGRESO_HOSPEDAJE"),
-                                    rs.getBigDecimal("INGRESO_SERVICIOS"),
-                                    rs.getBigDecimal("INGRESO_TOTAL"),
-                                    rs.getBigDecimal("INGRESO_TOTAL").multiply(new BigDecimal("0.10")),
-                                    rs.getBigDecimal("INGRESO_TOTAL").multiply(new BigDecimal("0.90"))
+                                    totalHospedaje,
+                                    totalServicios,
+                                    totalIngresos,
+                                    comision,
+                                    neto
                             ));
                         }
                     }
