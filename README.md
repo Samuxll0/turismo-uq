@@ -1,0 +1,69 @@
+# TurismoUQ · Plataforma Turística del Quindío
+**Proyecto Integrador – Bases de Datos II **  
+**Universidad del Quindío – Facultad de Ingeniería**
+
+---
+
+## 🏛️ Estructura del Repositorio
+
+```text
+turismo-uq/
+├── database/
+│   ├── entrega 1/
+│   │   ├── 01_tablespace_historico.sql    # Creación de TBS_HISTORICO_RESERVAS y reubicación de tablas/índices
+│   │   ├── 02_consultas_analisis.sql       # 8 Consultas analíticas (PIVOT, ROLLUP, RANK, LAG, MV, etc.)
+│   │   └── justificacion_tablespace.md     # Documento técnico que sustenta la separación física de I/O
+│   └── entrega 2/
+│       ├── 01_ajuste_temporadas_tarifas.sql # Estandarización a Temporada Alta y Baja (800 tarifas)
+│       ├── 02_pkg_turismo_reservas_spec.sql # Especificación del paquete PL/SQL
+│       ├── 03_pkg_turismo_reservas_body.sql # Cuerpo del paquete (fn_valor_estadia, sp_crear_reserva, etc.)
+│       ├── 04_triggers.sql                  # Triggers de auditoría de tarifas y prevención de solapamientos
+│       └── 05_test_entrega2.sql             # Batería de pruebas automatizadas en SQL*Plus (100% exitosas)
+├── backend/                                 # Spring Boot 3.4 + Java 21 LTS + Oracle JDBC
+│   ├── src/main/java/com/turismouq/app/
+│   │   ├── config/                          # Configuración CORS y DataSource
+│   │   ├── controller/                      # Endpoints REST para reservas, cotizaciones, analítica y catálogo
+│   │   ├── dto/
+│   │   │   ├── request/                     # Records de petición
+│   │   │   └── response/                    # Records de respuesta
+│   │   ├── entity/                          # Entidades JPA que mapean el esquema de Oracle XE
+│   │   ├── exception/                       # Manejador global y mapeo de errores ORA-2000x a HTTP
+│   │   ├── repository/                      # Repositorios JPA y consultas nativas con JdbcTemplate
+│   │   └── service/                         # Lógica de negocio e invocación de paquetes PL/SQL
+│   └── pom.xml
+├── frontend/                                # Angular 19 + HTML5 + CSS moderno
+│   └── src/app/                             # Dashboard interactivo para sustentación en vivo
+├── run_project.ps1                          # Script de arranque en 1 clic
+└── .agents/                                 # Skills y agentes configurados para ahorro de cuota
+```
+
+---
+
+## 🚀 Puesta en Marcha
+
+### Prerrequisitos
+* **Oracle Database 21c XE** instalado localmente con el esquema `TURISMO_UQ` en la PDB `XEPDB1`.
+* **Java 21 LTS**.
+* **Node.js LTS (v24+)**.
+
+### Ejecución Rápida
+Ejecuta el script PowerShell incluido en la raíz:
+```powershell
+.\run_project.ps1
+```
+
+O arranca cada servicio manualmente:
+
+1. **Backend (Puerto 8080):**
+   ```powershell
+   cd backend
+   .\mvnw.cmd spring-boot:run
+   ```
+
+2. **Frontend (Puerto 4200):**
+   ```powershell
+   cd frontend
+   npm start
+   ```
+
+Abre tu navegador en: **`http://localhost:4200`**
