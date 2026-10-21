@@ -6,6 +6,16 @@ export interface CatalogoItem {
   id: number;
   nombre: string;
   descripcion?: string;
+  // Campos opcionales para enriquecer tarjetas de alojamiento
+  id_municipio?: number;
+  nombre_municipio?: string;
+  direccion?: string;
+  telefono?: string;
+  capacidad_total?: number;
+  total_habitaciones?: number;
+  tarifa_minima?: number;
+  imagen_url?: string;
+  rating?: number;
 }
 
 export interface HabitacionDetalle {
@@ -91,6 +101,23 @@ export interface AnaliticaVariacion {
   porcentaje_crecimiento: number;
 }
 
+export interface DesgloseNoche {
+  fecha: string;
+  diaSemana: string;
+  esAlta: boolean;
+  motivoTemporada: string;
+  tarifaNoche: number;
+}
+
+export interface ToastNotificacion {
+  id: string;
+  tipo: 'success' | 'error' | 'warning' | 'info';
+  titulo: string;
+  mensaje: string;
+  codigo?: string;
+  duracionMs?: number;
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -98,7 +125,9 @@ export class TurismoService {
   private http = inject(HttpClient);
   private baseUrl = 'http://localhost:8080/api';
 
-  // Catalogos
+  // ==========================================
+  // Catálogos Base
+  // ==========================================
   getMunicipios(): Observable<CatalogoItem[]> {
     return this.http.get<CatalogoItem[]>(`${this.baseUrl}/catalogos/municipios`);
   }
@@ -119,7 +148,9 @@ export class TurismoService {
     return this.http.get<CatalogoItem[]>(`${this.baseUrl}/catalogos/clientes`);
   }
 
-  // Entrega 2 - PL/SQL
+  // ==========================================
+  // Motor PL/SQL - Procedimientos & Funciones
+  // ==========================================
   cotizar(idHabitacion: number, fechaIn: string, fechaOut: string): Observable<CotizacionResponse> {
     return this.http.post<CotizacionResponse>(`${this.baseUrl}/reservas/cotizar`, {
       id_habitacion: idHabitacion,
@@ -128,7 +159,13 @@ export class TurismoService {
     });
   }
 
-  crearReserva(idCliente: number, idHabitacion: number, fechaIn: string, fechaOut: string, numHuespedes: number): Observable<ReservaResponse> {
+  crearReserva(
+    idCliente: number,
+    idHabitacion: number,
+    fechaIn: string,
+    fechaOut: string,
+    numHuespedes: number
+  ): Observable<ReservaResponse> {
     return this.http.post<ReservaResponse>(`${this.baseUrl}/reservas`, {
       id_cliente: idCliente,
       id_habitacion: idHabitacion,
@@ -144,7 +181,9 @@ export class TurismoService {
     return this.http.get<LiquidacionItem[]>(`${this.baseUrl}/liquidaciones`, { params });
   }
 
-  // Entrega 1 - Analitica
+  // ==========================================
+  // Consultas Analíticas BI (PIVOT, ROLLUP, RANK, LAG)
+  // ==========================================
   getOcupacionMensual(): Observable<AnaliticaOcupacion[]> {
     return this.http.get<AnaliticaOcupacion[]>(`${this.baseUrl}/analitica/ocupacion-mensual`);
   }
