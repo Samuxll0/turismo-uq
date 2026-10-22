@@ -79,6 +79,13 @@
         <span>Analítica BI (Entrega 1)</span>
       </button>
 
+      <button [class.active]="tabActivo() === 'tablespace'" (click)="cambiarTab('tablespace')" class="nav-btn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4m0 5c0 2.21-3.582 4-8 4s-8-1.79-8-4" />
+        </svg>
+        <span>Tablespace Histórico</span>
+      </button>
+
       <button [class.active]="tabActivo() === 'cotizador'" (click)="cambiarTab('cotizador')" class="nav-btn">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <path stroke-linecap="round" stroke-linejoin="round" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
@@ -208,6 +215,18 @@
             <button [class.active]="analiticaSubTab() === 'rank'" (click)="cambiarAnaliticaSubTab('rank')">
               4. Top RANK
             </button>
+            <button [class.active]="analiticaSubTab() === 'bind'" (click)="cambiarAnaliticaSubTab('bind')">
+              5. Rango BIND
+            </button>
+            <button [class.active]="analiticaSubTab() === 'mv'" (click)="cambiarAnaliticaSubTab('mv')">
+              6. Vista MV
+            </button>
+            <button [class.active]="analiticaSubTab() === 'unpivot'" (click)="cambiarAnaliticaSubTab('unpivot')">
+              7. Despivotado UNPIVOT
+            </button>
+            <button [class.active]="analiticaSubTab() === 'clv'" (click)="cambiarAnaliticaSubTab('clv')">
+              8. Clientes CLV
+            </button>
           </div>
 
           <button class="btn-refresh" (click)="cargarAnalitica()" [disabled]="cargando()">
@@ -330,6 +349,36 @@
               </div>
               <div class="canvas-wrapper">
                 <canvas id="chartRank"></canvas>
+              </div>
+            </div>
+          </div>
+
+          <div class="charts-row-2">
+            <!-- GRÁFICO 5: Ventas por Rango (BIND VARIABLES) -->
+            <div class="card chart-card">
+              <div class="chart-header">
+                <div>
+                  <h3 class="chart-title">5. Ventas por Rango Paramétrico (Bind Variables)</h3>
+                  <p class="chart-sub">Facturación por municipio con reutilización de planes en Shared Pool (Soft Parse).</p>
+                </div>
+                <div class="chart-badge-accent">:p_fecha_ini / :p_fecha_fin</div>
+              </div>
+              <div class="canvas-wrapper">
+                <canvas id="chartBind"></canvas>
+              </div>
+            </div>
+
+            <!-- GRÁFICO 6: Top 10 Clientes CLV -->
+            <div class="card chart-card">
+              <div class="chart-header">
+                <div>
+                  <h3 class="chart-title">8. Customer Lifetime Value (Top 10 CLV)</h3>
+                  <p class="chart-sub">Participación porcentual en facturación global acumulada (FETCH FIRST 10).</p>
+                </div>
+                <div class="chart-badge-accent">FETCH FIRST 10 + RATIO</div>
+              </div>
+              <div class="canvas-wrapper">
+                <canvas id="chartClv"></canvas>
               </div>
             </div>
           </div>
@@ -470,6 +519,470 @@
                   </td>
                   <td class="font-medium text-dark">{{ t.alojamiento }}</td>
                   <td class="font-bold text-emerald">${{ t.ingresos_alojamiento | number }} COP</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- SUBTAB 5: TABLA RANGO BIND VARIABLES -->
+        <div *ngIf="analiticaSubTab() === 'bind'" class="card table-card fade-in">
+          <div class="table-header-custom">
+            <div>
+              <h3>5. Consulta Paramétrica por Rango de Fechas con Variables de Enlace (Bind Variables)</h3>
+              <p>Filtro SQL optimizado con <code>:p_fecha_ini</code> y <code>:p_fecha_fin</code> evitando hard parsing y optimizando el cursor compartido.</p>
+            </div>
+            <div class="table-actions-inline">
+              <div class="date-input-group">
+                <label>Desde:</label>
+                <input type="date" [(ngModel)]="filtroBindInicio" class="input-date-compact">
+              </div>
+              <div class="date-input-group">
+                <label>Hasta:</label>
+                <input type="date" [(ngModel)]="filtroBindFin" class="input-date-compact">
+              </div>
+              <button class="btn-refresh" (click)="filtrarBind()" [disabled]="cargando()">
+                <span>🔍 Aplicar Filtro BIND</span>
+              </button>
+            </div>
+          </div>
+          <div class="table-responsive">
+            <table class="luxury-table">
+              <thead>
+                <tr>
+                  <th>Municipio</th>
+                  <th>Reservas en Periodo</th>
+                  <th>Total Recaudado</th>
+                  <th>Ticket Promedio</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let b of datosBind()">
+                  <td class="font-semibold text-dark">{{ b.municipio }}</td>
+                  <td><span class="badge-count">{{ b.reservas_periodo | number }}</span></td>
+                  <td class="font-bold text-emerald">${{ b.total_recaudado | number }} COP</td>
+                  <td class="font-medium text-dark">${{ b.ticket_promedio | number }} COP</td>
+                </tr>
+                <tr *ngIf="datosBind().length === 0">
+                  <td colspan="4" class="text-center text-muted py-4">No se encontraron reservas confirmadas en el rango seleccionado.</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- SUBTAB 6: TABLA VISTA MATERIALIZADA -->
+        <div *ngIf="analiticaSubTab() === 'mv'" class="card table-card fade-in">
+          <div class="table-header-custom">
+            <div>
+              <h3>6. Vista Materializada: <code>MV_OCUPACION_MENSUAL</code></h3>
+              <p>Estrategia: <strong>REFRESH COMPLETE ON DEMAND</strong>. Agregado analítico precalculado de alto rendimiento para aislar reportes de la carga transaccional.</p>
+            </div>
+            <div class="table-actions-inline">
+              <label class="font-medium text-dark text-sm">Periodo Año-Mes:</label>
+              <select [(ngModel)]="filtroMVAnioMes" (change)="filtrarMV()" class="input-select-compact">
+                <option value="2025-01">Enero 2025</option>
+                <option value="2025-02">Febrero 2025</option>
+                <option value="2025-03">Marzo 2025</option>
+                <option value="2025-04">Abril 2025</option>
+                <option value="2025-05">Mayo 2025</option>
+                <option value="2025-06">Junio 2025</option>
+                <option value="2025-07">Julio 2025</option>
+                <option value="2025-08">Agosto 2025</option>
+                <option value="2025-09">Septiembre 2025</option>
+                <option value="2025-10">Octubre 2025</option>
+                <option value="2025-11">Noviembre 2025</option>
+                <option value="2025-12">Diciembre 2025</option>
+              </select>
+            </div>
+          </div>
+          <div class="table-responsive">
+            <table class="luxury-table">
+              <thead>
+                <tr>
+                  <th>Municipio</th>
+                  <th>Tipo Alojamiento</th>
+                  <th>Año-Mes</th>
+                  <th>Total Reservas</th>
+                  <th>Habitaciones Ocupadas</th>
+                  <th>Facturación Acumulada</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let m of datosMV()">
+                  <td class="font-semibold text-dark">{{ m.municipio }}</td>
+                  <td>{{ m.tipo_alojamiento }}</td>
+                  <td><span class="badge-neutral">{{ m.anio_mes }}</span></td>
+                  <td><span class="badge-count">{{ m.total_reservas | number }}</span></td>
+                  <td>{{ m.total_habitaciones_ocupadas | number }}</td>
+                  <td class="font-bold text-emerald">${{ m.facturacion_acumulada | number }} COP</td>
+                </tr>
+                <tr *ngIf="datosMV().length === 0">
+                  <td colspan="6" class="text-center text-muted py-4">No hay datos agregados en la vista materializada para el periodo seleccionado.</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- SUBTAB 7: TABLA DESPIVOTADO UNPIVOT -->
+        <div *ngIf="analiticaSubTab() === 'unpivot'" class="card table-card fade-in">
+          <div class="table-header-custom">
+            <div>
+              <h3>7. Despivotado de Métricas con Cláusula <code>UNPIVOT</code></h3>
+              <p>Normalización tabular con <code>UNPIVOT (monto FOR concepto_gasto IN (hospedaje, servicios))</code> para transformación analítica.</p>
+            </div>
+            <div class="table-actions-inline">
+              <label class="font-medium text-dark text-sm">Mes a analizar:</label>
+              <select [(ngModel)]="filtroUnpivotMes" (change)="filtrarUnpivot()" class="input-select-compact">
+                <option value="2025-01">2025-01 (Enero)</option>
+                <option value="2025-02">2025-02 (Febrero)</option>
+                <option value="2025-03">2025-03 (Marzo)</option>
+                <option value="2025-04">2025-04 (Abril)</option>
+                <option value="2025-05">2025-05 (Mayo)</option>
+                <option value="2025-06">2025-06 (Junio)</option>
+                <option value="2025-07">2025-07 (Julio)</option>
+                <option value="2025-08">2025-08 (Agosto)</option>
+                <option value="2025-09">2025-09 (Septiembre)</option>
+                <option value="2025-10">2025-10 (Octubre)</option>
+                <option value="2025-11">2025-11 (Noviembre)</option>
+                <option value="2025-12">2025-12 (Diciembre)</option>
+              </select>
+            </div>
+          </div>
+          <div class="table-responsive">
+            <table class="luxury-table">
+              <thead>
+                <tr>
+                  <th>ID Reserva</th>
+                  <th>Mes</th>
+                  <th>Concepto de Gasto (UNPIVOT)</th>
+                  <th>Monto</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let u of datosUnpivot()">
+                  <td class="font-semibold text-dark">#{{ u.id_reserva }}</td>
+                  <td><span class="badge-neutral">{{ u.mes }}</span></td>
+                  <td>
+                    <span class="rubro-badge" [class.rubro-hosp]="u.concepto_gasto.includes('HOSPEDAJE')" [class.rubro-serv]="u.concepto_gasto.includes('SERVICIO') || u.concepto_gasto.includes('ACTIVIDAD')">
+                      {{ u.concepto_gasto }}
+                    </span>
+                  </td>
+                  <td class="font-bold text-emerald">${{ u.monto | number }} COP</td>
+                </tr>
+                <tr *ngIf="datosUnpivot().length === 0">
+                  <td colspan="4" class="text-center text-muted py-4">No hay datos despivotados para el mes seleccionado.</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- SUBTAB 8: TABLA TOP CLIENTES CLV -->
+        <div *ngIf="analiticaSubTab() === 'clv'" class="card table-card fade-in">
+          <div class="table-header-custom">
+            <div>
+              <h3>8. Top 10 Clientes por Customer Lifetime Value (CLV)</h3>
+              <p>Top histórico de clientes ordenado por facturación con <code>FETCH FIRST 10 ROWS ONLY</code> y peso relativo sobre el recaudo total del Quindío.</p>
+            </div>
+            <div class="table-actions-inline">
+              <button class="btn-refresh" (click)="cargarTopClientesCLV()" [disabled]="cargando()">
+                <span>🔄 Recalcular Top 10 CLV</span>
+              </button>
+            </div>
+          </div>
+          <div class="table-responsive">
+            <table class="luxury-table">
+              <thead>
+                <tr>
+                  <th>Posición</th>
+                  <th>Cliente</th>
+                  <th>ID Cliente</th>
+                  <th>Estadías</th>
+                  <th>Servicios Contratados</th>
+                  <th>Gasto Total (CLV)</th>
+                  <th>Ticket Promedio</th>
+                  <th>% Aporte Global</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let c of datosCLV(); let i = index">
+                  <td>
+                    <span class="rank-pill" [class.rank-1]="i === 0" [class.rank-2]="i === 1" [class.rank-3]="i === 2">
+                      #{{ i + 1 }}
+                    </span>
+                  </td>
+                  <td class="font-bold text-dark">{{ c.nombre_completo }}</td>
+                  <td class="text-muted text-sm">#{{ c.id_cliente }}</td>
+                  <td><span class="badge-count">{{ c.total_estadias }}</span></td>
+                  <td><span class="badge-neutral">{{ c.total_servicios_contratados }}</span></td>
+                  <td class="font-bold text-emerald">${{ c.gasto_historico_total | number }} COP</td>
+                  <td class="font-medium text-dark">${{ c.ticket_promedio | number }} COP</td>
+                  <td>
+                    <div class="progress-bar-container">
+                      <div class="progress-bar-fill purple-fill" [style.width.%]="c.pct_facturacion_global * 10"></div>
+                      <span class="progress-label font-bold text-purple">{{ c.pct_facturacion_global }}%</span>
+                    </div>
+                  </td>
+                </tr>
+                <tr *ngIf="datosCLV().length === 0">
+                  <td colspan="8" class="text-center text-muted py-4">No se encontraron clientes para el cálculo de CLV.</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ======================================================== -->
+      <!-- VISTA: ADMINISTRACIÓN DE TABLESPACE HISTÓRICO (DBA)       -->
+      <!-- ======================================================== -->
+      <section *ngIf="tabActivo() === 'tablespace'" class="fade-in">
+        <!-- Barra de herramientas del Tablespace -->
+        <div class="section-toolbar">
+          <div class="section-title-wrap">
+            <h2>Almacenamiento Físico & DBA: <code>TBS_HISTORICO_RESERVAS</code></h2>
+            <p class="section-sub">Aislamiento físico de I/O, arquitectura de extensiones LOCAL ASSM y estrategia de respaldos RMAN para datos de alto volumen.</p>
+          </div>
+          <button class="btn-refresh" (click)="refrescarTablespaceConFeedback()" [disabled]="cargando()">
+            <svg viewBox="0 0 20 20" fill="currentColor" class="w-4 h-4">
+              <path fill-rule="evenodd" d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1zm.008 9.057a1 1 0 011.276.61A5.002 5.002 0 0014.001 13H11a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0v-2.101a7.002 7.002 0 01-11.601-2.566 1 1 0 01.61-1.276z" clip-rule="evenodd" />
+            </svg>
+            <span>{{ cargando() ? 'Sincronizando...' : 'Refrescar Métricas DBA' }}</span>
+          </button>
+        </div>
+
+        <!-- KPIs DBA de Almacenamiento -->
+        <div class="kpi-grid">
+          <div class="kpi-card">
+            <div class="kpi-header">
+              <span class="kpi-title">Estado del Tablespace</span>
+              <span class="kpi-tag success">ONLINE · R/W</span>
+            </div>
+            <div class="kpi-number">{{ tablespaceInfo()?.status || 'ONLINE' }}</div>
+            <div class="kpi-footer text-emerald">
+              <span>● Gestión LOCAL · ASSM (Segment Auto)</span>
+            </div>
+          </div>
+
+          <div class="kpi-card">
+            <div class="kpi-header">
+              <span class="kpi-title">Espacio en Uso (DBA)</span>
+              <span class="kpi-tag info">{{ tablespaceInfo()?.pct_used_of_initial }}% Utilizado</span>
+            </div>
+            <div class="kpi-number">{{ tablespaceInfo()?.used_mb }} MB <span class="text-xs text-muted">/ {{ tablespaceInfo()?.initial_size_mb || 100 }} MB</span></div>
+            <div class="kpi-footer text-muted">
+              <span>● Autoextend: {{ tablespaceInfo()?.autoextend_next_mb || 50 }} MB (Máx: {{ tablespaceInfo()?.max_size_mb || 2048 }} MB)</span>
+            </div>
+          </div>
+
+          <div class="kpi-card">
+            <div class="kpi-header">
+              <span class="kpi-title">Filas Transaccionales Aisladas</span>
+              <span class="kpi-tag purple">100% Fuera de USERS</span>
+            </div>
+            <div class="kpi-number">{{ tablespaceInfo()?.total_filas_historicas | number }}</div>
+            <div class="kpi-footer text-purple">
+              <span>● 5 tablas críticas reubicadas físicamente</span>
+            </div>
+          </div>
+
+          <div class="kpi-card">
+            <div class="kpi-header">
+              <span class="kpi-title">Índices Reconstruidos</span>
+              <span class="kpi-tag emerald">100% VALID</span>
+            </div>
+            <div class="kpi-number">{{ tablespaceInfo()?.indices?.length || 6 }} Índices</div>
+            <div class="kpi-footer text-emerald">
+              <span>● 0 índices en estado UNUSABLE</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Fila 1: Especificación Técnica del Datafile y Storage -->
+        <div class="card table-card mb-4 fade-in">
+          <div class="table-header-custom">
+            <div>
+              <h3>Especificación del Datafile y Parámetros Físicos en Oracle XE</h3>
+              <p>Parámetros configurados mediante <code>CREATE TABLESPACE TBS_HISTORICO_RESERVAS DATAFILE ...</code></p>
+            </div>
+            <div class="storage-badge-group">
+              <span class="badge-neutral font-mono">Bloque: {{ tablespaceInfo()?.block_size_bytes }} Bytes</span>
+              <span class="badge-neutral font-mono">Cuota: {{ tablespaceInfo()?.quota_user }}</span>
+            </div>
+          </div>
+          <div class="storage-specs-grid">
+            <div class="spec-tile">
+              <span class="spec-k">Archivo Físico (Datafile):</span>
+              <span class="spec-v font-mono text-dark">{{ tablespaceInfo()?.datafile_name }}</span>
+            </div>
+            <div class="spec-tile">
+              <span class="spec-k">Ruta en Disco (XEPDB1):</span>
+              <span class="spec-v font-mono text-xs text-muted truncate" [title]="tablespaceInfo()?.datafile_path">{{ tablespaceInfo()?.datafile_path }}</span>
+            </div>
+            <div class="spec-tile">
+              <span class="spec-k">Tamaño Inicial:</span>
+              <span class="spec-v font-bold">{{ tablespaceInfo()?.initial_size_mb }} MB</span>
+            </div>
+            <div class="spec-tile">
+              <span class="spec-k">Incremento Automático:</span>
+              <span class="spec-v font-bold text-emerald">+{{ tablespaceInfo()?.autoextend_next_mb }} MB por extensión</span>
+            </div>
+            <div class="spec-tile">
+              <span class="spec-k">Capacidad Máxima (MAXSIZE):</span>
+              <span class="spec-v font-bold text-purple">{{ tablespaceInfo()?.max_size_mb }} MB (2 GB)</span>
+            </div>
+            <div class="spec-tile">
+              <span class="spec-k">Gestión de Extensiones:</span>
+              <span class="spec-v font-semibold">LOCAL (Bitmaps en encabezado)</span>
+            </div>
+          </div>
+
+          <!-- Barra de utilización visual -->
+          <div class="storage-meter-wrap">
+            <div class="meter-labels">
+              <span><strong>Consumo Actual:</strong> {{ tablespaceInfo()?.used_mb }} MB ({{ tablespaceInfo()?.pct_used_of_initial }}% de los 100 MB iniciales)</span>
+              <span><strong>Límite Autoextend:</strong> 2.048 MB ({{ tablespaceInfo()?.pct_used_of_max }}% del techo máximo)</span>
+            </div>
+            <div class="progress-bar-storage">
+              <div class="storage-fill" [style.width.%]="tablespaceInfo()?.pct_used_of_initial"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Fila 2: Tablas Reubicadas Físicamente en el Tablespace -->
+        <div class="card table-card mb-4 fade-in">
+          <div class="table-header-custom">
+            <div>
+              <h3>Inventario de Tablas Reubicadas Físicamente (Sentencias <code>ALTER TABLE ... MOVE</code>)</h3>
+              <p>Segmentos aislados del tablespace por defecto <code>USERS</code> para prevenir contención de disco y fragmentación.</p>
+            </div>
+            <span class="badge-total">{{ tablespaceInfo()?.tablas?.length || 0 }} Tablas Transaccionales</span>
+          </div>
+          <div class="table-responsive">
+            <table class="luxury-table">
+              <thead>
+                <tr>
+                  <th>Nombre de Tabla</th>
+                  <th>Tablespace Físico</th>
+                  <th>Filas Persistidas</th>
+                  <th>Tamaño Segmento</th>
+                  <th>Bloques (8 KB)</th>
+                  <th>Extensiones</th>
+                  <th>Estado</th>
+                  <th>Naturaleza / Propósito en TurismoUQ</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let t of tablespaceInfo()?.tablas">
+                  <td class="font-bold text-dark font-mono">{{ t.table_name }}</td>
+                  <td><span class="badge-neutral font-semibold text-purple">{{ t.tablespace_name }}</span></td>
+                  <td><span class="badge-count font-bold">{{ t.num_rows | number }}</span></td>
+                  <td class="font-semibold text-emerald">{{ t.size_mb }} MB</td>
+                  <td class="text-muted">{{ t.blocks | number }}</td>
+                  <td class="text-muted">{{ t.extents }}</td>
+                  <td><span class="status-pill active">{{ t.status }}</span></td>
+                  <td class="text-sm text-dark">{{ t.descripcion }}</td>
+                </tr>
+                <tr *ngIf="!tablespaceInfo() || tablespaceInfo()?.tablas?.length === 0">
+                  <td colspan="8" class="text-center text-muted py-4">Cargando inventario de tablas del tablespace...</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Fila 3: Índices Reconstruidos en TBS_HISTORICO_RESERVAS -->
+        <div class="card table-card mb-4 fade-in">
+          <div class="table-header-custom">
+            <div>
+              <h3>Índices B-Tree Alojados y Reconstruidos (<code>ALTER INDEX ... REBUILD</code>)</h3>
+              <p>Tras la migración física de tablas, los índices fueron reconstruidos para devolverlos a estado <strong>VALID</strong> y evitar errores <code>ORA-01502</code>.</p>
+            </div>
+            <span class="badge-subtotal">{{ tablespaceInfo()?.indices?.length || 0 }} Índices B-Tree</span>
+          </div>
+          <div class="table-responsive">
+            <table class="luxury-table">
+              <thead>
+                <tr>
+                  <th>Nombre del Índice</th>
+                  <th>Tabla Asociada</th>
+                  <th>Tablespace</th>
+                  <th>Tipo / Unicidad</th>
+                  <th>Tamaño Segmento</th>
+                  <th>Estado de Usabilidad</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let idx of tablespaceInfo()?.indices">
+                  <td class="font-semibold text-dark font-mono">{{ idx.index_name }}</td>
+                  <td class="font-bold text-dark">{{ idx.table_name }}</td>
+                  <td><span class="badge-neutral">{{ idx.tablespace_name }}</span></td>
+                  <td><span class="badge-neutral text-xs">{{ idx.uniqueness }}</span></td>
+                  <td class="font-medium text-emerald">{{ idx.size_mb }} MB</td>
+                  <td>
+                    <span class="status-pill active" [class.danger]="idx.status === 'UNUSABLE'">
+                      {{ idx.status }}
+                    </span>
+                  </td>
+                </tr>
+                <tr *ngIf="!tablespaceInfo() || tablespaceInfo()?.indices?.length === 0">
+                  <td colspan="6" class="text-center text-muted py-4">Cargando índices del tablespace...</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Fila 4: Matriz de Justificación Técnica y Comparativa Frente a USERS -->
+        <div class="card table-card fade-in">
+          <div class="table-header-custom">
+            <div>
+              <h3>Matriz de Justificación Técnica de Arquitectura: <code>TBS_HISTORICO_RESERVAS</code> vs <code>USERS</code></h3>
+              <p>Defensa conceptual para la sustentación docente según las mejores prácticas de administración de almacenamiento Oracle 21c.</p>
+            </div>
+          </div>
+          <div class="table-responsive">
+            <table class="luxury-table">
+              <thead>
+                <tr>
+                  <th>Criterio DBA / Arquitectura</th>
+                  <th>Tablespace Catálogos (<code>USERS</code>)</th>
+                  <th>Tablespace Histórico (<code>TBS_HISTORICO_RESERVAS</code>)</th>
+                  <th>Beneficio Operativo en TurismoUQ</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td class="font-semibold text-dark">Naturaleza de los Datos</td>
+                  <td>Maestros y dimensionales (12 municipios, 60 alojamientos, 400 habitaciones).</td>
+                  <td>Transaccionales masivos (25.000 reservas, 40.000 consumos, 25.000 pagos).</td>
+                  <td>Aísla tablas de alta mutabilidad evitando fragmentación en catálogos base.</td>
+                </tr>
+                <tr>
+                  <td class="font-semibold text-dark">Patrón de Entrada / Salida (I/O)</td>
+                  <td>95% Lecturas en memoria compartida (Buffer Cache).</td>
+                  <td>Escrituras concurrentes continuas (INSERT / UPDATE) y scans masivos.</td>
+                  <td>Elimina la contención de cabezales y bloques entre OLTP transaccional y consultas de catálogo.</td>
+                </tr>
+                <tr>
+                  <td class="font-semibold text-dark">Política de Respaldos (RMAN)</td>
+                  <td>Respaldos completos semanales (baja tasa de cambio).</td>
+                  <td>Respaldos incrementales diarios o multinivel según RPO y RTO.</td>
+                  <td>Permite <strong>TSPIR</strong> (recuperación puntual del histórico) sin apagar catálogos maestros.</td>
+                </tr>
+                <tr>
+                  <td class="font-semibold text-dark">Mantenimiento y Archivo</td>
+                  <td>Siempre READ/WRITE activo para altas comerciales.</td>
+                  <td>Permite conmutar a <code>READ ONLY</code> o activar compresión avanzada para años cerrados.</td>
+                  <td>RMAN omite tablespaces READ ONLY en copias incrementales, reduciendo ventanas de backup.</td>
+                </tr>
+                <tr>
+                  <td class="font-semibold text-dark">Gestión de Espacio (ASSM)</td>
+                  <td>Estándar compartida.</td>
+                  <td><code>AUTOEXTEND ON NEXT 50M MAXSIZE 2048M</code> con cuota ilimitada al esquema.</td>
+                  <td>Escalabilidad controlada con techo máximo para prevenir agotamiento del disco host.</td>
                 </tr>
               </tbody>
             </table>

@@ -101,6 +101,83 @@ export interface AnaliticaVariacion {
   porcentaje_crecimiento: number;
 }
 
+export interface AnaliticaRangoFechas {
+  municipio: string;
+  reservas_periodo: number;
+  total_recaudado: number;
+  ticket_promedio: number;
+}
+
+export interface AnaliticaMaterializada {
+  id_municipio: number;
+  municipio: string;
+  tipo_alojamiento: string;
+  anio_mes: string;
+  total_reservas: number;
+  total_habitaciones_ocupadas: number;
+  facturacion_acumulada: number;
+}
+
+export interface AnaliticaUnpivot {
+  id_reserva: number;
+  mes: string;
+  concepto_gasto: string;
+  monto: number;
+}
+
+export interface AnaliticaClienteClv {
+  id_cliente: number;
+  nombre_completo: string;
+  total_estadias: number;
+  total_servicios_contratados: number;
+  gasto_historico_total: number;
+  ticket_promedio: number;
+  pct_facturacion_global: number;
+}
+
+
+export interface TablespaceTabla {
+  table_name: string;
+  tablespace_name: string;
+  num_rows: number;
+  size_mb: number;
+  blocks: number;
+  extents: number;
+  status: string;
+  descripcion: string;
+}
+
+export interface TablespaceIndex {
+  index_name: string;
+  table_name: string;
+  tablespace_name: string;
+  status: string;
+  uniqueness: string;
+  size_mb: number;
+}
+
+export interface TablespaceInfo {
+  tablespace_name: string;
+  status: string;
+  extent_management: string;
+  allocation_type: string;
+  segment_space_management: string;
+  block_size_bytes: number;
+  initial_size_mb: number;
+  autoextend_next_mb: number;
+  max_size_mb: number;
+  used_bytes: number;
+  used_mb: number;
+  pct_used_of_initial: number;
+  pct_used_of_max: number;
+  quota_user: string;
+  datafile_name: string;
+  datafile_path: string;
+  total_filas_historicas: number;
+  tablas: TablespaceTabla[];
+  indices: TablespaceIndex[];
+}
+
 export interface DesgloseNoche {
   fecha: string;
   diaSemana: string;
@@ -199,4 +276,35 @@ export class TurismoService {
   getVariacionMes(): Observable<AnaliticaVariacion[]> {
     return this.http.get<AnaliticaVariacion[]>(`${this.baseUrl}/analitica/variacion-mes`);
   }
+
+  getRangoFechas(fechaInicio: string, fechaFin: string): Observable<AnaliticaRangoFechas[]> {
+    let params = new HttpParams()
+      .set('fechaInicio', fechaInicio)
+      .set('fechaFin', fechaFin);
+    return this.http.get<AnaliticaRangoFechas[]>(`${this.baseUrl}/analitica/rango-fechas`, { params });
+  }
+
+  getVistaMaterializada(anioMes?: string): Observable<AnaliticaMaterializada[]> {
+    let params = new HttpParams();
+    if (anioMes) params = params.set('anioMes', anioMes);
+    return this.http.get<AnaliticaMaterializada[]>(`${this.baseUrl}/analitica/vista-materializada`, { params });
+  }
+
+  getDespivotadoMetricas(mes?: string): Observable<AnaliticaUnpivot[]> {
+    let params = new HttpParams();
+    if (mes) params = params.set('mes', mes);
+    return this.http.get<AnaliticaUnpivot[]>(`${this.baseUrl}/analitica/despivotado-metricas`, { params });
+  }
+
+  getTopClientesClv(): Observable<AnaliticaClienteClv[]> {
+    return this.http.get<AnaliticaClienteClv[]>(`${this.baseUrl}/analitica/top-clientes-clv`);
+  }
+
+  // ==========================================
+  // Administración de Tablespace Histórico
+  // ==========================================
+  getTablespaceInfo(): Observable<TablespaceInfo> {
+    return this.http.get<TablespaceInfo>(`${this.baseUrl}/tablespace/info`);
+  }
+
 }

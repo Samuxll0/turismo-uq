@@ -12,8 +12,15 @@ import {
   AnaliticaJerarquia,
   AnaliticaTop,
   AnaliticaVariacion,
+  AnaliticaRangoFechas,
+  AnaliticaMaterializada,
+  AnaliticaUnpivot,
+  AnaliticaClienteClv,
   DesgloseNoche,
-  ToastNotificacion
+  ToastNotificacion,
+  TablespaceInfo,
+  TablespaceTabla,
+  TablespaceIndex
 } from './turismo.service';
 import { Chart, registerables } from 'chart.js';
 
@@ -47,8 +54,9 @@ export class App implements OnInit, OnDestroy {
   // ==========================================
   // Navegación Principal
   // ==========================================
-  tabActivo = signal<'analitica' | 'cotizador' | 'reservas' | 'liquidacion' | 'directorio'>('analitica');
-  analiticaSubTab = signal<'graficos' | 'pivot' | 'rollup' | 'rank' | 'lag'>('graficos');
+  tabActivo = signal<'analitica' | 'tablespace' | 'cotizador' | 'reservas' | 'liquidacion' | 'directorio'>('analitica');
+  tablespaceInfo = signal<TablespaceInfo | null>(null);
+  analiticaSubTab = signal<'graficos' | 'pivot' | 'lag' | 'rollup' | 'rank' | 'bind' | 'mv' | 'unpivot' | 'clv'>('graficos');
 
   // ==========================================
   // Catálogos
@@ -77,6 +85,18 @@ export class App implements OnInit, OnDestroy {
   chartLagInstancia: Chart | null = null;
   chartRollupInstancia: Chart | null = null;
   chartRankInstancia: Chart | null = null;
+  chartBindInstancia: Chart | null = null;
+  chartClvInstancia: Chart | null = null;
+
+  datosBind = signal<AnaliticaRangoFechas[]>([]);
+  datosMV = signal<AnaliticaMaterializada[]>([]);
+  datosUnpivot = signal<AnaliticaUnpivot[]>([]);
+  datosCLV = signal<AnaliticaClienteClv[]>([]);
+
+  filtroBindInicio: string = '2025-06-01';
+  filtroBindFin: string = '2025-08-31';
+  filtroMVAnioMes: string = '2025-07';
+  filtroUnpivotMes: string = '2025-01';
 
   // KPIs Calculados
   kpiFacturacionTotal = computed(() => {
@@ -201,6 +221,7 @@ export class App implements OnInit, OnDestroy {
   ngOnInit() {
     this.cargarCatalogos();
     this.cargarAnalitica();
+    this.cargarTablespaceInfo();
   }
 
   ngOnDestroy() {
@@ -227,17 +248,29 @@ export class App implements OnInit, OnDestroy {
   // ==========================================
   // Navegación
   // ==========================================
-  cambiarTab(tab: 'analitica' | 'cotizador' | 'reservas' | 'liquidacion' | 'directorio') {
+  cambiarTab(tab: 'analitica' | 'tablespace' | 'cotizador' | 'reservas' | 'liquidacion' | 'directorio') {
     this.tabActivo.set(tab);
     if (tab === 'analitica') {
       setTimeout(() => this.actualizarTodosLosGraficos(), 150);
+    } else if (tab === 'tablespace') {
+      if (!this.tablespaceInfo()) {
+        this.cargarTablespaceInfo();
+      }
     }
   }
 
-  cambiarAnaliticaSubTab(subTab: 'graficos' | 'pivot' | 'rollup' | 'rank' | 'lag') {
+  cambiarAnaliticaSubTab(subTab: 'graficos' | 'pivot' | 'lag' | 'rollup' | 'rank' | 'bind' | 'mv' | 'unpivot' | 'clv') {
     this.analiticaSubTab.set(subTab);
     if (subTab === 'graficos') {
       setTimeout(() => this.actualizarTodosLosGraficos(), 150);
+    } else if (subTab === 'bind' && this.datosBind().length === 0) {
+      this.filtrarBind();
+    } else if (subTab === 'mv' && this.datosMV().length === 0) {
+      this.filtrarMV();
+    } else if (subTab === 'unpivot' && this.datosUnpivot().length === 0) {
+      this.filtrarUnpivot();
+    } else if (subTab === 'clv' && this.datosCLV().length === 0) {
+      this.cargarTopClientesCLV();
     }
   }
 
@@ -308,17 +341,138 @@ export class App implements OnInit, OnDestroy {
     this.api.getVariacionMes().subscribe({
       next: d => {
         this.datosLag.set(d);
-        this.cargando.set(false);
         if (this.tabActivo() === 'analitica') this.renderChartLag();
+      },
+      error: err => console.error('Error cargando variación mes a mes', err)
+    });
+
+    this.api.getRangoFechas(this.filtroBindInicio, this.filtroBindFin).subscribe({
+      next: d => {
+        this.datosBind.set(d);
+        if (this.tabActivo() === 'analitica') this.renderChartBind();
+      },
+      error: err => console.error('Error cargando rango bind', err)
+    });
+
+    this.api.getVistaMaterializada(this.filtroMVAnioMes).subscribe({
+      next: d => this.datosMV.set(d),
+      error: err => console.error('Error cargando vista materializada', err)
+    });
+
+    this.api.getDespivotadoMetricas(this.filtroUnpivotMes).subscribe({
+      next: d => this.datosUnpivot.set(d),
+      error: err => console.error('Error cargando unpivot', err)
+    });
+
+    this.api.getTopClientesClv().subscribe({
+      next: d => {
+        this.datosCLV.set(d);
+        this.cargando.set(false);
+        if (this.tabActivo() === 'analitica') this.renderChartClv();
       },
       error: err => {
         this.cargando.set(false);
-        console.error('Error cargando variación mes a mes', err);
+        console.error('Error cargando clientes CLV', err);
       }
     });
   }
 
-  // Genera tarjetas de alojamientos para el Directorio agrupando habitaciones
+  filtrarBind() {
+    this.cargando.set(true);
+    this.api.getRangoFechas(this.filtroBindInicio, this.filtroBindFin).subscribe({
+      next: d => {
+        this.cargando.set(false);
+        this.datosBind.set(d);
+        this.renderChartBind();
+        this.mostrarToast('success', 'Variables de Enlace Aplicadas', 'Filtrado ' + this.filtroBindInicio + ' al ' + this.filtroBindFin + ' con Soft Parse.');
+      },
+      error: err => {
+        this.cargando.set(false);
+        this.mostrarToast('error', 'Error en Bind Variables', err.error?.message || 'Error en consulta');
+      }
+    });
+  }
+
+  filtrarMV() {
+    this.cargando.set(true);
+    this.api.getVistaMaterializada(this.filtroMVAnioMes).subscribe({
+      next: d => {
+        this.cargando.set(false);
+        this.datosMV.set(d);
+        this.mostrarToast('info', 'Vista Materializada', 'Cargados ' + d.length + ' registros desde MV_OCUPACION_MENSUAL.');
+      },
+      error: err => {
+        this.cargando.set(false);
+        this.mostrarToast('error', 'Error en MV', err.error?.message || 'Error en vista materializada');
+      }
+    });
+  }
+
+  filtrarUnpivot() {
+    this.cargando.set(true);
+    this.api.getDespivotadoMetricas(this.filtroUnpivotMes).subscribe({
+      next: d => {
+        this.cargando.set(false);
+        this.datosUnpivot.set(d);
+        this.mostrarToast('info', 'UNPIVOT Dinámico', 'Despivotado de métricas para ' + this.filtroUnpivotMes + '.');
+      },
+      error: err => {
+        this.cargando.set(false);
+        this.mostrarToast('error', 'Error en UNPIVOT', err.error?.message || 'Error despivotando');
+      }
+    });
+  }
+
+  cargarTopClientesCLV() {
+    this.cargando.set(true);
+    this.api.getTopClientesClv().subscribe({
+      next: d => {
+        this.cargando.set(false);
+        this.datosCLV.set(d);
+        this.renderChartClv();
+        this.mostrarToast('info', 'Top 10 CLV', 'Cargados ' + d.length + ' clientes con mayor valor de vida transaccional.');
+      },
+      error: err => {
+        this.cargando.set(false);
+        this.mostrarToast('error', 'Error en CLV', err.error?.message || 'Error cargando Top Clientes CLV');
+      }
+    });
+  }
+
+  // ==========================================
+  // Administración de Tablespace Histórico (DBA)
+  // ==========================================
+  cargarTablespaceInfo() {
+    this.cargando.set(true);
+    this.api.getTablespaceInfo().subscribe({
+      next: data => {
+        this.cargando.set(false);
+        this.tablespaceInfo.set(data);
+      },
+      error: err => {
+        this.cargando.set(false);
+        console.error('Error cargando tablespace info', err);
+      }
+    });
+  }
+
+  refrescarTablespaceConFeedback() {
+    this.cargando.set(true);
+    this.api.getTablespaceInfo().subscribe({
+      next: data => {
+        this.cargando.set(false);
+        this.tablespaceInfo.set(data);
+        this.mostrarToast('success', 'Tablespace Actualizado', `Métricas de ${data.tablespace_name} sincronizadas (${data.used_mb} MB en uso).`);
+      },
+      error: err => {
+        this.cargando.set(false);
+        this.mostrarToast('error', 'Error en Tablespace', err.error?.message || 'Error al consultar métricas del tablespace');
+      }
+    });
+  }
+
+
+    // Genera tarjetas de alojamientos para el Directorio agrupando habitaciones
   private generarDirectorioDesdeHabitaciones(habs: HabitacionDetalle[]) {
     const mapa = new Map<number, AlojamientoDirectorio>();
 
@@ -375,6 +529,8 @@ export class App implements OnInit, OnDestroy {
     this.renderChartLag();
     this.renderChartRollup();
     this.renderChartRank();
+    this.renderChartBind();
+    this.renderChartClv();
   }
 
   destruirGraficos() {
@@ -393,6 +549,14 @@ export class App implements OnInit, OnDestroy {
     if (this.chartRankInstancia) {
       this.chartRankInstancia.destroy();
       this.chartRankInstancia = null;
+    }
+    if (this.chartBindInstancia) {
+      this.chartBindInstancia.destroy();
+      this.chartBindInstancia = null;
+    }
+    if (this.chartClvInstancia) {
+      this.chartClvInstancia.destroy();
+      this.chartClvInstancia = null;
     }
   }
 
@@ -759,6 +923,128 @@ export class App implements OnInit, OnDestroy {
       }
     });
   }
+
+  // 5. BIND: Recaudación por Rango de Fechas
+  renderChartBind() {
+    const canvas = document.getElementById('chartBind') as HTMLCanvasElement;
+    if (!canvas) return;
+
+    if (this.chartBindInstancia) {
+      this.chartBindInstancia.destroy();
+      this.chartBindInstancia = null;
+    }
+
+    const rawData = this.datosBind();
+    if (rawData.length === 0) return;
+
+    const labels = rawData.map(d => d.municipio);
+    const valores = rawData.map(d => d.total_recaudado);
+
+    const ctx = canvas.getContext('2d');
+    let gradient: any = '#2563eb';
+    if (ctx) {
+      gradient = ctx.createLinearGradient(0, 0, 0, 300);
+      gradient.addColorStop(0, '#2563eb');
+      gradient.addColorStop(1, '#60a5fa');
+    }
+
+    this.chartBindInstancia = new Chart(canvas, {
+      type: 'bar',
+      data: {
+        labels: labels,
+        datasets: [{
+          label: 'Total Recaudado en Período (COP)',
+          data: valores,
+          backgroundColor: gradient,
+          borderRadius: 6
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            backgroundColor: '#0f172a',
+            padding: 12,
+            callbacks: {
+              label: (ctx) => ' Recaudado: $' + Number(ctx.parsed.y).toLocaleString() + ' COP'
+            }
+          }
+        },
+        scales: {
+          y: {
+            beginAtZero: true,
+            ticks: {
+              callback: (val) => '$' + Number(val).toLocaleString()
+            }
+          }
+        }
+      }
+    });
+  }
+
+  // 8. CLV: Participación Top Clientes en Facturación Global
+  renderChartClv() {
+    const canvas = document.getElementById('chartClv') as HTMLCanvasElement;
+    if (!canvas) return;
+
+    if (this.chartClvInstancia) {
+      this.chartClvInstancia.destroy();
+      this.chartClvInstancia = null;
+    }
+
+    const rawData = this.datosCLV();
+    if (rawData.length === 0) return;
+
+    const labels = rawData.map(c => c.nombre_completo);
+    const porcentajes = rawData.map(c => c.pct_facturacion_global);
+
+    const ctx = canvas.getContext('2d');
+    let gradient: any = '#7c3aed';
+    if (ctx) {
+      gradient = ctx.createLinearGradient(0, 0, 400, 0);
+      gradient.addColorStop(0, '#7c3aed');
+      gradient.addColorStop(1, '#a855f7');
+    }
+
+    this.chartClvInstancia = new Chart(canvas, {
+      type: 'bar',
+      data: {
+        labels: labels,
+        datasets: [{
+          label: '% de Facturación Global del Quindío',
+          data: porcentajes,
+          backgroundColor: gradient,
+          borderRadius: 6
+        }]
+      },
+      options: {
+        indexAxis: 'y',
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            backgroundColor: '#0f172a',
+            padding: 12,
+            callbacks: {
+              label: (ctx) => ' Aporte Global: ' + ctx.parsed.x + '% de las ventas'
+            }
+          }
+        },
+        scales: {
+          x: {
+            beginAtZero: true,
+            ticks: {
+              callback: (val) => val + '%'
+            }
+          }
+        }
+      }
+    });
+  }
+
 
   // ==========================================
   // Cotizador Multi-Temporada & Algoritmo de Noches
