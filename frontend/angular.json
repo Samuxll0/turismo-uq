@@ -55,7 +55,7 @@
             ]
           },
           "configurations": {
-            "production": {
+            "production": { "optimization": { "fonts": { "inline": false } },
               "budgets": [
                 {
                   "type": "initial",
@@ -81,7 +81,7 @@
         "serve": {
           "builder": "@angular/build:dev-server",
           "configurations": {
-            "production": {
+            "production": { "optimization": { "fonts": { "inline": false } },
               "buildTarget": "frontend:build:production"
             },
             "development": {
@@ -94,3 +94,4 @@
     }
   }
 }
+

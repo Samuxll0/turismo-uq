@@ -9,7 +9,7 @@ ALTER SESSION SET CURRENT_SCHEMA = TURISMO_UQ;
 
 SET SERVEROUTPUT ON SIZE UNLIMITED;
 
--- 1. Tabla de Auditoria de Tarifas
+-- 1. Tabla de Auditoria de Tarifas Fila por Fila
 BEGIN
     EXECUTE IMMEDIATE '
         CREATE TABLE TURISMO_UQ.AUDITORIA_TARIFA (
@@ -25,31 +25,64 @@ BEGIN
             CONSTRAINT pk_auditoria_tarifa PRIMARY KEY (id_auditoria),
             CONSTRAINT chk_auditoria_accion CHECK (accion IN (''INSERT'', ''UPDATE'', ''DELETE''))
         )';
-    DBMS_OUTPUT.PUT_LINE('Tabla AUDITORIA_TARIFA creada exitosamente.');
 EXCEPTION
     WHEN OTHERS THEN
-        IF SQLCODE = -955 THEN
-            DBMS_OUTPUT.PUT_LINE('Tabla AUDITORIA_TARIFA ya existe.');
-        ELSE
-            RAISE;
-        END IF;
+        IF SQLCODE = -955 THEN NULL; ELSE RAISE; END IF;
 END;
 /
 
--- 2. Compound Trigger de Auditoria sobre TARIFA
+-- 2. Tabla de Log a Nivel de Sentencia
+BEGIN
+    EXECUTE IMMEDIATE '
+        CREATE TABLE TURISMO_UQ.LOG_SENTENCIA_TARIFA (
+            id_log          NUMBER GENERATED ALWAYS AS IDENTITY,
+            usuario         VARCHAR2(60) NOT NULL,
+            fecha           DATE DEFAULT SYSDATE NOT NULL,
+            accion          VARCHAR2(10) NOT NULL,
+            total_filas     NUMBER NOT NULL,
+            CONSTRAINT pk_log_sentencia_tarifa PRIMARY KEY (id_log),
+            CONSTRAINT chk_log_accion CHECK (accion IN (''INSERT'', ''UPDATE'', ''DELETE''))
+        )';
+EXCEPTION
+    WHEN OTHERS THEN
+        IF SQLCODE = -955 THEN NULL; ELSE RAISE; END IF;
+END;
+/
+
+-- 3. Disparador de Auditoria sobre TARIFA
+-- Implementado como Compound Trigger para auditar tanto a nivel de fila (valores anterior y nuevo)
+-- como a nivel de sentencia (registro consolidado por ejecucion DML)
 CREATE OR REPLACE TRIGGER TURISMO_UQ.TRG_AUDITORIA_TARIFA
 FOR INSERT OR UPDATE OR DELETE ON TURISMO_UQ.TARIFA
 COMPOUND TRIGGER
 
-    AFTER EACH ROW IS
-        v_usuario VARCHAR2(60) := SYS_CONTEXT('USERENV', 'SESSION_USER');
+    g_usuario        VARCHAR2(60);
+    g_filas_afectadas NUMBER := 0;
+    g_accion         VARCHAR2(10);
+
+    BEFORE STATEMENT IS
     BEGIN
+        g_usuario := SYS_CONTEXT('USERENV', 'SESSION_USER');
+        g_filas_afectadas := 0;
+        IF INSERTING THEN
+            g_accion := 'INSERT';
+        ELSIF UPDATING THEN
+            g_accion := 'UPDATE';
+        ELSIF DELETING THEN
+            g_accion := 'DELETE';
+        END IF;
+    END BEFORE STATEMENT;
+
+    AFTER EACH ROW IS
+    BEGIN
+        g_filas_afectadas := g_filas_afectadas + 1;
+
         IF INSERTING THEN
             INSERT INTO TURISMO_UQ.AUDITORIA_TARIFA (
                 usuario, fecha, id_tarifa, id_habitacion, id_temporada,
                 precio_anterior, precio_nuevo, accion
             ) VALUES (
-                v_usuario, SYSDATE, :NEW.id_tarifa, :NEW.id_habitacion, :NEW.id_temporada,
+                g_usuario, SYSDATE, :NEW.id_tarifa, :NEW.id_habitacion, :NEW.id_temporada,
                 NULL, :NEW.precio_noche, 'INSERT'
             );
         ELSIF UPDATING THEN
@@ -57,7 +90,7 @@ COMPOUND TRIGGER
                 usuario, fecha, id_tarifa, id_habitacion, id_temporada,
                 precio_anterior, precio_nuevo, accion
             ) VALUES (
-                v_usuario, SYSDATE, :OLD.id_tarifa, :OLD.id_habitacion, :OLD.id_temporada,
+                g_usuario, SYSDATE, :OLD.id_tarifa, :OLD.id_habitacion, :OLD.id_temporada,
                 :OLD.precio_noche, :NEW.precio_noche, 'UPDATE'
             );
         ELSIF DELETING THEN
@@ -65,16 +98,28 @@ COMPOUND TRIGGER
                 usuario, fecha, id_tarifa, id_habitacion, id_temporada,
                 precio_anterior, precio_nuevo, accion
             ) VALUES (
-                v_usuario, SYSDATE, :OLD.id_tarifa, :OLD.id_habitacion, :OLD.id_temporada,
+                g_usuario, SYSDATE, :OLD.id_tarifa, :OLD.id_habitacion, :OLD.id_temporada,
                 :OLD.precio_noche, NULL, 'DELETE'
             );
         END IF;
     END AFTER EACH ROW;
 
+    -- Auditoría a nivel de sentencia: persiste el evento consolidado del bloque DML
+    AFTER STATEMENT IS
+    BEGIN
+        IF g_filas_afectadas > 0 THEN
+            INSERT INTO TURISMO_UQ.LOG_SENTENCIA_TARIFA (
+                usuario, fecha, accion, total_filas
+            ) VALUES (
+                g_usuario, SYSDATE, g_accion, g_filas_afectadas
+            );
+        END IF;
+    END AFTER STATEMENT;
+
 END TRG_AUDITORIA_TARIFA;
 /
 
--- 3. Compound Trigger sobre RESERVA_HABITACION
+-- 4. Compound Trigger sobre RESERVA_HABITACION
 -- Blindado contra el error mutante ORA-04091 mediante estructura compuesta
 CREATE OR REPLACE TRIGGER TURISMO_UQ.TRG_PREVENIR_SOLAPAMIENTO_RESHAB
 FOR INSERT OR UPDATE ON TURISMO_UQ.RESERVA_HABITACION
@@ -148,8 +193,3 @@ END TRG_PREVENIR_SOLAPAMIENTO_RESHAB;
 
 SHOW ERRORS TRIGGER TURISMO_UQ.TRG_AUDITORIA_TARIFA;
 SHOW ERRORS TRIGGER TURISMO_UQ.TRG_PREVENIR_SOLAPAMIENTO_RESHAB;
-
-SELECT trigger_name, table_name, trigger_type, status 
-FROM all_triggers 
-WHERE owner = 'TURISMO_UQ'
-ORDER BY trigger_name;

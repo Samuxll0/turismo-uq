@@ -9,16 +9,20 @@
 ```text
 turismo-uq/
 ├── database/
+│   ├── 00_master_instalacion_completa.sql  # Script maestro: corre de arriba a abajo en base limpia
+│   ├── modelo_y_decisiones_diseno.md       # Documento técnico oficial (Modelo 14 tablas y decisiones)
 │   ├── entrega 1/
-│   │   ├── 01_tablespace_historico.sql    # Creación de TBS_HISTORICO_RESERVAS y reubicación de tablas/índices
-│   │   ├── 02_consultas_analisis.sql       # 8 Consultas analíticas (PIVOT, ROLLUP, RANK, LAG, MV, etc.)
-│   │   └── justificacion_tablespace.md     # Documento técnico que sustenta la separación física de I/O
+│   │   ├── 01_ddl_esquema_completo.sql    # DDL con PK, FK, CHECK, NOT NULL y UNIQUE (14 entidades)
+│   │   ├── 02_carga_datos_minimos.sql     # Población reproducible (12 mun, 60 aloj, 400 hab, 3k cli, 25k res, 40k serv)
+│   │   ├── 03_tablespace_historico.sql    # TBS_HISTORICO_RESERVAS y reubicación de tablas/índices
+│   │   ├── 04_consultas_analisis.sql      # 8 Consultas analíticas (PIVOT, ROLLUP, RANK, LAG, MV, etc.)
+│   │   └── justificacion_tablespace.md    # Sustentación técnica de separación física de I/O
 │   └── entrega 2/
 │       ├── 01_ajuste_temporadas_tarifas.sql # Estandarización a Temporada Alta y Baja (800 tarifas)
 │       ├── 02_pkg_turismo_reservas_spec.sql # Especificación del paquete PL/SQL
 │       ├── 03_pkg_turismo_reservas_body.sql # Cuerpo del paquete (fn_valor_estadia, sp_crear_reserva, etc.)
-│       ├── 04_triggers.sql                  # Triggers de auditoría de tarifas y prevención de solapamientos
-│       └── 05_test_entrega2.sql             # Batería de pruebas automatizadas en SQL*Plus (100% exitosas)
+│       ├── 04_triggers.sql                  # Triggers: auditoría a nivel de sentencia y anti-mutante
+│       └── 05_test_entrega2.sql             # Batería de pruebas automatizadas idempotente (100% exitosa)
 ├── backend/                                 # Spring Boot 3.4 + Java 21 LTS + Oracle JDBC
 │   ├── src/main/java/com/turismouq/app/
 │   │   ├── config/                          # Configuración CORS y DataSource
@@ -31,7 +35,7 @@ turismo-uq/
 │   │   ├── repository/                      # Repositorios JPA y consultas nativas con JdbcTemplate
 │   │   └── service/                         # Lógica de negocio e invocación de paquetes PL/SQL
 │   └── pom.xml
-├── frontend/                                # Angular 19 + HTML5 + CSS moderno
+├── frontend/                                # Angular 19 + HTML5 + CSS moderno (Signals & Chart.js)
 │   └── src/app/                             # Dashboard interactivo para sustentación en vivo
 ├── run_project.ps1                          # Script de arranque en 1 clic
 └── .agents/                                 # Skills y agentes configurados para ahorro de cuota

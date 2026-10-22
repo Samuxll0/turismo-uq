@@ -42,8 +42,16 @@ END;
 /
 
 -- ------------------------------------------------------------------------
--- PRUEBA B: sp_crear_reserva caso exitoso
+-- PRUEBA B: sp_crear_reserva caso exitoso (Idempotente con limpieza previa)
 -- ------------------------------------------------------------------------
+BEGIN
+    DELETE FROM TURISMO_UQ.RESERVA_HABITACION 
+    WHERE id_reserva IN (SELECT id_reserva FROM TURISMO_UQ.RESERVA WHERE fecha_check_in = DATE '2027-05-10');
+    DELETE FROM TURISMO_UQ.RESERVA WHERE fecha_check_in = DATE '2027-05-10';
+    COMMIT;
+END;
+/
+
 DECLARE
     v_id_reserva NUMBER;
     v_total      NUMBER;

@@ -1,16 +1,19 @@
 -- ========================================================================
 -- PROYECTO INTEGRADOR: TURISMOUQ - BASES DE DATOS II
--- ENTREGA 1: OCHO CONSULTAS DE ANALISIS OBLIGATORIAS
+-- ENTREGA 1: SCRIPT 04 - OCHO CONSULTAS DE ANALISIS OBLIGATORIAS
+-- MOTOR: ORACLE DATABASE 21c (PDB: XEPDB1)
+-- ESQUEMA: TURISMO_UQ
 -- ========================================================================
 
 ALTER SESSION SET CONTAINER = XEPDB1;
 ALTER SESSION SET CURRENT_SCHEMA = TURISMO_UQ;
+SET PAGESIZE 100 LINESIZE 250 FEEDBACK ON;
 
--- ========================================================================
--- Consulta 1: Ocupacion por Municipio y Mes (Utilizando PIVOT)
+PROMPT ========================================================================
+PROMPT === CONSULTA 1: OCUPACION POR MUNICIPIO Y MES (PIVOT)                ===
+PROMPT ========================================================================
 -- Proposito: Generar una matriz bidimensional (tipo tabla dinamica) para
 --            visualizar la distribucion estacional de la demanda en 2025.
--- ========================================================================
 SELECT *
 FROM (
     SELECT 
@@ -35,11 +38,11 @@ PIVOT (
 )
 ORDER BY municipio;
 
--- ========================================================================
--- Consulta 2: Ingresos por Municipio, Tipo y Temporada (ROLLUP + GROUPING)
+PROMPT ========================================================================
+PROMPT === CONSULTA 2: INGRESOS POR MUNICIPIO, TIPO Y TEMPORADA (ROLLUP)    ===
+PROMPT ========================================================================
 -- Proposito: Producir un reporte financiero jerarquico multinivel con subtotales
 --            automaticos y gran total consolidado.
--- ========================================================================
 SELECT 
     CASE 
         WHEN GROUPING(m.nombre) = 1 THEN '>>> TOTAL DEPARTAMENTAL <<<'
@@ -68,15 +71,15 @@ JOIN TARIFA tf             ON h.id_habitacion = tf.id_habitacion
 JOIN TEMPORADA t           ON tf.id_temporada = t.id_temporada
 JOIN RESERVA_HABITACION rh ON h.id_habitacion = rh.id_habitacion
 JOIN RESERVA r             ON rh.id_reserva = r.id_reserva
-WHERE r.fecha_check_in BETWEEN t.fecha_inicio AND t.fecha_fin
+WHERE r.fecha_check_in >= DATE '2025-01-01' AND r.fecha_check_in < DATE '2026-01-01'
 GROUP BY ROLLUP(m.nombre, ta.nombre, t.nombre)
 ORDER BY GROUPING(m.nombre), m.nombre, GROUPING(ta.nombre), ta.nombre;
 
--- ========================================================================
--- Consulta 3: Top 3 Alojamientos de Mayor Ingreso (DENSE_RANK + PARTITION BY)
+PROMPT ========================================================================
+PROMPT === CONSULTA 3: TOP 3 ALOJAMIENTOS POR MUNICIPIO (DENSE_RANK)        ===
+PROMPT ========================================================================
 -- Proposito: Identificar el podio de hospedajes lideres en captacion economica
 --            dentro de cada uno de los 12 municipios.
--- ========================================================================
 WITH ranking_alojamientos AS (
     SELECT 
         m.nombre AS municipio,
@@ -102,11 +105,11 @@ FROM ranking_alojamientos
 WHERE posicion_ranking <= 3
 ORDER BY municipio, posicion_ranking;
 
--- ========================================================================
--- Consulta 4: Variacion de Ingresos Mes contra Mes (Utilizando LAG)
+PROMPT ========================================================================
+PROMPT === CONSULTA 4: VARIACION DE INGRESOS MES CONTRA MES (LAG)           ===
+PROMPT ========================================================================
 -- Proposito: Evaluar la evolucion temporal del flujo financiero y medir el
 --            crecimiento o contraccion intermensual.
--- ========================================================================
 WITH ventas_mensuales AS (
     SELECT 
         TRUNC(r.fecha_check_in, 'MM') AS periodo_mes,
@@ -130,11 +133,11 @@ SELECT
 FROM ventas_mensuales
 ORDER BY periodo_mes;
 
--- ========================================================================
--- Consulta 5: Consulta Parametrizada con Variables de Enlace (Bind Variables)
+PROMPT ========================================================================
+PROMPT === CONSULTA 5: PARAMETRIZADA CON VARIABLES DE ENLACE (BIND VARS)   ===
+PROMPT ========================================================================
 -- Proposito: Optimizar el rendimiento del SGA reutilizando planes en el
 --            Library Cache (evitar Hard Parse) y proteger contra SQL Injection.
--- ========================================================================
 VARIABLE b_fecha_inicio VARCHAR2(10);
 VARIABLE b_fecha_fin   VARCHAR2(10);
 
@@ -156,13 +159,20 @@ WHERE r.fecha_check_in >= TO_DATE(:b_fecha_inicio, 'YYYY-MM-DD')
 GROUP BY m.nombre
 ORDER BY total_recaudado DESC;
 
--- ========================================================================
--- Consulta 6: Vista Materializada de Ocupacion Mensual
+PROMPT ========================================================================
+PROMPT === CONSULTA 6: VISTA MATERIALIZADA DE OCUPACION MENSUAL             ===
+PROMPT ========================================================================
 -- Proposito: Persistir fisicamente en disco agregados pesados para responder
 --            en tiempo record a tableros directivos.
--- ========================================================================
--- Nota: La creacion de la MV se ejecuta una vez en el esquema:
-/*
+-- Politica de Refresco: REFRESH COMPLETE ON DEMAND para no degradar el rendimiento
+--                       OLTP en cada INSERT/UPDATE de reserva.
+BEGIN
+    EXECUTE IMMEDIATE 'DROP MATERIALIZED VIEW MV_OCUPACION_MENSUAL';
+EXCEPTION
+    WHEN OTHERS THEN NULL;
+END;
+/
+
 CREATE MATERIALIZED VIEW MV_OCUPACION_MENSUAL
 BUILD IMMEDIATE
 REFRESH COMPLETE ON DEMAND
@@ -186,18 +196,17 @@ GROUP BY
     m.nombre, 
     ta.nombre, 
     TO_CHAR(r.fecha_check_in, 'YYYY-MM');
-*/
 
 SELECT * 
 FROM MV_OCUPACION_MENSUAL 
 WHERE anio_mes = '2025-07' 
 ORDER BY facturacion_acumulada DESC;
 
--- ========================================================================
--- Consulta 7: Despivotado de Metricas (UNPIVOT)
+PROMPT ========================================================================
+PROMPT === CONSULTA 7: DESPIVOTADO DE METRICAS (UNPIVOT)                    ===
+PROMPT ========================================================================
 -- Proposito: Normalizar verticalmente registros que agrupan componentes
 --            financieros en columnas paralelas.
--- ========================================================================
 WITH resumen_componentes AS (
     SELECT 
         r.id_reserva,
@@ -224,11 +233,11 @@ UNPIVOT (
 )
 WHERE ROWNUM <= 25;
 
--- ========================================================================
--- Consulta 8: Clientes con Mayor Valor de Vida Transaccional (CLV)
--- Proposito: Identificar el Top 10 de clientes mas valiosos, su cuota de
+PROMPT ========================================================================
+PROMPT === CONSULTA 8: TOP 10 CLIENTES POR VALOR DE VIDA (CLV)              ===
+PROMPT ========================================================================
+-- Proposito: Segmentar a los clientes mas valiosos, su cuota sobre la
 --            facturacion global y adopcion de servicios complementarios.
--- ========================================================================
 WITH metricas_cliente AS (
     SELECT 
         c.id_cliente,
