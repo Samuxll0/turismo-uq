@@ -94,6 +94,11 @@ public class PlsqlEngineService {
      */
     @Transactional
     public ReservaResponseDto crearReserva(CrearReservaRequestDto dto) {
+        if (dto.fechaIn().isBefore(java.time.LocalDate.now())) {
+            throw new ApiException(HttpStatus.BAD_REQUEST, "ERR_FECHA_PASADA",
+                    "No se pueden generar reservas anteriores a la fecha actual");
+        }
+
         Habitacion hab = habitacionRepository.findByIdWithDetails(dto.idHabitacion())
                 .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "ERR_HABITACION_NO_EXISTE",
                         "No se encontró la habitación con ID " + dto.idHabitacion()));
@@ -132,6 +137,72 @@ public class PlsqlEngineService {
                 );
             }
         });
+    }
+
+    /**
+     * Consulta las liquidaciones que ya fueron procesadas y persistidas en la tabla
+     * LIQUIDACION_MENSUAL_HISTORICO para el mes y año dados.
+     */
+    public List<LiquidacionItemDto> consultarLiquidacionesHistorico(int mes, int anio, Long idAlojamiento) {
+        StringBuilder sql = new StringBuilder("""
+            SELECT 
+                l.anio,
+                l.mes,
+                l.id_alojamiento,
+                a.nombre AS nombre_alojamiento,
+                l.total_reservas,
+                l.total_hospedaje,
+                l.total_servicios,
+                l.total_ingresos
+            FROM TURISMO_UQ.LIQUIDACION_MENSUAL_HISTORICO l
+            JOIN TURISMO_UQ.ALOJAMIENTO a ON l.id_alojamiento = a.id_alojamiento
+            WHERE l.mes = ? AND l.anio = ?
+        """);
+
+        List<Object> params = new ArrayList<>();
+        params.add(mes);
+        params.add(anio);
+
+        if (idAlojamiento != null) {
+            sql.append(" AND l.id_alojamiento = ?");
+            params.add(idAlojamiento);
+        }
+
+        sql.append(" ORDER BY l.total_ingresos DESC");
+
+        return jdbcTemplate.query(sql.toString(), (rs, rowNum) -> {
+            BigDecimal totalHospedaje = rs.getBigDecimal("TOTAL_HOSPEDAJE") != null 
+                    ? rs.getBigDecimal("TOTAL_HOSPEDAJE") 
+                    : BigDecimal.ZERO;
+            BigDecimal totalServicios = rs.getBigDecimal("TOTAL_SERVICIOS") != null 
+                    ? rs.getBigDecimal("TOTAL_SERVICIOS") 
+                    : BigDecimal.ZERO;
+            BigDecimal totalIngresos = rs.getBigDecimal("TOTAL_INGRESOS") != null 
+                    ? rs.getBigDecimal("TOTAL_INGRESOS") 
+                    : BigDecimal.ZERO;
+            BigDecimal comision = totalIngresos.multiply(new BigDecimal("0.10"))
+                    .setScale(2, RoundingMode.HALF_UP);
+            BigDecimal neto = totalIngresos.multiply(new BigDecimal("0.90"))
+                    .setScale(2, RoundingMode.HALF_UP);
+
+            return new LiquidacionItemDto(
+                    rs.getInt("ANIO"),
+                    rs.getInt("MES"),
+                    rs.getLong("ID_ALOJAMIENTO"),
+                    rs.getString("NOMBRE_ALOJAMIENTO"),
+                    rs.getLong("TOTAL_RESERVAS"),
+                    totalHospedaje,
+                    totalServicios,
+                    totalIngresos,
+                    comision,
+                    neto
+            );
+        }, params.toArray());
+    }
+
+    @Transactional
+    public void limpiarLiquidacionesHistorico() {
+        jdbcTemplate.execute("DELETE FROM TURISMO_UQ.LIQUIDACION_MENSUAL_HISTORICO");
     }
 
     /**

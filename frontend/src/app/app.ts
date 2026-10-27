@@ -20,7 +20,13 @@ import {
   ToastNotificacion,
   TablespaceInfo,
   TablespaceTabla,
-  TablespaceIndex
+  TablespaceIndex,
+  AuditoriaResumen,
+  AuditoriaFila,
+  AuditoriaSentencia,
+  TarifaDetalle,
+  PeriodoTemporada,
+  GuardarTarifaRequest
 } from './turismo.service';
 import { Chart, registerables } from 'chart.js';
 
@@ -54,7 +60,7 @@ export class App implements OnInit, OnDestroy {
   // ==========================================
   // Navegación Principal
   // ==========================================
-  tabActivo = signal<'analitica' | 'tablespace' | 'cotizador' | 'reservas' | 'liquidacion' | 'directorio'>('analitica');
+  tabActivo = signal<'analitica' | 'tablespace' | 'cotizador' | 'reservas' | 'liquidacion' | 'directorio' | 'auditoria'>('analitica');
   tablespaceInfo = signal<TablespaceInfo | null>(null);
   analiticaSubTab = signal<'graficos' | 'pivot' | 'lag' | 'rollup' | 'rank' | 'bind' | 'mv' | 'unpivot' | 'clv'>('graficos');
 
@@ -152,6 +158,64 @@ export class App implements OnInit, OnDestroy {
   liqIdAlojamiento: number | null = null;
   liquidaciones = signal<LiquidacionItem[]>([]);
   filtroBusquedaLiquidacion: string = '';
+  liquidacionEjecutada = signal<boolean>(false);
+  ultimoPeriodoConsultado = signal<{ mes: number; anio: number; mesNombre: string } | null>(null);
+
+  getNombreMes(mes: number): string {
+    const nombres = [
+      'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
+      'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'
+    ];
+    return nombres[mes - 1] || `Mes ${mes}`;
+  }
+
+  probarPeriodoConDatos(mes: number, anio: number) {
+    this.liqMes = mes;
+    this.liqAnio = anio;
+    this.liqIdAlojamiento = null;
+    this.ejecutarLiquidacion();
+  }
+
+  onCambioPeriodo() {
+    this.consultarLiquidacionPeriodo();
+  }
+
+  consultarLiquidacionPeriodo() {
+    this.cargando.set(true);
+    const mes = this.liqMes;
+    const anio = this.liqAnio;
+    const mesNombre = this.getNombreMes(mes);
+
+    this.api.getLiquidaciones(mes, anio, this.liqIdAlojamiento || undefined).subscribe({
+      next: data => {
+        this.cargando.set(false);
+        this.liquidaciones.set(data);
+        this.liquidacionEjecutada.set(true);
+        this.ultimoPeriodoConsultado.set({ mes, anio, mesNombre });
+      },
+      error: err => {
+        this.cargando.set(false);
+        this.liquidaciones.set([]);
+        this.liquidacionEjecutada.set(true);
+        this.ultimoPeriodoConsultado.set({ mes, anio, mesNombre });
+      }
+    });
+  }
+
+  reiniciarLiquidaciones() {
+    this.cargando.set(true);
+    this.api.limpiarLiquidaciones().subscribe({
+      next: () => {
+        this.cargando.set(false);
+        this.liquidaciones.set([]);
+        this.mostrarToast('success', 'Histórico Reiniciado', 'Se ha vaciado la tabla de liquidaciones. Ahora puedes liquidar mes a mes desde cero.');
+      },
+      error: err => {
+        this.cargando.set(false);
+        this.mostrarToast('error', 'Error al reiniciar', err.error?.message || 'No se pudo vaciar el histórico.');
+      }
+    });
+  }
 
   kpiLiqBruto = computed(() => {
     return this.liquidaciones().reduce((acc, item) => acc + (item.ingreso_bruto || 0), 0);
@@ -208,6 +272,28 @@ export class App implements OnInit, OnDestroy {
     });
   }
 
+  // ==========================================
+  // 6. Auditoría y Trazabilidad (Triggers)
+  // ==========================================
+  auditoriaResumen = signal<AuditoriaResumen | null>(null);
+  auditoriaFilas = signal<AuditoriaFila[]>([]);
+  auditoriaSentencias = signal<AuditoriaSentencia[]>([]);
+  tarifas = signal<TarifaDetalle[]>([]);
+  periodosTemporada = signal<PeriodoTemporada[]>([]);
+  auditoriaSubTab = signal<'tarifas' | 'filas'>('tarifas');
+  filtroBusquedaAuditoria: string = '';
+  simHabitacionId: number | null = null;
+  simPorcentajeAjuste: number = 5;
+
+  // Formulario interactivo para Actualizar / Asignar Tarifas
+  tarifaFormIdHabitacion: number | null = null;
+  tarifaFormPrecioBaja: number | null = 180000;
+  tarifaFormPrecioAlta: number | null = 252000;
+  tarifaFormCalculoAutoAlta: boolean = true;
+  tarifaFormEditando: boolean = false;
+  filtroTarifasAlojamiento: number | null = null;
+  filtroTarifasQuery: string = '';
+
   constructor() {
     effect(() => {
       const tab = this.tabActivo();
@@ -222,6 +308,7 @@ export class App implements OnInit, OnDestroy {
     this.cargarCatalogos();
     this.cargarAnalitica();
     this.cargarTablespaceInfo();
+    this.cargarAuditoria();
   }
 
   ngOnDestroy() {
@@ -248,7 +335,7 @@ export class App implements OnInit, OnDestroy {
   // ==========================================
   // Navegación
   // ==========================================
-  cambiarTab(tab: 'analitica' | 'tablespace' | 'cotizador' | 'reservas' | 'liquidacion' | 'directorio') {
+  cambiarTab(tab: 'analitica' | 'tablespace' | 'cotizador' | 'reservas' | 'liquidacion' | 'directorio' | 'auditoria') {
     this.tabActivo.set(tab);
     if (tab === 'analitica') {
       setTimeout(() => this.actualizarTodosLosGraficos(), 150);
@@ -256,6 +343,10 @@ export class App implements OnInit, OnDestroy {
       if (!this.tablespaceInfo()) {
         this.cargarTablespaceInfo();
       }
+    } else if (tab === 'liquidacion') {
+      this.consultarLiquidacionPeriodo();
+    } else if (tab === 'auditoria') {
+      this.cargarAuditoria();
     }
   }
 
@@ -469,6 +560,315 @@ export class App implements OnInit, OnDestroy {
         this.mostrarToast('error', 'Error en Tablespace', err.error?.message || 'Error al consultar métricas del tablespace');
       }
     });
+  }
+
+  // ==========================================
+  // Auditoría y Trazabilidad (Triggers)
+  // ==========================================
+  cargarAuditoria() {
+    this.cargando.set(true);
+    this.cargarTarifas();
+    this.api.getAuditoriaFilas(100).subscribe({
+      next: filas => {
+        this.auditoriaFilas.set(filas);
+        this.cargando.set(false);
+      },
+      error: err => {
+        this.cargando.set(false);
+        console.error('Error cargando historial de auditoría', err);
+        const msg = err.error?.message || err.message || '';
+        if (msg.includes('No static resource') || err.status === 404) {
+          this.mostrarToast(
+            'warning',
+            'Reinicio de Backend Requerido',
+            'Por favor reinicia el backend Spring Boot para registrar los nuevos endpoints de auditoría.'
+          );
+        } else if (msg.includes('tabla o vista no existe') || msg.includes('ORA-00942')) {
+          this.mostrarToast('warning', 'Tablas en Inicialización', 'Las tablas de auditoría se están inicializando en Oracle XE.');
+        } else {
+          this.mostrarToast('error', 'Error en Auditoría', msg || 'No se pudieron consultar los registros de auditoría');
+        }
+      }
+    });
+  }
+
+  cargarTarifas() {
+    this.api.getTarifasDetalle(this.filtroTarifasAlojamiento || undefined, this.filtroTarifasQuery || undefined).subscribe({
+      next: data => this.tarifas.set(data),
+      error: err => console.error('Error cargando tarifas', err)
+    });
+  }
+
+  cargarPeriodosTemporada() {
+    this.api.getPeriodosTemporada().subscribe({
+      next: data => this.periodosTemporada.set(data),
+      error: err => console.error('Error cargando periodos de temporada', err)
+    });
+  }
+
+  refrescarAuditoriaConFeedback() {
+    this.cargando.set(true);
+    this.cargarTarifas();
+    this.api.getAuditoriaFilas(100).subscribe({
+      next: filas => {
+        this.auditoriaFilas.set(filas);
+        this.cargando.set(false);
+        this.mostrarToast('success', 'Datos Sincronizados', `Tarifas y ${filas.length} registros de auditoría cargados desde Oracle XE.`);
+      },
+      error: err => {
+        this.cargando.set(false);
+        const msg = err.error?.message || err.message || '';
+        if (msg.includes('No static resource') || err.status === 404) {
+          this.mostrarToast(
+            'warning',
+            'Reinicio de Backend Requerido',
+            'Por favor reinicia el backend Spring Boot para registrar los nuevos endpoints.'
+          );
+        } else {
+          this.mostrarToast('error', 'Error en Auditoría', msg || 'Error al sincronizar registros de auditoría');
+        }
+      }
+    });
+  }
+
+  cambiarAuditoriaSubTab(subTab: 'tarifas' | 'filas') {
+    this.auditoriaSubTab.set(subTab);
+    if (subTab === 'tarifas' && this.tarifas().length === 0) {
+      this.cargarTarifas();
+    } else if (subTab === 'filas' && this.auditoriaFilas().length === 0) {
+      this.cargarAuditoria();
+    }
+  }
+
+  onPrecioBajaChange() {
+    if (this.tarifaFormCalculoAutoAlta && this.tarifaFormPrecioBaja && this.tarifaFormPrecioBaja > 0) {
+      // Regla oficial TurismoUQ: Temporada Alta = precio base + 40% redondeado a miles
+      this.tarifaFormPrecioAlta = Math.round((this.tarifaFormPrecioBaja * 1.40) / 1000) * 1000;
+    }
+  }
+
+  onHabitacionSelectChange(idHab: number | null) {
+    if (!idHab) return;
+    const t = this.tarifas().find(item => (item.id_habitacion || item.idHabitacion) === Number(idHab));
+    if (t) {
+      this.tarifaFormPrecioBaja = t.precio_baja || t.precioBaja || 180000;
+      this.tarifaFormPrecioAlta = t.precio_alta || t.precioAlta || 252000;
+      return;
+    }
+    const h = this.habitaciones().find(item => item.id_habitacion === Number(idHab));
+    if (h) {
+      this.tarifaFormPrecioBaja = h.tarifa_baja || 180000;
+      this.tarifaFormPrecioAlta = h.tarifa_alta || 252000;
+    }
+  }
+
+  abrirEditorTarifa(t: TarifaDetalle) {
+    this.tarifaFormIdHabitacion = t.id_habitacion || t.idHabitacion || null;
+    this.tarifaFormPrecioBaja = t.precio_baja || t.precioBaja || 180000;
+    this.tarifaFormPrecioAlta = t.precio_alta || t.precioAlta || 252000;
+    this.tarifaFormCalculoAutoAlta = true;
+    this.tarifaFormEditando = true;
+    const num = t.numero_habitacion || t.numeroHabitacion || 'Habitación';
+    const aloj = t.nombre_alojamiento || t.nombreAlojamiento || 'Alojamiento';
+    this.mostrarToast('info', 'Habitación Seleccionada', `Configurando tarifas para ${num} (${aloj}).`);
+  }
+
+  cancelarEdicionTarifa() {
+    this.tarifaFormEditando = false;
+    this.tarifaFormIdHabitacion = null;
+    this.tarifaFormPrecioBaja = 180000;
+    this.tarifaFormPrecioAlta = 252000;
+  }
+
+  guardarTarifaFormulario() {
+    if (!this.tarifaFormIdHabitacion) {
+      this.mostrarToast('warning', 'Dato Requerido', 'Por favor selecciona la habitación a la que deseas asignar o actualizar tarifa.');
+      return;
+    }
+    if (!this.tarifaFormPrecioBaja || this.tarifaFormPrecioBaja <= 0) {
+      this.mostrarToast('warning', 'Precio Inválido', 'El precio para Temporada Baja debe ser mayor a cero.');
+      return;
+    }
+
+    this.cargando.set(true);
+    const idHab = Number(this.tarifaFormIdHabitacion);
+    const pBaja = Number(this.tarifaFormPrecioBaja);
+    const pAlta = Number(this.tarifaFormPrecioAlta) || Math.round((pBaja * 1.40) / 1000) * 1000;
+
+    const req: GuardarTarifaRequest = {
+      id_habitacion: idHab,
+      precio_baja: pBaja,
+      precio_alta: pAlta
+    };
+
+    this.api.guardarTarifa(req).subscribe({
+      next: resp => {
+        this.cargando.set(false);
+        const t = resp?.tarifa;
+        const num = t?.numero_habitacion || t?.numeroHabitacion || ('Habitación #' + idHab);
+        const aloj = t?.nombre_alojamiento || t?.nombreAlojamiento || '';
+        const baja = t?.precio_baja || t?.precioBaja || pBaja;
+        const alta = t?.precio_alta || t?.precioAlta || pAlta;
+
+        this.mostrarToast(
+          'success',
+          'Tarifa Actualizada en Oracle XE',
+          `Se actualizó ${num} ${aloj ? '(' + aloj + ')' : ''}: Baja $${baja.toLocaleString()} | Alta $${alta.toLocaleString()} (+40%). Trigger TRG_AUDITORIA_TARIFA disparado.`
+        );
+        this.cargarTarifas();
+        this.cargarAuditoria();
+        this.cancelarEdicionTarifa();
+      },
+      error: err => {
+        this.cargando.set(false);
+        this.mostrarToast('error', 'Error al Guardar', err.error?.message || 'No se pudieron actualizar las tarifas en Oracle');
+      }
+    });
+  }
+
+  tarifasFiltradas(): TarifaDetalle[] {
+    const alId = this.filtroTarifasAlojamiento;
+    const query = this.filtroTarifasQuery.trim().toLowerCase();
+    return this.tarifas().filter(t => {
+      const alojId = t.id_alojamiento ?? t.idAlojamiento;
+      const matchAloj = !alId || alojId === Number(alId);
+      const num = (t.numero_habitacion || t.numeroHabitacion || '').toLowerCase();
+      const nom = (t.nombre_alojamiento || t.nombreAlojamiento || '').toLowerCase();
+      const mun = (t.nombre_municipio || t.nombreMunicipio || '').toLowerCase();
+      const cama = (t.tipo_cama || t.tipoCama || '').toLowerCase();
+      const matchQuery = !query ||
+        num.includes(query) ||
+        nom.includes(query) ||
+        mun.includes(query) ||
+        cama.includes(query);
+      return matchAloj && matchQuery;
+    });
+  }
+
+  exportarCSVTarifas() {
+    const items = this.tarifasFiltradas();
+    if (items.length === 0) {
+      this.mostrarToast('warning', 'Sin Datos', 'No hay tarifas disponibles para exportar.');
+      return;
+    }
+    const headers = ['ID Habitacion', 'Numero/Nombre', 'Alojamiento', 'Municipio', 'Capacidad', 'Cama', 'Tarifa Baja (Normal)', 'Tarifa Alta (+40%)', 'Recargo Alta COP', '% Recargo'];
+    const rows = items.map(t => [
+      t.id_habitacion || t.idHabitacion,
+      `"${t.numero_habitacion || t.numeroHabitacion || ''}"`,
+      `"${t.nombre_alojamiento || t.nombreAlojamiento || ''}"`,
+      `"${t.nombre_municipio || t.nombreMunicipio || ''}"`,
+      t.capacidad,
+      `"${t.tipo_cama || t.tipoCama || ''}"`,
+      t.precio_baja || t.precioBaja || 0,
+      t.precio_alta || t.precioAlta || 0,
+      t.recargo_alta || t.recargoAlta || 0,
+      t.porcentaje_recargo || t.porcentajeRecargo || 40
+    ]);
+    const csvContent = 'data:text/csv;charset=utf-8,' + [headers.join(','), ...rows.map(e => e.join(','))].join('\n');
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement('a');
+    link.setAttribute('href', encodedUri);
+    link.setAttribute('download', `Tarifas_Alojamientos_TurismoUQ_${Date.now()}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    this.mostrarToast('info', 'Reporte Descargado', 'CSV de tarifas de alojamientos descargado.');
+  }
+
+  ejecutarSimulacionTarifa() {
+    this.cargando.set(true);
+    const habId = this.simHabitacionId ? Number(this.simHabitacionId) : undefined;
+    const porcentaje = Number(this.simPorcentajeAjuste) || 5;
+
+    this.api.simularCambioTarifa(habId, undefined, porcentaje).subscribe({
+      next: resp => {
+        this.mostrarToast(
+          'success',
+          'Trigger Disparado',
+          `Se modificaron ${resp.filasAfectadas} tarifas (${porcentaje > 0 ? '+' : ''}${porcentaje}%). TRG_AUDITORIA_TARIFA registró los cambios en fila y sentencia.`
+        );
+        this.cargarTarifas();
+        this.cargarAuditoria();
+      },
+      error: err => {
+        this.cargando.set(false);
+        this.mostrarToast('error', 'Fallo en Simulación', err.error?.message || 'Error al disparar trigger');
+      }
+    });
+  }
+
+  limpiarHistorialAuditoria() {
+    if (!confirm('¿Deseas vaciar los registros de auditoría en Oracle XE? Se eliminarán los datos de AUDITORIA_TARIFA y LOG_SENTENCIA_TARIFA.')) {
+      return;
+    }
+    this.cargando.set(true);
+    this.api.limpiarAuditoria().subscribe({
+      next: () => {
+        this.mostrarToast('success', 'Auditoría Reiniciada', 'Se vaciaron las tablas AUDITORIA_TARIFA y LOG_SENTENCIA_TARIFA.');
+        this.cargarAuditoria();
+      },
+      error: err => {
+        this.cargando.set(false);
+        this.mostrarToast('error', 'Error al Limpiar', err.error?.message || 'No se pudo vaciar la auditoría');
+      }
+    });
+  }
+
+  auditoriaFilasFiltradas(): AuditoriaFila[] {
+    const query = this.filtroBusquedaAuditoria.trim().toLowerCase();
+    const items = this.auditoriaFilas();
+    if (!query) return items;
+    return items.filter(f => {
+      const num = (f.numero_habitacion || f.numeroHabitacion || '').toLowerCase();
+      const nom = (f.nombre_alojamiento || f.nombreAlojamiento || '').toLowerCase();
+      const temp = (f.nombre_temporada || f.nombreTemporada || '').toLowerCase();
+      const usr = (f.usuario || '').toLowerCase();
+      const acc = (f.accion || '').toLowerCase();
+      const idT = (f.id_tarifa || f.idTarifa || '').toString();
+      return num.includes(query) || nom.includes(query) || temp.includes(query) || usr.includes(query) || acc.includes(query) || idT.includes(query);
+    });
+  }
+
+  auditoriaSentenciasFiltradas(): AuditoriaSentencia[] {
+    const query = this.filtroBusquedaAuditoria.trim().toLowerCase();
+    const items = this.auditoriaSentencias();
+    if (!query) return items;
+    return items.filter(s =>
+      (s.usuario && s.usuario.toLowerCase().includes(query)) ||
+      (s.accion && s.accion.toLowerCase().includes(query)) ||
+      (s.idLog && s.idLog.toString().includes(query))
+    );
+  }
+
+  exportarCSVAuditoria() {
+    const items = this.auditoriaFilasFiltradas();
+    if (items.length === 0) {
+      this.mostrarToast('warning', 'Sin Datos', 'No hay registros de historial de tarifas para exportar.');
+      return;
+    }
+    const headers = ['ID Auditoria', 'Fecha', 'Usuario', 'ID Tarifa', 'Habitacion', 'Alojamiento', 'Temporada', 'Precio Anterior', 'Precio Nuevo', 'Variacion', 'Accion'];
+    const rows = items.map(f => [
+      f.id_auditoria || f.idAuditoria,
+      `"${f.fecha || ''}"`,
+      `"${f.usuario || ''}"`,
+      f.id_tarifa || f.idTarifa,
+      `"${f.numero_habitacion || f.numeroHabitacion || ''}"`,
+      `"${f.nombre_alojamiento || f.nombreAlojamiento || ''}"`,
+      `"${f.nombre_temporada || f.nombreTemporada || ''}"`,
+      f.precio_anterior || f.precioAnterior || 0,
+      f.precio_nuevo || f.precioNuevo || 0,
+      f.variacion || 0,
+      `"${f.accion || ''}"`
+    ]);
+    const csvContent = 'data:text/csv;charset=utf-8,' + [headers.join(','), ...rows.map(e => e.join(','))].join('\n');
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement('a');
+    link.setAttribute('href', encodedUri);
+    link.setAttribute('download', `Historial_Tarifas_${Date.now()}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    this.mostrarToast('info', 'Reporte Descargado', 'CSV de historial de tarifas descargado.');
   }
 
 
@@ -1242,23 +1642,51 @@ export class App implements OnInit, OnDestroy {
     this.ejecutarCrearReserva();
   }
 
+  probarErrorFechaPasada() {
+    this.resFechaIn = '2023-01-10';
+    this.resFechaOut = '2023-01-15';
+    this.resNumHuespedes = 2;
+    if (this.habitaciones().length > 0) this.resIdHabitacion = this.habitaciones()[0].id_habitacion;
+    if (this.clientes().length > 0) this.resIdCliente = this.clientes()[0].id;
+
+    this.mostrarToast('warning', 'Banco de Pruebas', 'Provocando ORA-20006 (Fecha anterior a la fecha actual)...');
+    this.ejecutarCrearReserva();
+  }
+
   // ==========================================
   // Liquidación Masiva por Lotes (Cursor Explícito)
   // ==========================================
   ejecutarLiquidacion() {
     this.cargando.set(true);
-    this.api.getLiquidaciones(this.liqMes, this.liqAnio, this.liqIdAlojamiento || undefined).subscribe({
+    const mesSolicitado = this.liqMes;
+    const anioSolicitado = this.liqAnio;
+    const mesNombre = this.getNombreMes(mesSolicitado);
+
+    this.api.procesarLiquidacion(this.liqMes, this.liqAnio, this.liqIdAlojamiento || undefined).subscribe({
       next: data => {
         this.cargando.set(false);
         this.liquidaciones.set(data);
-        this.mostrarToast(
-          'success',
-          'Cursor Ejecutado',
-          `Proceso masivo completado. ${data.length} alojamientos liquidados y persistidos en Oracle XE.`
-        );
+        this.liquidacionEjecutada.set(true);
+        this.ultimoPeriodoConsultado.set({ mes: mesSolicitado, anio: anioSolicitado, mesNombre });
+
+        if (data.length === 0) {
+          this.mostrarToast(
+            'info',
+            'Sin Movimientos',
+            `No hubo reservas finalizadas para procesar en ${mesNombre} de ${anioSolicitado}.`
+          );
+        } else {
+          this.mostrarToast(
+            'success',
+            'Liquidación Procesada',
+            `Se procesaron y registraron ${data.length} alojamientos para ${mesNombre} de ${anioSolicitado} en LIQUIDACION_MENSUAL_HISTORICO.`
+          );
+        }
       },
       error: err => {
         this.cargando.set(false);
+        this.liquidacionEjecutada.set(true);
+        this.ultimoPeriodoConsultado.set({ mes: mesSolicitado, anio: anioSolicitado, mesNombre });
         this.mostrarToast('error', 'Error en Liquidación', err.error?.message || 'Fallo en cursor de liquidación');
       }
     });

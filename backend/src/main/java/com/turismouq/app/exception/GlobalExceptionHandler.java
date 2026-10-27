@@ -76,6 +76,10 @@ public class GlobalExceptionHandler {
                 status = HttpStatus.BAD_REQUEST;
                 code = "ERR_CLIENTE_NO_EXISTE";
             }
+            case 20006 -> {
+                status = HttpStatus.BAD_REQUEST;
+                code = "ERR_FECHA_PASADA";
+            }
             default -> {
                 if (errorCode >= 20000 && errorCode <= 20999) {
                     status = HttpStatus.BAD_REQUEST;

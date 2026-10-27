@@ -246,6 +246,34 @@ BEGIN
 END;
 /
 
+-- ------------------------------------------------------------------------
+-- PRUEBA H: sp_crear_reserva validacion ORA-20006 (Fecha anterior a la actual)
+-- ------------------------------------------------------------------------
+DECLARE
+    v_id_reserva NUMBER;
+    v_total      NUMBER;
+BEGIN
+    TURISMO_UQ.PKG_TURISMO_RESERVAS.sp_crear_reserva(
+        p_id_cliente    => 1,
+        p_id_habitacion => 1,
+        p_fecha_in      => DATE '2020-01-10',
+        p_fecha_out     => DATE '2020-01-15',
+        p_num_huespedes => 2,
+        o_id_reserva    => v_id_reserva,
+        o_total         => v_total
+    );
+    DBMS_OUTPUT.PUT_LINE('Prueba H) Error: debio fallar con ORA-20006 pero continuo.');
+EXCEPTION
+    WHEN OTHERS THEN
+        IF SQLCODE = -20006 THEN
+            DBMS_OUTPUT.PUT_LINE('Prueba H) ORA-20006 capturado correctamente: ' || SQLERRM);
+            DBMS_OUTPUT.PUT_LINE('  --> [RESULTADO: EXITOSO]');
+        ELSE
+            DBMS_OUTPUT.PUT_LINE('Prueba H) Codigo inesperado: ' || SQLCODE || ' - ' || SQLERRM);
+        END IF;
+END;
+/
+
 PROMPT ========================================================================
 PROMPT FIN DE BATERIA DE PRUEBAS - ENTREGA 2 (TURISMO_UQ)
 PROMPT ========================================================================

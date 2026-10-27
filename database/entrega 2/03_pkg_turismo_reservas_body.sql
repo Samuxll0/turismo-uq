@@ -104,6 +104,11 @@ CREATE OR REPLACE PACKAGE BODY TURISMO_UQ.PKG_TURISMO_RESERVAS AS
             RAISE_APPLICATION_ERROR(-20001, 'Check-out anterior o igual al check-in');
         END IF;
 
+        -- Validar que la fecha de check-in no sea anterior a la fecha actual (reservas en el pasado)
+        IF v_fecha_in < TRUNC(SYSDATE) THEN
+            RAISE_APPLICATION_ERROR(-20006, 'No se pueden generar reservas anteriores a la fecha actual');
+        END IF;
+
         -- 2. Validar existencia del cliente
         SELECT COUNT(*)
         INTO v_count_cliente

@@ -68,6 +68,95 @@ export interface LiquidacionItem {
   neto_pagar: number;
 }
 
+export interface AuditoriaFila {
+  id_auditoria: number;
+  usuario: string;
+  fecha: string;
+  id_tarifa: number;
+  id_habitacion: number;
+  numero_habitacion: string;
+  nombre_alojamiento: string;
+  nombre_temporada: string;
+  precio_anterior: number;
+  precio_nuevo: number;
+  variacion: number;
+  accion: string;
+  idAuditoria?: number;
+  idTarifa?: number;
+  idHabitacion?: number;
+  numeroHabitacion?: string;
+  nombreAlojamiento?: string;
+  nombreTemporada?: string;
+  precioAnterior?: number;
+  precioNuevo?: number;
+}
+
+export interface AuditoriaSentencia {
+  idLog: number;
+  usuario: string;
+  fecha: string;
+  accion: string;
+  totalFilas: number;
+}
+
+export interface AuditoriaResumen {
+  totalFilasAuditadas: number;
+  totalSentenciasDml: number;
+  nombreTrigger: string;
+  tipoTrigger: string;
+  estadoTrigger: string;
+  ultimoUsuario: string;
+  ultimaFecha: string;
+  ultimasFilas: AuditoriaFila[];
+  ultimasSentencias: AuditoriaSentencia[];
+}
+
+export interface TarifaDetalle {
+  id_habitacion: number;
+  numero_habitacion: string;
+  capacidad: number;
+  tipo_cama: string;
+  id_alojamiento: number;
+  nombre_alojamiento: string;
+  nombre_municipio: string;
+  id_tarifa_baja: number;
+  precio_baja: number;
+  id_tarifa_alta: number;
+  precio_alta: number;
+  recargo_alta: number;
+  porcentaje_recargo: number;
+  idHabitacion?: number;
+  numeroHabitacion?: string;
+  tipoCama?: string;
+  idAlojamiento?: number;
+  nombreAlojamiento?: string;
+  nombreMunicipio?: string;
+  idTarifaBaja?: number;
+  precioBaja?: number;
+  idTarifaAlta?: number;
+  precioAlta?: number;
+  recargoAlta?: number;
+  porcentajeRecargo?: number;
+}
+
+export interface PeriodoTemporada {
+  idPeriodo: number;
+  idTemporada: number;
+  nombre: string;
+  fechaInicio: string;
+  fechaFin: string;
+  diasDuracion: number;
+}
+
+export interface GuardarTarifaRequest {
+  id_habitacion: number;
+  precio_baja: number;
+  precio_alta?: number;
+  idHabitacion?: number;
+  precioBaja?: number;
+  precioAlta?: number;
+}
+
 export interface AnaliticaOcupacion {
   municipio: string;
   ene: number; feb: number; mar: number; abr: number;
@@ -258,6 +347,16 @@ export class TurismoService {
     return this.http.get<LiquidacionItem[]>(`${this.baseUrl}/liquidaciones`, { params });
   }
 
+  procesarLiquidacion(mes: number, anio: number, idAlojamiento?: number): Observable<LiquidacionItem[]> {
+    let params = new HttpParams().set('mes', mes).set('anio', anio);
+    if (idAlojamiento) params = params.set('idAlojamiento', idAlojamiento);
+    return this.http.post<LiquidacionItem[]>(`${this.baseUrl}/liquidaciones/procesar`, null, { params });
+  }
+
+  limpiarLiquidaciones(): Observable<void> {
+    return this.http.delete<void>(`${this.baseUrl}/liquidaciones/limpiar`);
+  }
+
   // ==========================================
   // Consultas Analíticas BI (PIVOT, ROLLUP, RANK, LAG)
   // ==========================================
@@ -307,4 +406,48 @@ export class TurismoService {
     return this.http.get<TablespaceInfo>(`${this.baseUrl}/tablespace/info`);
   }
 
+  // ==========================================
+  // Auditoría y Trazabilidad (Triggers)
+  // ==========================================
+  getAuditoriaResumen(): Observable<AuditoriaResumen> {
+    return this.http.get<AuditoriaResumen>(`${this.baseUrl}/auditoria/resumen`);
+  }
+
+  getAuditoriaFilas(limite: number = 100): Observable<AuditoriaFila[]> {
+    return this.http.get<AuditoriaFila[]>(`${this.baseUrl}/auditoria/filas`, {
+      params: new HttpParams().set('limite', limite)
+    });
+  }
+
+  getAuditoriaSentencias(limite: number = 100): Observable<AuditoriaSentencia[]> {
+    return this.http.get<AuditoriaSentencia[]>(`${this.baseUrl}/auditoria/sentencias`, {
+      params: new HttpParams().set('limite', limite)
+    });
+  }
+
+  simularCambioTarifa(idHabitacion?: number, idTemporada?: number, porcentaje: number = 5.0): Observable<any> {
+    let params = new HttpParams().set('porcentaje', porcentaje);
+    if (idHabitacion) params = params.set('idHabitacion', idHabitacion);
+    if (idTemporada) params = params.set('idTemporada', idTemporada);
+    return this.http.post<any>(`${this.baseUrl}/auditoria/simular-cambio`, null, { params });
+  }
+
+  limpiarAuditoria(): Observable<void> {
+    return this.http.delete<void>(`${this.baseUrl}/auditoria/limpiar`);
+  }
+
+  getTarifasDetalle(idAlojamiento?: number, busqueda?: string): Observable<TarifaDetalle[]> {
+    let params = new HttpParams();
+    if (idAlojamiento) params = params.set('idAlojamiento', idAlojamiento);
+    if (busqueda) params = params.set('busqueda', busqueda);
+    return this.http.get<TarifaDetalle[]>(`${this.baseUrl}/auditoria/tarifas`, { params });
+  }
+
+  getPeriodosTemporada(): Observable<PeriodoTemporada[]> {
+    return this.http.get<PeriodoTemporada[]>(`${this.baseUrl}/auditoria/periodos-temporada`);
+  }
+
+  guardarTarifa(req: GuardarTarifaRequest): Observable<{ mensaje: string; tarifa: TarifaDetalle }> {
+    return this.http.post<{ mensaje: string; tarifa: TarifaDetalle }>(`${this.baseUrl}/auditoria/guardar-tarifa`, req);
+  }
 }

@@ -97,7 +97,7 @@
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" />
         </svg>
-        <span>Consola & Banco de Pruebas</span>
+        <span>Gestión de Reservas</span>
       </button>
 
       <button [class.active]="tabActivo() === 'liquidacion'" (click)="cambiarTab('liquidacion')" class="nav-btn">
@@ -105,6 +105,13 @@
           <path stroke-linecap="round" stroke-linejoin="round" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
         </svg>
         <span>Liquidación por Lotes</span>
+      </button>
+
+      <button [class.active]="tabActivo() === 'auditoria'" (click)="cambiarTab('auditoria')" class="nav-btn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+        </svg>
+        <span>Auditoría de Tarifas</span>
       </button>
 
       <button [class.active]="tabActivo() === 'directorio'" (click)="cambiarTab('directorio')" class="nav-btn">
@@ -139,17 +146,21 @@
           <span class="crumb-separator">/</span>
           <span class="crumb-current">
             {{ tabActivo() === 'analitica' ? 'Dashboard BI Ejecutivo' : '' }}
+            {{ tabActivo() === 'tablespace' ? 'Tablespace Histórico (DBA)' : '' }}
             {{ tabActivo() === 'cotizador' ? 'Cotizador Multi-Temporada' : '' }}
-            {{ tabActivo() === 'reservas' ? 'Consola de Reservas & Pruebas' : '' }}
+            {{ tabActivo() === 'reservas' ? 'Gestión de Reservas' : '' }}
             {{ tabActivo() === 'liquidacion' ? 'Liquidación Masiva por Lotes' : '' }}
+            {{ tabActivo() === 'auditoria' ? 'Gestión y Auditoría de Tarifas' : '' }}
             {{ tabActivo() === 'directorio' ? 'Directorio de Alojamientos del Quindío' : '' }}
           </span>
         </div>
         <h1 class="header-title">
           {{ tabActivo() === 'analitica' ? 'Tablero de Control Financiero y Ocupación' : '' }}
+          {{ tabActivo() === 'tablespace' ? 'Monitoreo de Almacenamiento Físico y Datafiles' : '' }}
           {{ tabActivo() === 'cotizador' ? 'Cálculo Dinámico de Estadías (fn_valor_estadia)' : '' }}
-          {{ tabActivo() === 'reservas' ? 'Integridad Transaccional & Pruebas Docente' : '' }}
+          {{ tabActivo() === 'reservas' ? 'Gestión y Registro de Reservas' : '' }}
           {{ tabActivo() === 'liquidacion' ? 'Procesamiento de Comisiones y Pagos a Propietarios' : '' }}
+          {{ tabActivo() === 'auditoria' ? 'Historial de Tarifas y Registro de Precios' : '' }}
           {{ tabActivo() === 'directorio' ? 'Catálogo de Hoteles, Haciendas y Glampings' : '' }}
         </h1>
       </div>
@@ -1069,7 +1080,7 @@
               <svg *ngIf="!cargando()" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5">
                 <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-11a1 1 0 10-2 0v2H7a1 1 0 100 2h2v2a1 1 0 102 0v-2h2a1 1 0 100-2h-2V7z" clip-rule="evenodd" />
               </svg>
-              <span>{{ cargando() ? 'Ejecutando fn_valor_estadia en Oracle XE...' : 'Cotizar con Función PL/SQL' }}</span>
+              <span>{{ cargando() ? 'Cotizando reserva...' : 'Cotizar valor de reserva' }}</span>
             </button>
           </div>
 
@@ -1156,10 +1167,9 @@
       <section *ngIf="tabActivo() === 'reservas'" class="fade-in">
         <div class="section-intro">
           <div class="intro-texts">
-            <h2>Consola Transaccional & Banco de Pruebas de Sustentación</h2>
+            <h2>Gestión y Registro de Reservas</h2>
             <p>
-              Prueba en tiempo real las reglas de negocio ejecutadas por el procedimiento <code>sp_crear_reserva</code>
-              y el trigger de integridad. Cada botón del banco de pruebas simula un escenario evaluado por el docente.
+              Registra nuevas reservas en el sistema y comprueba las reglas de integridad y negocio (capacidad de habitación, solapamiento de fechas y validación de checkout).
             </p>
           </div>
         </div>
@@ -1202,6 +1212,14 @@
               <h5>Disparo de ORA-20003</h5>
               <p>Intento de reservar fechas (12 al 14 Ago) ya ocupadas por el Caso 1.</p>
               <div class="test-expected">Esperado: Trigger de Integridad (-20003)</div>
+            </div>
+
+            <!-- Caso 5: ORA-20006 -->
+            <div class="test-card test-danger" (click)="probarErrorFechaPasada()">
+              <div class="test-badge-type danger">🔴 Caso 5 · Fecha Pasada</div>
+              <h5>Disparo de ORA-20006</h5>
+              <p>Intento de reservar en una fecha anterior a la fecha actual (Pasado).</p>
+              <div class="test-expected">Esperado: RAISE_APPLICATION_ERROR(-20006)</div>
             </div>
           </div>
         </div>
@@ -1253,7 +1271,7 @@
               <svg *ngIf="!cargando()" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5">
                 <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
               </svg>
-              <span>{{ cargando() ? 'Ejecutando sp_crear_reserva...' : 'Registrar Reserva en Oracle XE' }}</span>
+              <span>{{ cargando() ? 'Registrando reserva...' : 'Registrar reserva' }}</span>
             </button>
           </div>
 
@@ -1338,49 +1356,127 @@
           </div>
         </div>
 
-        <!-- Barra de Filtros y Ejecución -->
-        <div class="card filter-bar-luxury">
-          <div class="filter-controls-inline">
-            <div class="form-group-compact">
-              <label>Mes de Liquidación:</label>
-              <select [(ngModel)]="liqMes" class="input-luxury-compact">
-                <option [ngValue]="1">Enero</option>
-                <option [ngValue]="2">Febrero</option>
-                <option [ngValue]="3">Marzo</option>
-                <option [ngValue]="4">Abril</option>
-                <option [ngValue]="5">Mayo</option>
-                <option [ngValue]="6">Junio</option>
-                <option [ngValue]="7">Julio</option>
-                <option [ngValue]="8">Agosto</option>
-                <option [ngValue]="9">Septiembre</option>
-                <option [ngValue]="10">Octubre</option>
-                <option [ngValue]="11">Noviembre</option>
-                <option [ngValue]="12">Diciembre</option>
+        <!-- Barra de Configuración y Ejecución del Lote -->
+        <div class="card batch-config-card">
+          <div class="batch-card-header">
+            <div class="batch-header-title">
+              <div class="batch-header-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-5 h-5">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+              </div>
+              <div>
+                <h3 class="batch-title-text">Parámetros de Liquidación</h3>
+                <span class="batch-subtitle-text">Configura el período temporal y el alcance de los alojamientos a liquidar</span>
+              </div>
+            </div>
+            <div class="batch-header-badges">
+              <span class="badge-oracle-plsql">
+                <span class="pulse-indicator"></span>
+                Cursor BULK COLLECT (100 regs/lote)
+              </span>
+              <button class="btn-reset-batch" (click)="reiniciarLiquidaciones()" title="Vaciar histórico de liquidaciones para probar desde cero" [disabled]="cargando()">
+                🗑️ Vaciar Histórico
+              </button>
+            </div>
+          </div>
+
+          <div class="batch-form-grid">
+            <div class="form-field-group">
+              <label class="field-label">
+                <svg viewBox="0 0 20 20" fill="currentColor" class="field-icon">
+                  <path fill-rule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clip-rule="evenodd" />
+                </svg>
+                <span>Mes de Liquidación</span>
+              </label>
+              <select [(ngModel)]="liqMes" (ngModelChange)="onCambioPeriodo()" class="input-luxury-field">
+                <option [ngValue]="1">01 - Enero</option>
+                <option [ngValue]="2">02 - Febrero</option>
+                <option [ngValue]="3">03 - Marzo</option>
+                <option [ngValue]="4">04 - Abril</option>
+                <option [ngValue]="5">05 - Mayo</option>
+                <option [ngValue]="6">06 - Junio</option>
+                <option [ngValue]="7">07 - Julio</option>
+                <option [ngValue]="8">08 - Agosto</option>
+                <option [ngValue]="9">09 - Septiembre</option>
+                <option [ngValue]="10">10 - Octubre</option>
+                <option [ngValue]="11">11 - Noviembre</option>
+                <option [ngValue]="12">12 - Diciembre</option>
               </select>
             </div>
 
-            <div class="form-group-compact">
-              <label>Año:</label>
-              <select [(ngModel)]="liqAnio" class="input-luxury-compact">
+            <div class="form-field-group">
+              <label class="field-label">
+                <svg viewBox="0 0 20 20" fill="currentColor" class="field-icon">
+                  <path fill-rule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm10 5H4v9h12V7z" clip-rule="evenodd" />
+                </svg>
+                <span>Año Fiscal</span>
+              </label>
+              <select [(ngModel)]="liqAnio" (ngModelChange)="onCambioPeriodo()" class="input-luxury-field">
                 <option [ngValue]="2024">2024</option>
                 <option [ngValue]="2025">2025</option>
                 <option [ngValue]="2026">2026</option>
               </select>
             </div>
 
-            <div class="form-group-compact">
-              <label>Alojamiento (Opcional):</label>
-              <select [(ngModel)]="liqIdAlojamiento" class="input-luxury-compact">
-                <option [ngValue]="null">Todos los Alojamientos (Lote Completo)</option>
+            <div class="form-field-group flex-wide">
+              <label class="field-label">
+                <svg viewBox="0 0 20 20" fill="currentColor" class="field-icon">
+                  <path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z" />
+                </svg>
+                <span>Alcance / Alojamiento</span>
+              </label>
+              <select [(ngModel)]="liqIdAlojamiento" (ngModelChange)="onCambioPeriodo()" class="input-luxury-field">
+                <option [ngValue]="null">Todos los Alojamientos (Lote Completo Departamental)</option>
                 <option *ngFor="let a of alojamientos()" [ngValue]="a.id">{{ a.nombre }}</option>
               </select>
             </div>
 
-            <button class="btn-batch-execute" (click)="ejecutarLiquidacion()" [disabled]="cargando()">
-              <svg *ngIf="!cargando()" viewBox="0 0 20 20" fill="currentColor" class="w-4 h-4">
-                <path fill-rule="evenodd" d="M11.49 3.17c-.38-1.56-2.6-1.56-2.98 0a1.532 1.532 0 01-2.286.948c-1.372-.836-2.942.734-2.106 2.106.54.886.061 2.042-.947 2.287-1.561.379-1.561 2.6 0 2.978a1.532 1.532 0 01.947 2.287c-.836 1.372.734 2.942 2.106 2.106a1.532 1.532 0 012.287.947c.379 1.561 2.6 1.561 2.978 0a1.533 1.533 0 012.287-.947c1.372.836 2.942-.734 2.106-2.106a1.533 1.533 0 01.947-2.287c1.561-.379 1.561-2.6 0-2.978a1.532 1.532 0 01-.947-2.287c.836-1.372-.734-2.942-2.106-2.106a1.532 1.532 0 01-2.287-.947zM10 13a3 3 0 100-6 3 3 0 000 6z" clip-rule="evenodd" />
+            <div class="form-field-group flex-action">
+              <label class="field-label-spacer">&nbsp;</label>
+              <button class="btn-process-batches" (click)="ejecutarLiquidacion()" [disabled]="cargando()">
+                <svg *ngIf="!cargando()" viewBox="0 0 20 20" fill="currentColor" class="btn-icon">
+                  <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clip-rule="evenodd" />
+                </svg>
+                <svg *ngIf="cargando()" class="btn-icon spinner" viewBox="0 0 24 24" fill="none">
+                  <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                  <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                <span>{{ cargando() ? 'Procesando lotes...' : 'Procesar lotes' }}</span>
+              </button>
+            </div>
+          </div>
+
+          <div class="batch-card-footer">
+            <div class="footer-rule-pill">
+              <span class="rule-icon">⚖️</span>
+              <span class="rule-text">Distribución automática: <strong>10% comisión</strong> TurismoUQ • <strong>90% transferencia</strong> a propietarios</span>
+            </div>
+            <div class="footer-meta-pill">
+              <span class="meta-dot"></span>
+              <span>Tabla destino: <code>LIQUIDACION_MENSUAL_HISTORICO</code> en <code>TBS_HISTORICO_RESERVAS</code></span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Estado Vacío: Cuando NO se ha hecho la liquidación para la fecha seleccionada -->
+        <div *ngIf="liquidaciones().length === 0" class="card batch-empty-card mt-4 fade-in">
+          <div class="batch-empty-icon-wrap">
+            <div class="batch-empty-icon">📭</div>
+          </div>
+          <h3 class="batch-empty-title">
+            No se ha hecho la liquidación para {{ getNombreMes(liqMes) }} de {{ liqAnio }}
+          </h3>
+          <p class="batch-empty-desc">
+            Aún no se ha realizado la liquidación correspondiente a <strong>{{ getNombreMes(liqMes) }} de {{ liqAnio }}</strong>.
+            Presiona el botón <strong>"Procesar lotes"</strong> para calcular comisiones y registrar la liquidación de este período en la base de datos.
+          </p>
+          <div class="batch-empty-actions">
+            <button class="btn-process-batches auto-width" (click)="ejecutarLiquidacion()" [disabled]="cargando()">
+              <svg *ngIf="!cargando()" viewBox="0 0 20 20" fill="currentColor" class="btn-icon">
+                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clip-rule="evenodd" />
               </svg>
-              <span>{{ cargando() ? 'Ejecutando Cursor...' : '⚙️ Procesar Lote con Cursor' }}</span>
+              <span>{{ cargando() ? 'Procesando lotes...' : 'Procesar lotes de ' + getNombreMes(liqMes) + ' ' + liqAnio }}</span>
             </button>
           </div>
         </div>
@@ -1420,7 +1516,7 @@
           <div class="table-header-custom">
             <div>
               <h3>Registros Persistidos en LIQUIDACION_MENSUAL_HISTORICO</h3>
-              <p>Período: Mes {{ liqMes }} / {{ liqAnio }}</p>
+              <p>Período: {{ getNombreMes(liqMes) }} de {{ liqAnio }}</p>
             </div>
             <div class="table-actions">
               <input
@@ -1463,8 +1559,361 @@
                   <td class="text-amber font-semibold">${{ item.comision_plataforma | number }}</td>
                   <td class="text-emerald font-bold">${{ item.neto_pagar | number }}</td>
                 </tr>
+                <tr *ngIf="liquidacionesFiltradas().length === 0">
+                  <td colspan="8" class="text-center py-5 text-muted">
+                    <div class="empty-table-state">
+                      <span class="empty-table-icon">🔍</span>
+                      <p class="font-semibold text-dark mt-2">No se encontraron alojamientos</p>
+                      <p class="text-xs text-muted">Ningún registro coincide con el filtro "{{ filtroBusquedaLiquidacion }}".</p>
+                    </div>
+                  </td>
+                </tr>
               </tbody>
             </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ======================================================== -->
+      <!-- VISTA: AUDITORÍA Y TARIFAS MULTI-TEMPORADA (ORACLE XE)   -->
+      <!-- ======================================================== -->
+      <section *ngIf="tabActivo() === 'auditoria'" class="fade-in">
+        <!-- Barra de herramientas superior -->
+        <div class="section-toolbar">
+          <div class="section-title-wrap">
+            <h2>Gestión y Auditoría de Tarifas</h2>
+            <p class="section-sub">
+              Administración de tarifas de hospedaje (Temporada Baja y Alta +40%) con trazabilidad e historial de cambios en Oracle XE.
+            </p>
+          </div>
+          <div class="toolbar-actions-group">
+            <button class="btn-refresh" (click)="refrescarAuditoriaConFeedback()" [disabled]="cargando()" title="Sincronizar tarifas y registros desde Oracle XE">
+              <svg viewBox="0 0 20 20" fill="currentColor" class="w-4 h-4">
+                <path fill-rule="evenodd" d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1zm.008 9.057a1 1 0 011.276.61A5.002 5.002 0 0014.001 13H11a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0v-2.101a7.002 7.002 0 01-11.601-2.566 1 1 0 01.61-1.276z" clip-rule="evenodd" />
+              </svg>
+              <span>{{ cargando() ? 'Sincronizando...' : 'Refrescar' }}</span>
+            </button>
+            <button class="btn-reset-batch" (click)="limpiarHistorialAuditoria()" [disabled]="cargando()" title="Vaciar historial de auditoría">
+              <svg viewBox="0 0 20 20" fill="currentColor" class="w-4 h-4">
+                <path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd" />
+              </svg>
+              <span>Limpiar Historial</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Formulario: Asignación y Actualización de Tarifas en Alojamientos -->
+        <div class="card p-4 mb-4 luxury-editor-card">
+          <div class="editor-header">
+            <div class="editor-header-title">
+              <div class="editor-icon-badge">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-5 h-5">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+              </div>
+              <div>
+                <h3 class="editor-title">{{ tarifaFormEditando ? 'Modificar Tarifas de Habitación' : 'Asignar / Actualizar Tarifas de Alojamiento' }}</h3>
+                <p class="editor-sub">
+                  Configura el precio base (Temporada Baja). El sistema calcula automáticamente el valor de Temporada Alta (+40%). Al guardar, se actualiza la tabla <code>TARIFA</code> en Oracle XE y el trigger <code>TRG_AUDITORIA_TARIFA</code> registrará la traza de auditoría.
+                </p>
+              </div>
+            </div>
+            <span *ngIf="tarifaFormEditando" class="badge-edit-mode">Modo Edición Activo</span>
+          </div>
+
+          <div class="editor-form-grid">
+            <div class="form-field-group">
+              <label>Habitación / Alojamiento:</label>
+              <select [(ngModel)]="tarifaFormIdHabitacion" (ngModelChange)="onHabitacionSelectChange($event)" class="input-luxury-compact">
+                <option [ngValue]="null">-- Selecciona una habitación --</option>
+                <option *ngFor="let h of habitaciones()" [ngValue]="h.id_habitacion">
+                  {{ h.numero_nombre }} — {{ h.nombre_alojamiento }} ({{ h.nombre_municipio }})
+                </option>
+              </select>
+            </div>
+
+            <div class="form-field-group">
+              <label>Tarifa Temporada Baja (Precio Base COP):</label>
+              <div class="input-money-wrap">
+                <span class="money-prefix">$</span>
+                <input
+                  type="number"
+                  [(ngModel)]="tarifaFormPrecioBaja"
+                  (ngModelChange)="onPrecioBajaChange()"
+                  step="5000"
+                  min="50000"
+                  class="input-luxury-compact input-with-prefix"
+                  placeholder="Ej: 180000"
+                />
+              </div>
+            </div>
+
+            <div class="form-field-group">
+              <div class="label-with-badge">
+                <label>Tarifa Temporada Alta (COP):</label>
+                <span class="badge-formula">+40% Oficial</span>
+              </div>
+              <div class="input-money-wrap">
+                <span class="money-prefix">$</span>
+                <input
+                  type="number"
+                  [(ngModel)]="tarifaFormPrecioAlta"
+                  [disabled]="tarifaFormCalculoAutoAlta"
+                  step="5000"
+                  min="50000"
+                  class="input-luxury-compact input-with-prefix"
+                  placeholder="Ej: 252000"
+                />
+              </div>
+            </div>
+
+            <div class="form-actions-inline">
+              <button class="btn-save-tarifa" (click)="guardarTarifaFormulario()" [disabled]="cargando()">
+                <svg viewBox="0 0 20 20" fill="currentColor" class="w-4 h-4">
+                  <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
+                </svg>
+                <span>{{ cargando() ? 'Guardando...' : (tarifaFormEditando ? 'Actualizar en Oracle' : 'Guardar Tarifas') }}</span>
+              </button>
+
+              <button *ngIf="tarifaFormEditando" class="btn-cancel-edit" (click)="cancelarEdicionTarifa()">
+                Cancelar
+              </button>
+            </div>
+          </div>
+
+          <div class="editor-footer-help">
+            <label class="checkbox-label-compact">
+              <input type="checkbox" [(ngModel)]="tarifaFormCalculoAutoAlta" (change)="onPrecioBajaChange()" />
+              <span>Calcular automáticamente el valor de Temporada Alta (+40% sobre el precio base redondeado a miles)</span>
+            </label>
+          </div>
+        </div>
+
+        <!-- Subpestañas del Módulo de Tarifas y Auditoría -->
+        <div class="audit-subtabs-nav-luxury">
+          <button
+            class="tab-pill-btn"
+            [class.active]="auditoriaSubTab() === 'tarifas'"
+            (click)="cambiarAuditoriaSubTab('tarifas')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-4 h-4">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
+            </svg>
+            <span>Tarifas Activas (Baja vs Alta +40%)</span>
+            <span class="tab-badge-counter">{{ tarifasFiltradas().length }}</span>
+          </button>
+
+          <button
+            class="tab-pill-btn"
+            [class.active]="auditoriaSubTab() === 'filas'"
+            (click)="cambiarAuditoriaSubTab('filas')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-4 h-4">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+            </svg>
+            <span>Historial de Tarifas de Alojamientos</span>
+            <span class="tab-badge-counter">{{ auditoriaFilasFiltradas().length }}</span>
+          </button>
+        </div>
+
+        <!-- ======================================================== -->
+        <!-- SUBTAB 1: TABLA DE TARIFAS ACTIVAS (BAJA VS ALTA +40%)   -->
+        <!-- ======================================================== -->
+        <div *ngIf="auditoriaSubTab() === 'tarifas'" class="fade-in">
+          <!-- Barra de Filtros y Búsqueda -->
+          <div class="card p-3 mb-3 filter-bar-luxury">
+            <div class="filter-controls-inline">
+              <div class="form-group-compact">
+                <label>Filtrar por Alojamiento:</label>
+                <select [(ngModel)]="filtroTarifasAlojamiento" class="input-luxury-compact">
+                  <option [ngValue]="null">-- Todos los Alojamientos (60) --</option>
+                  <option *ngFor="let a of alojamientos()" [ngValue]="a.id">
+                    {{ a.nombre }}
+                  </option>
+                </select>
+              </div>
+
+              <div class="form-group-compact flex-grow">
+                <label>Buscar por habitación, alojamiento o municipio:</label>
+                <input
+                  type="text"
+                  placeholder="Ej: Habitación 101, Hacienda, Salento, King..."
+                  [(ngModel)]="filtroTarifasQuery"
+                  class="input-luxury-compact"
+                />
+              </div>
+
+              <div class="filter-action-end">
+                <label>&nbsp;</label>
+                <button class="btn-export-csv" (click)="exportarCSVTarifas()" title="Exportar catálogo de tarifas a CSV">
+                  <svg viewBox="0 0 20 20" fill="currentColor" class="w-4 h-4">
+                    <path fill-rule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clip-rule="evenodd" />
+                  </svg>
+                  <span>Exportar CSV</span>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Tabla de Tarifas -->
+          <div class="card table-card">
+            <div class="table-responsive">
+              <table class="luxury-table">
+                <thead>
+                  <tr>
+                    <th>Habitación</th>
+                    <th>Alojamiento & Municipio</th>
+                    <th>Capacidad & Cama</th>
+                    <th>Tarifa Baja (Normal)</th>
+                    <th>Tarifa Alta (+40%)</th>
+                    <th>Recargo Alta</th>
+                    <th>Acciones</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr *ngFor="let t of tarifasFiltradas()">
+                    <td>
+                      <div class="font-bold text-dark">{{ t.numero_habitacion || t.numeroHabitacion }}</div>
+                      <div class="text-xs text-muted font-mono">ID Hab #{{ t.id_habitacion || t.idHabitacion }}</div>
+                    </td>
+                    <td>
+                      <div class="font-semibold text-dark">{{ t.nombre_alojamiento || t.nombreAlojamiento }}</div>
+                      <div class="text-xs text-muted">📍 {{ t.nombre_municipio || t.nombreMunicipio }}</div>
+                    </td>
+                    <td>
+                      <span class="badge-neutral">{{ t.capacidad }} pers.</span>
+                      <span class="text-xs text-muted ml-1">{{ t.tipo_cama || t.tipoCama }}</span>
+                    </td>
+                    <td>
+                      <span class="price-baja-tag">${{ (t.precio_baja || t.precioBaja || 0) | number }} COP</span>
+                    </td>
+                    <td>
+                      <span class="price-alta-tag">
+                        ${{ (t.precio_alta || t.precioAlta || 0) | number }} COP
+                        <small class="alta-calc-pill">+{{ t.porcentaje_recargo || t.porcentajeRecargo || 40 }}%</small>
+                      </span>
+                    </td>
+                    <td>
+                      <span class="recargo-diff-pill">+${{ (t.recargo_alta || t.recargoAlta || 0) | number }} COP</span>
+                    </td>
+                    <td>
+                      <button class="btn-action-edit-tarifa" (click)="abrirEditorTarifa(t)" title="Modificar tarifas de esta habitación">
+                        <svg viewBox="0 0 20 20" fill="currentColor" class="w-3.5 h-3.5">
+                          <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
+                        </svg>
+                        <span>Editar</span>
+                      </button>
+                    </td>
+                  </tr>
+
+                  <tr *ngIf="tarifasFiltradas().length === 0">
+                    <td colspan="7" class="text-center py-5 text-muted">
+                      <div class="empty-table-state">
+                        <span class="empty-table-icon">🔍</span>
+                        <p class="font-semibold text-dark mt-2">No se encontraron habitaciones coincidentes</p>
+                        <p class="text-xs text-muted">Ajusta los filtros de alojamiento o término de búsqueda.</p>
+                      </div>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- ======================================================== -->
+        <!-- SUBTAB 2: HISTORIAL DE TARIFAS (AUDITORIA_TARIFA)        -->
+        <!-- ======================================================== -->
+        <div *ngIf="auditoriaSubTab() === 'filas'" class="fade-in">
+          <div class="card p-3 mb-3 filter-bar-luxury">
+            <div class="filter-controls-inline">
+              <div class="form-group-compact flex-grow">
+                <label>Buscar en auditoría:</label>
+                <input
+                  type="text"
+                  placeholder="Filtrar por habitación, hotel, usuario, temporada..."
+                  [(ngModel)]="filtroBusquedaAuditoria"
+                  class="input-luxury-compact"
+                />
+              </div>
+
+              <div class="filter-action-end">
+                <label>&nbsp;</label>
+                <button class="btn-export-csv" (click)="exportarCSVAuditoria()" title="Exportar traza de fila a CSV">
+                  <svg viewBox="0 0 20 20" fill="currentColor" class="w-4 h-4">
+                    <path fill-rule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clip-rule="evenodd" />
+                  </svg>
+                  <span>Exportar CSV</span>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div class="card table-card">
+            <div class="table-responsive">
+              <table class="luxury-table">
+                <thead>
+                  <tr>
+                    <th>ID</th>
+                    <th>Fecha y Hora</th>
+                    <th>Usuario BD</th>
+                    <th>Habitación & Alojamiento</th>
+                    <th>Temporada</th>
+                    <th>Precio Anterior</th>
+                    <th>Precio Nuevo</th>
+                    <th>Variación</th>
+                    <th>Acción</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr *ngFor="let fila of auditoriaFilasFiltradas()">
+                    <td class="font-mono text-xs text-muted">#{{ fila.id_auditoria || fila.idAuditoria }}</td>
+                    <td class="text-xs font-mono">{{ fila.fecha }}</td>
+                    <td>
+                      <span class="user-pill">{{ fila.usuario }}</span>
+                    </td>
+                    <td>
+                      <div class="cell-primary font-medium text-dark">
+                        {{ fila.numero_habitacion || fila.numeroHabitacion || ('Tarifa #' + (fila.id_tarifa || fila.idTarifa)) }}
+                      </div>
+                      <div class="cell-sub text-xs text-muted">
+                        {{ fila.nombre_alojamiento || fila.nombreAlojamiento || 'Alojamiento Quindío' }}
+                      </div>
+                    </td>
+                    <td>
+                      <span class="badge-neutral">{{ fila.nombre_temporada || fila.nombreTemporada || 'Estándar' }}</span>
+                    </td>
+                    <td class="font-mono text-muted">
+                      ${{ (fila.precio_anterior || fila.precioAnterior || 0) | number }}
+                    </td>
+                    <td class="font-mono font-bold text-dark">
+                      ${{ (fila.precio_nuevo || fila.precioNuevo || 0) | number }}
+                    </td>
+                    <td>
+                      <span
+                        class="diff-pill"
+                        [class.positive]="fila.variacion > 0"
+                        [class.negative]="fila.variacion < 0">
+                        {{ fila.variacion > 0 ? '+' : '' }}${{ (fila.variacion || 0) | number }}
+                      </span>
+                    </td>
+                    <td>
+                      <span class="badge-action-update">{{ fila.accion }}</span>
+                    </td>
+                  </tr>
+
+                  <tr *ngIf="auditoriaFilasFiltradas().length === 0">
+                    <td colspan="9" class="text-center py-5 text-muted">
+                      <div class="empty-table-state">
+                        <span class="empty-table-icon">🛡️</span>
+                        <p class="font-semibold text-dark mt-2">No se encontraron registros de auditoría por fila</p>
+                        <p class="text-xs text-muted">
+                          {{ filtroBusquedaAuditoria ? 'Ningún registro coincide con el filtro de búsqueda.' : 'Modifica una tarifa en el formulario superior para activar el trigger TRG_AUDITORIA_TARIFA.' }}
+                        </p>
+                      </div>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
           </div>
         </div>
       </section>
