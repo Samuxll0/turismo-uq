@@ -1,460 +1,369 @@
-<div class="executive-app">
-  <!-- ======================================================== -->
-  <!-- SISTEMA DE TOASTS FLOTANTES                              -->
-  <!-- ======================================================== -->
-  <div class="toast-stack" aria-live="polite">
-    <div *ngFor="let toast of toasts()" class="toast-item toast-{{ toast.tipo }} fade-in">
-      <div class="toast-indicator"></div>
-      <div class="toast-icon">
-        <svg *ngIf="toast.tipo === 'success'" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5">
-          <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
-        </svg>
-        <svg *ngIf="toast.tipo === 'error'" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5">
-          <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
-        </svg>
-        <svg *ngIf="toast.tipo === 'warning'" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5">
-          <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
-        </svg>
-        <svg *ngIf="toast.tipo === 'info'" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5">
-          <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" />
-        </svg>
+<!-- ========================================================================= -->
+<!-- SISTEMA DE NOTIFICACIONES FLOTANTES (TOASTS)                              -->
+<!-- ========================================================================= -->
+<div class="toast-container">
+  <div *ngFor="let t of toasts()" class="toast-item" [ngClass]="'toast-' + t.tipo">
+    <div class="toast-indicator"></div>
+    <div class="toast-body">
+      <div class="toast-top">
+        <span class="toast-title">{{ t.titulo }}</span>
+        <span *ngIf="t.codigo" class="toast-code">{{ t.codigo }}</span>
       </div>
-      <div class="toast-body">
-        <div class="toast-header-line">
-          <strong class="toast-title">{{ toast.titulo }}</strong>
-          <span *ngIf="toast.codigo" class="toast-code-badge">{{ toast.codigo }}</span>
-        </div>
-        <p class="toast-message">{{ toast.mensaje }}</p>
-      </div>
-      <button class="toast-close" (click)="removerToast(toast.id)" aria-label="Cerrar notificación">×</button>
+      <p class="toast-msg">{{ t.mensaje }}</p>
     </div>
+    <button class="toast-close" (click)="removerToast(t.id)" aria-label="Cerrar">✕</button>
   </div>
+</div>
 
-  <!-- ======================================================== -->
-  <!-- SIDEBAR LATERAL                                          -->
-  <!-- ======================================================== -->
+<!-- ========================================================================= -->
+<!-- LAYOUT PRINCIPAL DE LA APLICACIÓN                                         -->
+<!-- ========================================================================= -->
+<div class="app-layout">
+
+  <!-- ======================================================================= -->
+  <!-- BARRA LATERAL (SIDEBAR)                                                 -->
+  <!-- ======================================================================= -->
   <aside class="sidebar">
     <div class="sidebar-brand">
-      <div class="brand-logo-wrap">
-        <svg viewBox="0 0 24 24" fill="none" class="brand-svg-logo" stroke="currentColor" stroke-width="2">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M12 21a9.004 9.004 0 008.716-6.747M12 21a9.004 9.004 0 01-8.716-6.747M12 21c2.485 0 4.5-4.03 4.5-9S14.485 3 12 3m0 18c-2.485 0-4.5-4.03-4.5-9S9.515 3 12 3m0 0a8.997 8.997 0 017.843 4.582M12 3a8.997 8.997 0 00-7.843 4.582m15.686 0A11.953 11.953 0 0112 10.5c-2.998 0-5.74-1.1-7.843-2.918m15.686 0A8.959 8.959 0 0121 12c0 .778-.099 1.533-.284 2.253m0 0A17.919 17.919 0 0112 16.5c-3.162 0-6.133-.815-8.716-2.247m0 0A9.015 9.015 0 013 12c0-.778.099-1.533.284-2.253" />
+      <div class="brand-logo">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
         </svg>
       </div>
-      <div class="brand-texts">
-        <div class="brand-title">Turismo<strong>UQ</strong></div>
-        <div class="brand-tag">Bases de Datos II · Quindío</div>
+      <div class="brand-info">
+        <span class="brand-name">TurismoUQ</span>
+        <span class="brand-region">Paisaje Cultural Cafetero</span>
       </div>
     </div>
 
-    <!-- Indicador de conexión Oracle XE -->
-    <div class="oracle-status-card">
-      <div class="oracle-header">
-        <span class="oracle-pulse"></span>
-        <span class="oracle-title">Oracle XE 21c Conectado</span>
-      </div>
-      <div class="oracle-specs">
-        <div class="spec-row">
-          <span>PDB:</span>
-          <strong>XEPDB1</strong>
-        </div>
-        <div class="spec-row">
-          <span>Tablespace:</span>
-          <strong>TBS_HISTORICO</strong>
-        </div>
-        <div class="spec-row">
-          <span>Esquema:</span>
-          <strong>TURISMO_UQ</strong>
-        </div>
-      </div>
-    </div>
-
-    <!-- Menú de Pestañas -->
     <nav class="sidebar-nav">
-      <div class="nav-section-label">MÓDULOS DEL SISTEMA</div>
+      <div class="nav-group">
+        <span class="nav-group-label">Operación y Reservas</span>
 
-      <button [class.active]="tabActivo() === 'analitica'" (click)="cambiarTab('analitica')" class="nav-btn">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-        </svg>
-        <span>Analítica BI (Entrega 1)</span>
-      </button>
+        <button class="nav-link" [class.active]="tabActivo() === 'directorio'" (click)="cambiarTab('directorio')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" class="nav-icon">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+          </svg>
+          <span>Catálogo de Alojamientos</span>
+        </button>
 
-      <button [class.active]="tabActivo() === 'tablespace'" (click)="cambiarTab('tablespace')" class="nav-btn">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4m0 5c0 2.21-3.582 4-8 4s-8-1.79-8-4" />
-        </svg>
-        <span>Tablespace Histórico</span>
-      </button>
+        <button class="nav-link" [class.active]="tabActivo() === 'cotizador'" (click)="cambiarTab('cotizador')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" class="nav-icon">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+          </svg>
+          <span>Cotizador de Estadías</span>
+        </button>
 
-      <button [class.active]="tabActivo() === 'cotizador'" (click)="cambiarTab('cotizador')" class="nav-btn">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
-        </svg>
-        <span>Cotizador Multi-Temporada</span>
-      </button>
+        <button class="nav-link" [class.active]="tabActivo() === 'reservas'" (click)="cambiarTab('reservas')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" class="nav-icon">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+          </svg>
+          <span>Gestión de Reservas</span>
+        </button>
 
-      <button [class.active]="tabActivo() === 'reservas'" (click)="cambiarTab('reservas')" class="nav-btn">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" />
-        </svg>
-        <span>Gestión de Reservas</span>
-      </button>
+        <button class="nav-link" [class.active]="tabActivo() === 'transacciones'" (click)="cambiarTab('transacciones')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" class="nav-icon">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
+          </svg>
+          <span>Checkout y Disponibilidad</span>
+        </button>
+      </div>
 
-      <button [class.active]="tabActivo() === 'liquidacion'" (click)="cambiarTab('liquidacion')" class="nav-btn">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
-        </svg>
-        <span>Liquidación por Lotes</span>
-      </button>
+      <div class="nav-group">
+        <span class="nav-group-label">Finanzas y Tarifas</span>
 
-      <button [class.active]="tabActivo() === 'auditoria'" (click)="cambiarTab('auditoria')" class="nav-btn">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
-        </svg>
-        <span>Auditoría de Tarifas</span>
-      </button>
+        <button class="nav-link" [class.active]="tabActivo() === 'auditoria'" (click)="cambiarTab('auditoria')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" class="nav-icon">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
+          </svg>
+          <span>Tarifas e Historial</span>
+        </button>
 
-      <button [class.active]="tabActivo() === 'directorio'" (click)="cambiarTab('directorio')" class="nav-btn">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
-        </svg>
-        <span>Directorio de Alojamientos</span>
-      </button>
+        <button class="nav-link" [class.active]="tabActivo() === 'liquidacion'" (click)="cambiarTab('liquidacion')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" class="nav-icon">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+          <span>Liquidación Mensual</span>
+        </button>
+      </div>
+
+      <div class="nav-group">
+        <span class="nav-group-label">Analítica y Administración</span>
+
+        <button class="nav-link" [class.active]="tabActivo() === 'analitica'" (click)="cambiarTab('analitica')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" class="nav-icon">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+          </svg>
+          <span>Reportes e Indicadores</span>
+        </button>
+
+        <button class="nav-link" [class.active]="tabActivo() === 'seguridad'" (click)="cambiarTab('seguridad')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" class="nav-icon">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
+          </svg>
+          <span>Recepción y Accesos</span>
+        </button>
+
+        <button class="nav-link" [class.active]="tabActivo() === 'indices'" (click)="cambiarTab('indices')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" class="nav-icon">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" />
+          </svg>
+          <span>Rendimiento de Consultas</span>
+        </button>
+
+        <button class="nav-link" [class.active]="tabActivo() === 'tablespace'" (click)="cambiarTab('tablespace')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" class="nav-icon">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4" />
+          </svg>
+          <span>Almacenamiento</span>
+        </button>
+      </div>
     </nav>
 
-    <!-- Footer de Sidebar -->
     <div class="sidebar-footer">
-      <div class="engine-badge">
-        <svg viewBox="0 0 20 20" fill="currentColor" class="w-4 h-4 text-emerald-500">
-          <path fill-rule="evenodd" d="M2.166 4.999A11.954 11.954 0 0010 1.944 11.954 11.954 0 0017.834 5c.11.65.166 1.32.166 2.001 0 5.225-3.34 9.67-8 11.317C5.34 16.67 2 12.225 2 7c0-.682.057-1.35.166-2.001zm11.541 3.708a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
-        </svg>
-        <span>PL/SQL Integrity Suite v2.0</span>
+      <div class="status-pill">
+        <span class="status-dot"></span>
+        <span>Sistema en línea · Quindío</span>
       </div>
-      <div class="university-tag">Universidad del Quindío · 2026</div>
     </div>
   </aside>
 
-  <!-- ======================================================== -->
-  <!-- CONTENIDO PRINCIPAL                                      -->
-  <!-- ======================================================== -->
-  <div class="main-layout">
-    <!-- Header Superior -->
-    <header class="top-header">
-      <div class="header-left">
-        <div class="page-breadcrumb">
-          <span class="crumb-root">TurismoUQ</span>
-          <span class="crumb-separator">/</span>
-          <span class="crumb-current">
-            {{ tabActivo() === 'analitica' ? 'Dashboard BI Ejecutivo' : '' }}
-            {{ tabActivo() === 'tablespace' ? 'Tablespace Histórico (DBA)' : '' }}
-            {{ tabActivo() === 'cotizador' ? 'Cotizador Multi-Temporada' : '' }}
-            {{ tabActivo() === 'reservas' ? 'Gestión de Reservas' : '' }}
-            {{ tabActivo() === 'liquidacion' ? 'Liquidación Masiva por Lotes' : '' }}
-            {{ tabActivo() === 'auditoria' ? 'Gestión y Auditoría de Tarifas' : '' }}
-            {{ tabActivo() === 'directorio' ? 'Directorio de Alojamientos del Quindío' : '' }}
-          </span>
-        </div>
-        <h1 class="header-title">
-          {{ tabActivo() === 'analitica' ? 'Tablero de Control Financiero y Ocupación' : '' }}
-          {{ tabActivo() === 'tablespace' ? 'Monitoreo de Almacenamiento Físico y Datafiles' : '' }}
-          {{ tabActivo() === 'cotizador' ? 'Cálculo Dinámico de Estadías (fn_valor_estadia)' : '' }}
-          {{ tabActivo() === 'reservas' ? 'Gestión y Registro de Reservas' : '' }}
-          {{ tabActivo() === 'liquidacion' ? 'Procesamiento de Comisiones y Pagos a Propietarios' : '' }}
-          {{ tabActivo() === 'auditoria' ? 'Historial de Tarifas y Registro de Precios' : '' }}
-          {{ tabActivo() === 'directorio' ? 'Catálogo de Hoteles, Haciendas y Glampings' : '' }}
-        </h1>
+  <!-- ======================================================================= -->
+  <!-- CONTENIDO PRINCIPAL                                                     -->
+  <!-- ======================================================================= -->
+  <div class="main-area">
+
+    <!-- CABECERA SUPERIOR LIMPIA -->
+    <header class="topbar">
+      <div class="topbar-title">
+        <h1 *ngIf="tabActivo() === 'analitica'">Reportes e Indicadores Comerciales</h1>
+        <h1 *ngIf="tabActivo() === 'directorio'">Catálogo de Alojamientos Turísticos</h1>
+        <h1 *ngIf="tabActivo() === 'cotizador'">Cotizador de Estadías por Temporada</h1>
+        <h1 *ngIf="tabActivo() === 'reservas'">Gestión y Registro de Reservas</h1>
+        <h1 *ngIf="tabActivo() === 'transacciones'">Checkout con Pago y Control de Cupos</h1>
+        <h1 *ngIf="tabActivo() === 'auditoria'">Administración de Tarifas e Historial</h1>
+        <h1 *ngIf="tabActivo() === 'liquidacion'">Liquidación Mensual a Propietarios</h1>
+        <h1 *ngIf="tabActivo() === 'seguridad'">Recepción y Perfiles de Acceso</h1>
+        <h1 *ngIf="tabActivo() === 'indices'">Diagnóstico de Rendimiento de Consultas</h1>
+        <h1 *ngIf="tabActivo() === 'tablespace'">Estado de Almacenamiento del Sistema</h1>
       </div>
 
-      <div class="header-right">
-        <!-- Chips de Métricas Globales del Motor -->
-        <div class="stats-chips-group">
-          <div class="metric-chip" title="Total de establecimientos en el Quindío">
-            <span class="chip-dot emerald"></span>
-            <span class="chip-label">Alojamientos:</span>
-            <strong class="chip-val">60</strong>
-          </div>
-          <div class="metric-chip" title="Habitaciones registradas">
-            <span class="chip-dot amber"></span>
-            <span class="chip-label">Habitaciones:</span>
-            <strong class="chip-val">400</strong>
-          </div>
-          <div class="metric-chip" title="Clientes registrados">
-            <span class="chip-dot blue"></span>
-            <span class="chip-label">Clientes:</span>
-            <strong class="chip-val">3.000</strong>
-          </div>
-          <div class="metric-chip" title="Volumen de reservas persistidas">
-            <span class="chip-dot purple"></span>
-            <span class="chip-label">Reservas:</span>
-            <strong class="chip-val">25.000+</strong>
-          </div>
+      <div class="topbar-meta">
+        <div class="meta-chip">
+          <span class="meta-label">Municipios</span>
+          <span class="meta-val">{{ municipios().length || 12 }}</span>
         </div>
-
-        <!-- Perfil Ejecutivo -->
-        <div class="user-profile-badge">
-          <div class="avatar-circle">AD</div>
-          <div class="user-info">
-            <span class="user-name">Admin TurismoUQ</span>
-            <span class="user-role">DBA & Operador BI</span>
-          </div>
+        <div class="meta-chip">
+          <span class="meta-label">Alojamientos</span>
+          <span class="meta-val">{{ alojamientos().length || 60 }}</span>
+        </div>
+        <div class="meta-chip">
+          <span class="meta-label">Habitaciones</span>
+          <span class="meta-val">{{ habitaciones().length || 180 }}</span>
         </div>
       </div>
     </header>
 
-    <!-- Área de Trabajo Dinámica -->
+    <!-- ÁREA DE VISTAS -->
     <main class="page-content">
 
-      <!-- ======================================================== -->
-      <!-- VISTA 1: ANALÍTICA BI (PIVOT, LAG, ROLLUP, RANK)         -->
-      <!-- ======================================================== -->
+      <!-- =================================================================== -->
+      <!-- MÓDULO 1: REPORTES E INDICADORES (ANALÍTICA)                        -->
+      <!-- =================================================================== -->
       <section *ngIf="tabActivo() === 'analitica'" class="fade-in">
-        <!-- Sub-navegación entre Gráficos y Tablas -->
-        <div class="section-toolbar">
-          <div class="view-switch-tabs">
-            <button [class.active]="analiticaSubTab() === 'graficos'" (click)="cambiarAnaliticaSubTab('graficos')">
-              📈 Tablero Gráfico Interactivo
-            </button>
-            <button [class.active]="analiticaSubTab() === 'pivot'" (click)="cambiarAnaliticaSubTab('pivot')">
-              1. Matriz PIVOT
-            </button>
-            <button [class.active]="analiticaSubTab() === 'lag'" (click)="cambiarAnaliticaSubTab('lag')">
-              2. Variación LAG
-            </button>
-            <button [class.active]="analiticaSubTab() === 'rollup'" (click)="cambiarAnaliticaSubTab('rollup')">
-              3. Jerarquía ROLLUP
-            </button>
-            <button [class.active]="analiticaSubTab() === 'rank'" (click)="cambiarAnaliticaSubTab('rank')">
-              4. Top RANK
-            </button>
-            <button [class.active]="analiticaSubTab() === 'bind'" (click)="cambiarAnaliticaSubTab('bind')">
-              5. Rango BIND
-            </button>
-            <button [class.active]="analiticaSubTab() === 'mv'" (click)="cambiarAnaliticaSubTab('mv')">
-              6. Vista MV
-            </button>
-            <button [class.active]="analiticaSubTab() === 'unpivot'" (click)="cambiarAnaliticaSubTab('unpivot')">
-              7. Despivotado UNPIVOT
-            </button>
-            <button [class.active]="analiticaSubTab() === 'clv'" (click)="cambiarAnaliticaSubTab('clv')">
-              8. Clientes CLV
-            </button>
+        <!-- KPIs Ejecutivos -->
+        <div class="kpi-grid-4">
+          <div class="kpi-card">
+            <span class="kpi-label">Facturación Acumulada</span>
+            <div class="kpi-value">${{ kpiFacturacionTotal() | number }}</div>
+            <span class="kpi-sub">Ingresos históricos consolidados (COP)</span>
           </div>
 
-          <button class="btn-refresh" (click)="cargarAnalitica()" [disabled]="cargando()">
-            <svg viewBox="0 0 20 20" fill="currentColor" class="w-4 h-4">
-              <path fill-rule="evenodd" d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1zm.008 9.057a1 1 0 011.276.61A5.002 5.002 0 0014.001 13H11a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0v-2.101a7.002 7.002 0 01-11.601-2.566 1 1 0 01.61-1.276z" clip-rule="evenodd" />
-            </svg>
-            <span>{{ cargando() ? 'Sincronizando...' : 'Recargar Datos' }}</span>
+          <div class="kpi-card">
+            <span class="kpi-label">Promedio Mensual</span>
+            <div class="kpi-value">${{ kpiPromedioMensual() | number }}</div>
+            <span class="kpi-sub">Facturación media por mes</span>
+          </div>
+
+          <div class="kpi-card">
+            <span class="kpi-label">Alojamiento Destacado</span>
+            <div class="kpi-value kpi-value-text">{{ kpiAlojamientoLider() }}</div>
+            <span class="kpi-sub">Mayor volumen de ingresos</span>
+          </div>
+
+          <div class="kpi-card">
+            <span class="kpi-label">Reservas Registradas</span>
+            <div class="kpi-value">{{ kpiTotalReservas() }}</div>
+            <span class="kpi-sub">Temporada regular y temporada alta</span>
+          </div>
+        </div>
+
+        <!-- Navegación de Reportes -->
+        <div class="subnav-bar">
+          <button class="subnav-btn" [class.active]="analiticaSubTab() === 'graficos'" (click)="cambiarAnaliticaSubTab('graficos')">
+            Panorama General
+          </button>
+          <button class="subnav-btn" [class.active]="analiticaSubTab() === 'pivot'" (click)="cambiarAnaliticaSubTab('pivot')">
+            Ocupación por Municipio
+          </button>
+          <button class="subnav-btn" [class.active]="analiticaSubTab() === 'lag'" (click)="cambiarAnaliticaSubTab('lag')">
+            Evolución Mensual
+          </button>
+          <button class="subnav-btn" [class.active]="analiticaSubTab() === 'rollup'" (click)="cambiarAnaliticaSubTab('rollup')">
+            Ingresos por Temporada
+          </button>
+          <button class="subnav-btn" [class.active]="analiticaSubTab() === 'rank'" (click)="cambiarAnaliticaSubTab('rank')">
+            Ranking de Alojamientos
+          </button>
+          <button class="subnav-btn" [class.active]="analiticaSubTab() === 'bind'" (click)="cambiarAnaliticaSubTab('bind')">
+            Recaudación por Fechas
+          </button>
+          <button class="subnav-btn" [class.active]="analiticaSubTab() === 'mv'" (click)="cambiarAnaliticaSubTab('mv')">
+            Consolidado Mensual
+          </button>
+          <button class="subnav-btn" [class.active]="analiticaSubTab() === 'unpivot'" (click)="cambiarAnaliticaSubTab('unpivot')">
+            Hospedaje vs Servicios
+          </button>
+          <button class="subnav-btn" [class.active]="analiticaSubTab() === 'clv'" (click)="cambiarAnaliticaSubTab('clv')">
+            Clientes Frecuentes
           </button>
         </div>
 
-        <!-- KPIs Ejecutivos Destacados -->
-        <div class="kpi-grid">
-          <div class="kpi-card">
-            <div class="kpi-header">
-              <span class="kpi-title">Facturación Total Analizada</span>
-              <span class="kpi-tag success">2024 - 2026</span>
+        <!-- SUBVISTA: PANORAMA GENERAL (GRÁFICOS) -->
+        <div *ngIf="analiticaSubTab() === 'graficos'" class="charts-grid-2 fade-in">
+          <div class="card">
+            <div class="card-header-flex">
+              <div>
+                <h3 class="card-title">Noches Reservadas por Mes</h3>
+                <p class="card-subtitle">Distribución mensual de ocupación en el departamento</p>
+              </div>
+              <select [(ngModel)]="municipioFiltroPivot" (change)="renderChartPivot()" class="form-control form-control-sm">
+                <option value="TODOS">Todo el Quindío</option>
+                <option *ngFor="let m of datosPivot()" [value]="m.municipio">{{ m.municipio }}</option>
+              </select>
             </div>
-            <div class="kpi-number">${{ kpiFacturacionTotal() | number }} COP</div>
-            <div class="kpi-footer text-emerald">
-              <span>● Calculado por funciones ventana en Oracle</span>
+            <div class="chart-box">
+              <canvas id="chartPivot"></canvas>
             </div>
           </div>
 
-          <div class="kpi-card">
-            <div class="kpi-header">
-              <span class="kpi-title">Promedio Mensual</span>
-              <span class="kpi-tag info">LAG / LEAD</span>
+          <div class="card">
+            <div class="card-header-flex">
+              <div>
+                <h3 class="card-title">Evolución de Facturación Mensual</h3>
+                <p class="card-subtitle">Tendencia de ingresos y variación mes a mes</p>
+              </div>
             </div>
-            <div class="kpi-number">${{ kpiPromedioMensual() | number }} COP</div>
-            <div class="kpi-footer text-muted">
-              <span>● Flujo constante de ingresos departamentales</span>
-            </div>
-          </div>
-
-          <div class="kpi-card">
-            <div class="kpi-header">
-              <span class="kpi-title">Volumen Total Reservas</span>
-              <span class="kpi-tag amber">Mínimo 25k</span>
-            </div>
-            <div class="kpi-number">{{ kpiTotalReservas() }}</div>
-            <div class="kpi-footer text-amber">
-              <span>● Almacenado en tablespace TBS_HISTORICO</span>
+            <div class="chart-box">
+              <canvas id="chartLag"></canvas>
             </div>
           </div>
 
-          <div class="kpi-card">
-            <div class="kpi-header">
-              <span class="kpi-title">Alojamiento #1 en Rentabilidad</span>
-              <span class="kpi-tag purple">DENSE_RANK</span>
-            </div>
-            <div class="kpi-number truncate">{{ kpiAlojamientoLider() }}</div>
-            <div class="kpi-footer text-purple">
-              <span>● Mayor facturación histórica en el Quindío</span>
-            </div>
-          </div>
-        </div>
-
-        <!-- VISTA DE GRÁFICOS INTERACTIVOS (CHART.JS) -->
-        <div *ngIf="analiticaSubTab() === 'graficos'" class="charts-bi-container fade-in">
-          <div class="charts-row-2">
-            <!-- GRÁFICO 1: Ocupación Mensual (PIVOT) -->
-            <div class="card chart-card">
-              <div class="chart-header">
-                <div>
-                  <h3 class="chart-title">1. Ocupación Mensual de Habitaciones (PIVOT)</h3>
-                  <p class="chart-sub">Matriz bidimensional agregada por municipio a lo largo del año 2025.</p>
-                </div>
-                <!-- Filtro por municipio -->
-                <div class="chart-filter">
-                  <label for="filtroMun">Municipio:</label>
-                  <select id="filtroMun" [(ngModel)]="municipioFiltroPivot" (change)="renderChartPivot()" class="input-select-compact">
-                    <option value="TODOS">📍 Todo el Departamento (Consolidado)</option>
-                    <option *ngFor="let m of datosPivot()" [value]="m.municipio">{{ m.municipio }}</option>
-                  </select>
-                </div>
-              </div>
-              <div class="canvas-wrapper">
-                <canvas id="chartPivot"></canvas>
+          <div class="card">
+            <div class="card-header-flex">
+              <div>
+                <h3 class="card-title">Participación por Temporada</h3>
+                <p class="card-subtitle">Comparativa entre temporada regular y temporada alta</p>
               </div>
             </div>
-
-            <!-- GRÁFICO 2: Variación Mes a Mes (LAG) -->
-            <div class="card chart-card">
-              <div class="chart-header">
-                <div>
-                  <h3 class="chart-title">2. Tendencia & Variación Intermensual (LAG)</h3>
-                  <p class="chart-sub">Comparación contra el mes precedente y tasa porcentual de crecimiento.</p>
-                </div>
-                <div class="chart-badge-accent">Función de Ventana LAG()</div>
-              </div>
-              <div class="canvas-wrapper">
-                <canvas id="chartLag"></canvas>
-              </div>
+            <div class="chart-box">
+              <canvas id="chartRollup"></canvas>
             </div>
           </div>
 
-          <div class="charts-row-2">
-            <!-- GRÁFICO 3: Ingresos por Temporada (ROLLUP) -->
-            <div class="card chart-card">
-              <div class="chart-header">
-                <div>
-                  <h3 class="chart-title">3. Distribución por Temporada (ROLLUP)</h3>
-                  <p class="chart-sub">Participación de ingresos en Temporada Alta (+40%) vs Temporada Baja.</p>
-                </div>
-                <div class="chart-badge-accent">Agrupamiento ROLLUP</div>
-              </div>
-              <div class="canvas-wrapper doughnut-wrapper">
-                <canvas id="chartRollup"></canvas>
+          <div class="card">
+            <div class="card-header-flex">
+              <div>
+                <h3 class="card-title">Alojamientos con Mayores Ingresos</h3>
+                <p class="card-subtitle">Primeros establecimientos por facturación acumulada</p>
               </div>
             </div>
-
-            <!-- GRÁFICO 4: Top Alojamientos (RANK) -->
-            <div class="card chart-card">
-              <div class="chart-header">
-                <div>
-                  <h3 class="chart-title">4. Top Alojamientos más Rentables (DENSE_RANK)</h3>
-                  <p class="chart-sub">Ranking departamental particionado por municipio con mayores ventas.</p>
-                </div>
-                <div class="chart-badge-accent">DENSE_RANK OVER()</div>
-              </div>
-              <div class="canvas-wrapper">
-                <canvas id="chartRank"></canvas>
-              </div>
-            </div>
-          </div>
-
-          <div class="charts-row-2">
-            <!-- GRÁFICO 5: Ventas por Rango (BIND VARIABLES) -->
-            <div class="card chart-card">
-              <div class="chart-header">
-                <div>
-                  <h3 class="chart-title">5. Ventas por Rango Paramétrico (Bind Variables)</h3>
-                  <p class="chart-sub">Facturación por municipio con reutilización de planes en Shared Pool (Soft Parse).</p>
-                </div>
-                <div class="chart-badge-accent">:p_fecha_ini / :p_fecha_fin</div>
-              </div>
-              <div class="canvas-wrapper">
-                <canvas id="chartBind"></canvas>
-              </div>
-            </div>
-
-            <!-- GRÁFICO 6: Top 10 Clientes CLV -->
-            <div class="card chart-card">
-              <div class="chart-header">
-                <div>
-                  <h3 class="chart-title">8. Customer Lifetime Value (Top 10 CLV)</h3>
-                  <p class="chart-sub">Participación porcentual en facturación global acumulada (FETCH FIRST 10).</p>
-                </div>
-                <div class="chart-badge-accent">FETCH FIRST 10 + RATIO</div>
-              </div>
-              <div class="canvas-wrapper">
-                <canvas id="chartClv"></canvas>
-              </div>
+            <div class="chart-box">
+              <canvas id="chartRank"></canvas>
             </div>
           </div>
         </div>
 
-        <!-- SUBTAB 1: TABLA MATRIZ PIVOT -->
-        <div *ngIf="analiticaSubTab() === 'pivot'" class="card table-card fade-in">
-          <div class="table-header-custom">
+        <!-- SUBVISTA 1: OCUPACIÓN POR MUNICIPIO (PIVOT) -->
+        <div *ngIf="analiticaSubTab() === 'pivot'" class="card fade-in">
+          <div class="card-header-flex">
             <div>
-              <h3>Matriz PIVOT: Noches Reservadas por Municipio (2025)</h3>
-              <p>Generado con la cláusula <code>PIVOT (SUM(noches) FOR mes IN (...))</code> en Oracle XE.</p>
+              <h3 class="card-title">Ocupación Mensual por Municipio (Noches Reservadas)</h3>
+              <p class="card-subtitle">Total de noches ocupadas en cada mes del año por destino</p>
             </div>
           </div>
-          <div class="table-responsive">
-            <table class="luxury-table">
+          <div class="table-wrap">
+            <table class="data-table">
               <thead>
                 <tr>
                   <th>Municipio</th>
-                  <th>Ene</th><th>Feb</th><th>Mar</th><th>Abr</th>
-                  <th>May</th><th>Jun</th><th>Jul</th><th>Ago</th>
-                  <th>Sep</th><th>Oct</th><th>Nov</th><th>Dic</th>
+                  <th>Ene</th>
+                  <th>Feb</th>
+                  <th>Mar</th>
+                  <th>Abr</th>
+                  <th>May</th>
+                  <th>Jun</th>
+                  <th>Jul</th>
+                  <th>Ago</th>
+                  <th>Sep</th>
+                  <th>Oct</th>
+                  <th>Nov</th>
+                  <th>Dic</th>
+                  <th>Total Anual</th>
                 </tr>
               </thead>
               <tbody>
                 <tr *ngFor="let row of datosPivot()">
-                  <td class="font-semibold text-dark">{{ row.municipio }}</td>
-                  <td>{{ row.ene }}</td><td>{{ row.feb }}</td><td>{{ row.mar }}</td><td>{{ row.abr }}</td>
-                  <td>{{ row.may }}</td><td>{{ row.jun }}</td><td>{{ row.jul }}</td><td>{{ row.ago }}</td>
-                  <td>{{ row.sep }}</td><td>{{ row.oct }}</td><td>{{ row.nov }}</td><td>{{ row.dic }}</td>
+                  <td class="font-semibold">{{ row.municipio }}</td>
+                  <td>{{ row.ene | number }}</td>
+                  <td>{{ row.feb | number }}</td>
+                  <td>{{ row.mar | number }}</td>
+                  <td>{{ row.abr | number }}</td>
+                  <td>{{ row.may | number }}</td>
+                  <td>{{ row.jun | number }}</td>
+                  <td>{{ row.jul | number }}</td>
+                  <td>{{ row.ago | number }}</td>
+                  <td>{{ row.sep | number }}</td>
+                  <td>{{ row.oct | number }}</td>
+                  <td>{{ row.nov | number }}</td>
+                  <td>{{ row.dic | number }}</td>
+                  <td class="font-bold text-emerald">{{ (row.ene + row.feb + row.mar + row.abr + row.may + row.jun + row.jul + row.ago + row.sep + row.oct + row.nov + row.dic) | number }}</td>
                 </tr>
               </tbody>
             </table>
           </div>
         </div>
 
-        <!-- SUBTAB 2: TABLA VARIACIÓN LAG -->
-        <div *ngIf="analiticaSubTab() === 'lag'" class="card table-card fade-in">
-          <div class="table-header-custom">
+        <!-- SUBVISTA 2: EVOLUCIÓN MENSUAL (LAG) -->
+        <div *ngIf="analiticaSubTab() === 'lag'" class="card fade-in">
+          <div class="card-header-flex">
             <div>
-              <h3>Variación Intermensual de Facturación con Función LAG()</h3>
-              <p>Calcula el delta absoluto y porcentual frente a <code>LAG(facturacion, 1) OVER (ORDER BY mes)</code>.</p>
+              <h3 class="card-title">Variación Mensual de Ingresos</h3>
+              <p class="card-subtitle">Comparativa de facturación frente al mes inmediatamente anterior</p>
             </div>
           </div>
-          <div class="table-responsive">
-            <table class="luxury-table">
+          <div class="table-wrap">
+            <table class="data-table">
               <thead>
                 <tr>
-                  <th>Año-Mes</th>
-                  <th>Facturación Actual</th>
-                  <th>Mes Anterior (LAG)</th>
-                  <th>Diferencia Neta</th>
-                  <th>Crecimiento %</th>
+                  <th>Período</th>
+                  <th>Facturación del Mes</th>
+                  <th>Mes Anterior</th>
+                  <th>Diferencia</th>
+                  <th>Variación %</th>
                 </tr>
               </thead>
               <tbody>
-                <tr *ngFor="let l of datosLag()">
-                  <td class="font-bold">{{ l.anio_mes }}</td>
-                  <td>${{ l.facturacion_actual | number }} COP</td>
-                  <td>${{ l.facturacion_mes_anterior | number }} COP</td>
-                  <td [class.text-emerald]="l.diferencia_neta >= 0" [class.text-rose]="l.diferencia_neta < 0">
-                    {{ l.diferencia_neta >= 0 ? '+' : '' }}${{ l.diferencia_neta | number }} COP
+                <tr *ngFor="let item of datosLag()">
+                  <td class="font-semibold">{{ item.anio_mes }}</td>
+                  <td class="font-bold">${{ item.facturacion_actual | number }}</td>
+                  <td class="text-muted">${{ item.facturacion_mes_anterior | number }}</td>
+                  <td [class.text-emerald]="item.diferencia_neta >= 0" [class.text-danger]="item.diferencia_neta < 0" class="font-semibold">
+                    {{ item.diferencia_neta >= 0 ? '+' : '' }}${{ item.diferencia_neta | number }}
                   </td>
                   <td>
-                    <span [class.badge-positive]="l.porcentaje_crecimiento >= 0" [class.badge-negative]="l.porcentaje_crecimiento < 0">
-                      {{ l.porcentaje_crecimiento >= 0 ? '▲ +' : '▼ ' }}{{ l.porcentaje_crecimiento }}%
+                    <span class="badge" [ngClass]="item.porcentaje_crecimiento >= 0 ? 'badge-success' : 'badge-danger'">
+                      {{ item.porcentaje_crecimiento >= 0 ? '▲ +' : '▼ ' }}{{ item.porcentaje_crecimiento }}%
                     </span>
                   </td>
                 </tr>
@@ -463,863 +372,604 @@
           </div>
         </div>
 
-        <!-- SUBTAB 3: TABLA ROLLUP -->
-        <div *ngIf="analiticaSubTab() === 'rollup'" class="card table-card fade-in">
-          <div class="table-header-custom">
+        <!-- SUBVISTA 3: INGRESOS POR TEMPORADA (ROLLUP) -->
+        <div *ngIf="analiticaSubTab() === 'rollup'" class="card fade-in">
+          <div class="card-header-flex">
             <div>
-              <h3>Desglose Jerárquico Multinivel: Municipio > Tipo Alojamiento > Temporada</h3>
-              <p>Consulta con <code>GROUP BY ROLLUP</code> y vector de banderas <code>GROUPING()</code>.</p>
+              <h3 class="card-title">Ingresos por Municipio y Temporada</h3>
+              <p class="card-subtitle">Desglose de reservas e ingresos con subtotales por destino</p>
             </div>
           </div>
-          <div class="table-responsive">
-            <table class="luxury-table">
+          <div class="table-wrap">
+            <table class="data-table">
               <thead>
                 <tr>
                   <th>Municipio</th>
-                  <th>Tipo Alojamiento</th>
+                  <th>Tipo de Alojamiento</th>
                   <th>Temporada</th>
                   <th>Reservas</th>
-                  <th>Ingresos Totales</th>
-                  <th>Nivel Agregación</th>
+                  <th>Ingresos Totales (COP)</th>
                 </tr>
               </thead>
               <tbody>
-                <tr *ngFor="let r of datosRollup()" [class.row-subtotal]="r.g_temp === 1" [class.row-total]="r.g_mun === 1">
-                  <td>{{ r.municipio || '--- TOTAL DEPARTAMENTAL ---' }}</td>
-                  <td>{{ r.tipo_alojamiento || '--- Subtotal Tipo ---' }}</td>
-                  <td>{{ r.temporada || '--- Subtotal Temporada ---' }}</td>
+                <tr *ngFor="let r of datosRollup()" [class.row-highlight]="r.temporada.includes('Subtotal') || r.municipio.includes('TOTAL')">
+                  <td class="font-semibold">{{ r.municipio }}</td>
+                  <td>{{ r.tipo_alojamiento }}</td>
+                  <td>{{ r.temporada }}</td>
                   <td>{{ r.cantidad_reservas | number }}</td>
-                  <td class="font-semibold">${{ r.ingresos_totales | number }} COP</td>
-                  <td>
-                    <span *ngIf="r.g_mun === 1" class="badge-total">Gran Total</span>
-                    <span *ngIf="r.g_mun === 0 && r.g_tipo === 1" class="badge-subtotal">Subtotal Mun</span>
-                    <span *ngIf="r.g_mun === 0 && r.g_tipo === 0 && r.g_temp === 1" class="badge-subtotal">Subtotal Tipo</span>
-                    <span *ngIf="r.g_mun === 0 && r.g_tipo === 0 && r.g_temp === 0" class="badge-detail">Detalle</span>
-                  </td>
+                  <td class="font-bold text-emerald">${{ r.ingresos_totales | number }}</td>
                 </tr>
               </tbody>
             </table>
           </div>
         </div>
 
-        <!-- SUBTAB 4: TABLA TOP DENSE_RANK -->
-        <div *ngIf="analiticaSubTab() === 'rank'" class="card table-card fade-in">
-          <div class="table-header-custom">
+        <!-- SUBVISTA 4: RANKING DE ALOJAMIENTOS (RANK) -->
+        <div *ngIf="analiticaSubTab() === 'rank'" class="card fade-in">
+          <div class="card-header-flex">
             <div>
-              <h3>Top 3 Alojamientos por Municipio con DENSE_RANK()</h3>
-              <p>Particionado por <code>PARTITION BY municipio ORDER BY ingresos DESC</code>.</p>
+              <h3 class="card-title">Ranking de Alojamientos por Municipio</h3>
+              <p class="card-subtitle">Establecimientos líderes en facturación por cada municipio</p>
             </div>
           </div>
-          <div class="table-responsive">
-            <table class="luxury-table">
+          <div class="table-wrap">
+            <table class="data-table">
               <thead>
                 <tr>
+                  <th>Posición</th>
                   <th>Municipio</th>
-                  <th>Puesto</th>
                   <th>Alojamiento</th>
-                  <th>Ingresos Totales Acumulados</th>
+                  <th>Ingresos Facturados</th>
                 </tr>
               </thead>
               <tbody>
                 <tr *ngFor="let t of datosRank()">
-                  <td class="font-semibold">{{ t.municipio }}</td>
                   <td>
-                    <span class="rank-pill" [class.rank-1]="t.posicion_ranking === 1" [class.rank-2]="t.posicion_ranking === 2" [class.rank-3]="t.posicion_ranking === 3">
+                    <span class="badge" [ngClass]="t.posicion_ranking === 1 ? 'badge-amber' : 'badge-neutral'">
                       #{{ t.posicion_ranking }}
                     </span>
                   </td>
-                  <td class="font-medium text-dark">{{ t.alojamiento }}</td>
-                  <td class="font-bold text-emerald">${{ t.ingresos_alojamiento | number }} COP</td>
+                  <td class="font-semibold">{{ t.municipio }}</td>
+                  <td>{{ t.alojamiento }}</td>
+                  <td class="font-bold text-emerald">${{ t.ingresos_alojamiento | number }}</td>
                 </tr>
               </tbody>
             </table>
           </div>
         </div>
 
-        <!-- SUBTAB 5: TABLA RANGO BIND VARIABLES -->
-        <div *ngIf="analiticaSubTab() === 'bind'" class="card table-card fade-in">
-          <div class="table-header-custom">
+        <!-- SUBVISTA 5: RECAUDACIÓN POR FECHAS (BIND) -->
+        <div *ngIf="analiticaSubTab() === 'bind'" class="card fade-in">
+          <div class="card-header-flex">
             <div>
-              <h3>5. Consulta Paramétrica por Rango de Fechas con Variables de Enlace (Bind Variables)</h3>
-              <p>Filtro SQL optimizado con <code>:p_fecha_ini</code> y <code>:p_fecha_fin</code> evitando hard parsing y optimizando el cursor compartido.</p>
+              <h3 class="card-title">Recaudación por Rango de Fechas</h3>
+              <p class="card-subtitle">Consulta de ingresos, reservas y ticket promedio en un período específico</p>
             </div>
-            <div class="table-actions-inline">
-              <div class="date-input-group">
-                <label>Desde:</label>
-                <input type="date" [(ngModel)]="filtroBindInicio" class="input-date-compact">
+            <div class="inline-filters">
+              <div class="filter-item">
+                <label>Desde</label>
+                <input type="date" [(ngModel)]="filtroBindInicio" class="form-control form-control-sm" />
               </div>
-              <div class="date-input-group">
-                <label>Hasta:</label>
-                <input type="date" [(ngModel)]="filtroBindFin" class="input-date-compact">
+              <div class="filter-item">
+                <label>Hasta</label>
+                <input type="date" [(ngModel)]="filtroBindFin" class="form-control form-control-sm" />
               </div>
-              <button class="btn-refresh" (click)="filtrarBind()" [disabled]="cargando()">
-                <span>🔍 Aplicar Filtro BIND</span>
+              <button class="btn-primary btn-sm" (click)="filtrarBind()" [disabled]="cargando()">
+                Consultar
               </button>
             </div>
           </div>
-          <div class="table-responsive">
-            <table class="luxury-table">
+
+          <div class="chart-box chart-box-sm mb-4">
+            <canvas id="chartBind"></canvas>
+          </div>
+
+          <div class="table-wrap">
+            <table class="data-table">
               <thead>
                 <tr>
                   <th>Municipio</th>
-                  <th>Reservas en Periodo</th>
+                  <th>Reservas en el Período</th>
                   <th>Total Recaudado</th>
                   <th>Ticket Promedio</th>
                 </tr>
               </thead>
               <tbody>
                 <tr *ngFor="let b of datosBind()">
-                  <td class="font-semibold text-dark">{{ b.municipio }}</td>
-                  <td><span class="badge-count">{{ b.reservas_periodo | number }}</span></td>
-                  <td class="font-bold text-emerald">${{ b.total_recaudado | number }} COP</td>
-                  <td class="font-medium text-dark">${{ b.ticket_promedio | number }} COP</td>
-                </tr>
-                <tr *ngIf="datosBind().length === 0">
-                  <td colspan="4" class="text-center text-muted py-4">No se encontraron reservas confirmadas en el rango seleccionado.</td>
+                  <td class="font-semibold">{{ b.municipio }}</td>
+                  <td>{{ b.reservas_periodo | number }}</td>
+                  <td class="font-bold text-emerald">${{ b.total_recaudado | number }}</td>
+                  <td>${{ b.ticket_promedio | number }}</td>
                 </tr>
               </tbody>
             </table>
           </div>
         </div>
 
-        <!-- SUBTAB 6: TABLA VISTA MATERIALIZADA -->
-        <div *ngIf="analiticaSubTab() === 'mv'" class="card table-card fade-in">
-          <div class="table-header-custom">
+        <!-- SUBVISTA 6: CONSOLIDADO MENSUAL (MV) -->
+        <div *ngIf="analiticaSubTab() === 'mv'" class="card fade-in">
+          <div class="card-header-flex">
             <div>
-              <h3>6. Vista Materializada: <code>MV_OCUPACION_MENSUAL</code></h3>
-              <p>Estrategia: <strong>REFRESH COMPLETE ON DEMAND</strong>. Agregado analítico precalculado de alto rendimiento para aislar reportes de la carga transaccional.</p>
+              <h3 class="card-title">Consolidado Mensual de Ocupación e Ingresos</h3>
+              <p class="card-subtitle">Resumen rápido por municipio y período</p>
             </div>
-            <div class="table-actions-inline">
-              <label class="font-medium text-dark text-sm">Periodo Año-Mes:</label>
-              <select [(ngModel)]="filtroMVAnioMes" (change)="filtrarMV()" class="input-select-compact">
-                <option value="2025-01">Enero 2025</option>
-                <option value="2025-02">Febrero 2025</option>
-                <option value="2025-03">Marzo 2025</option>
-                <option value="2025-04">Abril 2025</option>
-                <option value="2025-05">Mayo 2025</option>
-                <option value="2025-06">Junio 2025</option>
-                <option value="2025-07">Julio 2025</option>
-                <option value="2025-08">Agosto 2025</option>
-                <option value="2025-09">Septiembre 2025</option>
-                <option value="2025-10">Octubre 2025</option>
-                <option value="2025-11">Noviembre 2025</option>
-                <option value="2025-12">Diciembre 2025</option>
-              </select>
+            <div class="inline-filters">
+              <div class="filter-item">
+                <label>Período</label>
+                <select [(ngModel)]="filtroMVAnioMes" class="form-control form-control-sm">
+                  <option value="">Todos los meses</option>
+                  <option value="2025-01">2025-01 (Enero)</option>
+                  <option value="2025-04">2025-04 (Abril)</option>
+                  <option value="2025-07">2025-07 (Julio)</option>
+                  <option value="2025-10">2025-10 (Octubre)</option>
+                  <option value="2025-12">2025-12 (Diciembre)</option>
+                </select>
+              </div>
+              <button class="btn-primary btn-sm" (click)="filtrarMV()" [disabled]="cargando()">
+                Filtrar
+              </button>
             </div>
           </div>
-          <div class="table-responsive">
-            <table class="luxury-table">
+
+          <div class="table-wrap">
+            <table class="data-table">
               <thead>
                 <tr>
                   <th>Municipio</th>
-                  <th>Tipo Alojamiento</th>
-                  <th>Año-Mes</th>
-                  <th>Total Reservas</th>
+                  <th>Categoría</th>
+                  <th>Período</th>
+                  <th>Reservas</th>
                   <th>Habitaciones Ocupadas</th>
                   <th>Facturación Acumulada</th>
                 </tr>
               </thead>
               <tbody>
                 <tr *ngFor="let m of datosMV()">
-                  <td class="font-semibold text-dark">{{ m.municipio }}</td>
+                  <td class="font-semibold">{{ m.municipio }}</td>
                   <td>{{ m.tipo_alojamiento }}</td>
-                  <td><span class="badge-neutral">{{ m.anio_mes }}</span></td>
-                  <td><span class="badge-count">{{ m.total_reservas | number }}</span></td>
+                  <td><span class="badge badge-neutral">{{ m.anio_mes }}</span></td>
+                  <td>{{ m.total_reservas | number }}</td>
                   <td>{{ m.total_habitaciones_ocupadas | number }}</td>
-                  <td class="font-bold text-emerald">${{ m.facturacion_acumulada | number }} COP</td>
-                </tr>
-                <tr *ngIf="datosMV().length === 0">
-                  <td colspan="6" class="text-center text-muted py-4">No hay datos agregados en la vista materializada para el periodo seleccionado.</td>
+                  <td class="font-bold text-emerald">${{ m.facturacion_acumulada | number }}</td>
                 </tr>
               </tbody>
             </table>
           </div>
         </div>
 
-        <!-- SUBTAB 7: TABLA DESPIVOTADO UNPIVOT -->
-        <div *ngIf="analiticaSubTab() === 'unpivot'" class="card table-card fade-in">
-          <div class="table-header-custom">
+        <!-- SUBVISTA 7: HOSPEDAJE VS SERVICIOS (UNPIVOT) -->
+        <div *ngIf="analiticaSubTab() === 'unpivot'" class="card fade-in">
+          <div class="card-header-flex">
             <div>
-              <h3>7. Despivotado de Métricas con Cláusula <code>UNPIVOT</code></h3>
-              <p>Normalización tabular con <code>UNPIVOT (monto FOR concepto_gasto IN (hospedaje, servicios))</code> para transformación analítica.</p>
+              <h3 class="card-title">Comparativa de Ingresos: Hospedaje vs Servicios</h3>
+              <p class="card-subtitle">Desglose de rubros facturados por reserva y período</p>
             </div>
-            <div class="table-actions-inline">
-              <label class="font-medium text-dark text-sm">Mes a analizar:</label>
-              <select [(ngModel)]="filtroUnpivotMes" (change)="filtrarUnpivot()" class="input-select-compact">
-                <option value="2025-01">2025-01 (Enero)</option>
-                <option value="2025-02">2025-02 (Febrero)</option>
-                <option value="2025-03">2025-03 (Marzo)</option>
-                <option value="2025-04">2025-04 (Abril)</option>
-                <option value="2025-05">2025-05 (Mayo)</option>
-                <option value="2025-06">2025-06 (Junio)</option>
-                <option value="2025-07">2025-07 (Julio)</option>
-                <option value="2025-08">2025-08 (Agosto)</option>
-                <option value="2025-09">2025-09 (Septiembre)</option>
-                <option value="2025-10">2025-10 (Octubre)</option>
-                <option value="2025-11">2025-11 (Noviembre)</option>
-                <option value="2025-12">2025-12 (Diciembre)</option>
-              </select>
+            <div class="inline-filters">
+              <div class="filter-item">
+                <label>Mes</label>
+                <select [(ngModel)]="filtroUnpivotMes" class="form-control form-control-sm">
+                  <option value="2025-01">2025-01 (Enero)</option>
+                  <option value="2025-06">2025-06 (Junio)</option>
+                  <option value="2025-07">2025-07 (Julio)</option>
+                  <option value="2025-12">2025-12 (Diciembre)</option>
+                </select>
+              </div>
+              <button class="btn-primary btn-sm" (click)="filtrarUnpivot()" [disabled]="cargando()">
+                Actualizar
+              </button>
             </div>
           </div>
-          <div class="table-responsive">
-            <table class="luxury-table">
+
+          <div class="table-wrap">
+            <table class="data-table">
               <thead>
                 <tr>
-                  <th>ID Reserva</th>
-                  <th>Mes</th>
-                  <th>Concepto de Gasto (UNPIVOT)</th>
-                  <th>Monto</th>
+                  <th>Reserva</th>
+                  <th>Período</th>
+                  <th>Concepto</th>
+                  <th>Monto (COP)</th>
                 </tr>
               </thead>
               <tbody>
                 <tr *ngFor="let u of datosUnpivot()">
-                  <td class="font-semibold text-dark">#{{ u.id_reserva }}</td>
-                  <td><span class="badge-neutral">{{ u.mes }}</span></td>
+                  <td class="font-semibold font-mono">#{{ u.id_reserva }}</td>
+                  <td>{{ u.mes }}</td>
                   <td>
-                    <span class="rubro-badge" [class.rubro-hosp]="u.concepto_gasto.includes('HOSPEDAJE')" [class.rubro-serv]="u.concepto_gasto.includes('SERVICIO') || u.concepto_gasto.includes('ACTIVIDAD')">
+                    <span class="badge"
+                      [class.badge-success]="u.concepto_gasto.includes('HOSPEDAJE')"
+                      [class.badge-info]="u.concepto_gasto.includes('SERVICIOS')"
+                      [class.badge-amber]="!u.concepto_gasto.includes('HOSPEDAJE') && !u.concepto_gasto.includes('SERVICIOS')">
                       {{ u.concepto_gasto }}
                     </span>
                   </td>
-                  <td class="font-bold text-emerald">${{ u.monto | number }} COP</td>
-                </tr>
-                <tr *ngIf="datosUnpivot().length === 0">
-                  <td colspan="4" class="text-center text-muted py-4">No hay datos despivotados para el mes seleccionado.</td>
+                  <td class="font-bold">${{ u.monto | number }}</td>
                 </tr>
               </tbody>
             </table>
           </div>
         </div>
 
-        <!-- SUBTAB 8: TABLA TOP CLIENTES CLV -->
-        <div *ngIf="analiticaSubTab() === 'clv'" class="card table-card fade-in">
-          <div class="table-header-custom">
+        <!-- SUBVISTA 8: CLIENTES FRECUENTES (CLV) -->
+        <div *ngIf="analiticaSubTab() === 'clv'" class="card fade-in">
+          <div class="card-header-flex">
             <div>
-              <h3>8. Top 10 Clientes por Customer Lifetime Value (CLV)</h3>
-              <p>Top histórico de clientes ordenado por facturación con <code>FETCH FIRST 10 ROWS ONLY</code> y peso relativo sobre el recaudo total del Quindío.</p>
+              <h3 class="card-title">Top 10 Clientes con Mayor Facturación</h3>
+              <p class="card-subtitle">Huéspedes frecuentes ordenados por inversión acumulada</p>
             </div>
-            <div class="table-actions-inline">
-              <button class="btn-refresh" (click)="cargarTopClientesCLV()" [disabled]="cargando()">
-                <span>🔄 Recalcular Top 10 CLV</span>
+            <button class="btn-secondary btn-sm" (click)="cargarTopClientesCLV()" [disabled]="cargando()">
+              Actualizar
+            </button>
+          </div>
+
+          <div class="chart-box chart-box-sm mb-4">
+            <canvas id="chartClv"></canvas>
+          </div>
+
+          <div class="table-wrap">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th>Cliente</th>
+                  <th>Estadías</th>
+                  <th>Servicios Contratados</th>
+                  <th>Ticket Promedio</th>
+                  <th>Inversión Total</th>
+                  <th>Participación</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let c of datosCLV(); let idx = index">
+                  <td>
+                    <span class="badge" [ngClass]="idx < 3 ? 'badge-amber' : 'badge-neutral'">
+                      #{{ idx + 1 }}
+                    </span>
+                  </td>
+                  <td class="font-semibold">{{ c.nombre_completo }}</td>
+                  <td>{{ c.total_estadias | number }}</td>
+                  <td>{{ c.total_servicios_contratados | number }}</td>
+                  <td>${{ c.ticket_promedio | number }}</td>
+                  <td class="font-bold text-emerald">${{ c.gasto_historico_total | number }}</td>
+                  <td><span class="badge badge-info">{{ c.pct_facturacion_global }}%</span></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- =================================================================== -->
+      <!-- MÓDULO 2: DIRECTORIO DE ALOJAMIENTOS                                -->
+      <!-- =================================================================== -->
+      <section *ngIf="tabActivo() === 'directorio'" class="fade-in">
+        <div class="card filter-card mb-4">
+          <div class="filter-row">
+            <div class="form-group flex-1">
+              <label>Buscar alojamiento o experiencia</label>
+              <input
+                type="text"
+                placeholder="Ej: Hacienda, Glamping, Salento, Filandia..."
+                [(ngModel)]="filtroDirectorioQuery"
+                class="form-control"
+              />
+            </div>
+
+            <div class="form-group w-64">
+              <label>Municipio</label>
+              <select [(ngModel)]="filtroDirectorioMunicipio" class="form-control">
+                <option value="TODOS">Todos los municipios</option>
+                <option *ngFor="let m of municipios()" [value]="m.nombre">{{ m.nombre }}</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <div class="directory-grid">
+          <div *ngFor="let a of directorioFiltrado()" class="property-card">
+            <div class="property-img-wrap">
+              <img [src]="a.imagen" [alt]="a.nombre" loading="lazy" />
+              <span class="property-town-pill">📍 {{ a.municipio }}</span>
+              <span *ngIf="a.destacado" class="property-featured-pill">★ Destacado</span>
+            </div>
+
+            <div class="property-body">
+              <div class="property-meta-top">
+                <span class="property-category">{{ a.tipo }}</span>
+                <span class="property-rating">★ {{ a.rating }} <small>({{ a.resenas }})</small></span>
+              </div>
+
+              <h3 class="property-name">{{ a.nombre }}</h3>
+
+              <div class="property-tags">
+                <span *ngFor="let tag of a.etiquetas" class="tag-chip">{{ tag }}</span>
+              </div>
+
+              <div class="property-info-row">
+                <span>Hasta <strong>{{ a.capacidadMax }} huéspedes</strong></span>
+                <span><strong>{{ a.habitacionesCount }}</strong> habitaciones</span>
+              </div>
+
+              <div class="property-footer">
+                <div class="property-price">
+                  <span class="price-caption">Desde</span>
+                  <strong class="price-amount">${{ a.precioNocheMin | number }}</strong>
+                  <span class="price-unit">COP / noche</span>
+                </div>
+                <button class="btn-primary btn-sm" (click)="irACotizarDesdeAlojamiento(a.id)">
+                  Cotizar estadía
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- =================================================================== -->
+      <!-- MÓDULO 3: COTIZADOR DE ESTADÍAS                                     -->
+      <!-- =================================================================== -->
+      <section *ngIf="tabActivo() === 'cotizador'" class="fade-in">
+        <div class="split-layout">
+          <!-- Formulario de Cotización -->
+          <div class="card">
+            <div class="card-header-flex">
+              <div>
+                <h3 class="card-title">Configurar Estadía</h3>
+                <p class="card-subtitle">Selecciona la habitación y las fechas de llegada y salida</p>
+              </div>
+              <button class="btn-outline btn-sm" (click)="setDemoCruzado()">
+                Ejemplo Semana Santa
+              </button>
+            </div>
+
+            <div class="form-stack">
+              <div class="form-group">
+                <label>Habitación y Alojamiento</label>
+                <select [(ngModel)]="cotIdHabitacion" class="form-control">
+                  <option *ngFor="let h of habitaciones()" [ngValue]="h.id_habitacion">
+                    {{ h.numero_nombre }} · {{ h.nombre_alojamiento }} ({{ h.nombre_municipio }}) — Cap: {{ h.capacidad }} pers.
+                  </option>
+                </select>
+              </div>
+
+              <div *ngIf="getHabitacionSeleccionada() as selHab" class="info-panel">
+                <div class="info-panel-top">
+                  <strong>{{ selHab.nombre_alojamiento }}</strong>
+                  <span class="badge badge-neutral">📍 {{ selHab.nombre_municipio }}</span>
+                </div>
+                <div class="info-panel-specs">
+                  <span>Capacidad: <strong>{{ selHab.capacidad }} personas</strong></span>
+                  <span>Acomodación: <strong>{{ selHab.tipo_cama }}</strong></span>
+                </div>
+                <div class="rate-compare-row">
+                  <div class="rate-box">
+                    <span class="rate-box-label">Temporada Regular</span>
+                    <strong class="rate-box-val">${{ selHab.tarifa_baja | number }} / noche</strong>
+                  </div>
+                  <div class="rate-box rate-box-high">
+                    <span class="rate-box-label">Temporada Alta (+40%)</span>
+                    <strong class="rate-box-val">${{ selHab.tarifa_alta | number }} / noche</strong>
+                  </div>
+                </div>
+              </div>
+
+              <div class="form-row-2">
+                <div class="form-group">
+                  <label>Fecha de Llegada (Check-In)</label>
+                  <input type="date" [(ngModel)]="cotFechaIn" class="form-control" />
+                </div>
+                <div class="form-group">
+                  <label>Fecha de Salida (Check-Out)</label>
+                  <input type="date" [(ngModel)]="cotFechaOut" class="form-control" />
+                </div>
+              </div>
+
+              <button class="btn-primary btn-block" (click)="ejecutarCotizacion()" [disabled]="cargando()">
+                {{ cargando() ? 'Calculando cotización...' : 'Calcular Valor de la Estadía' }}
               </button>
             </div>
           </div>
-          <div class="table-responsive">
-            <table class="luxury-table">
-              <thead>
-                <tr>
-                  <th>Posición</th>
-                  <th>Cliente</th>
-                  <th>ID Cliente</th>
-                  <th>Estadías</th>
-                  <th>Servicios Contratados</th>
-                  <th>Gasto Total (CLV)</th>
-                  <th>Ticket Promedio</th>
-                  <th>% Aporte Global</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr *ngFor="let c of datosCLV(); let i = index">
-                  <td>
-                    <span class="rank-pill" [class.rank-1]="i === 0" [class.rank-2]="i === 1" [class.rank-3]="i === 2">
-                      #{{ i + 1 }}
-                    </span>
-                  </td>
-                  <td class="font-bold text-dark">{{ c.nombre_completo }}</td>
-                  <td class="text-muted text-sm">#{{ c.id_cliente }}</td>
-                  <td><span class="badge-count">{{ c.total_estadias }}</span></td>
-                  <td><span class="badge-neutral">{{ c.total_servicios_contratados }}</span></td>
-                  <td class="font-bold text-emerald">${{ c.gasto_historico_total | number }} COP</td>
-                  <td class="font-medium text-dark">${{ c.ticket_promedio | number }} COP</td>
-                  <td>
-                    <div class="progress-bar-container">
-                      <div class="progress-bar-fill purple-fill" [style.width.%]="c.pct_facturacion_global * 10"></div>
-                      <span class="progress-label font-bold text-purple">{{ c.pct_facturacion_global }}%</span>
+
+          <!-- Resultado de la Cotización -->
+          <div>
+            <div *ngIf="cotizacionResultado() as cot" class="card fade-in">
+              <div class="card-header-flex">
+                <div>
+                  <span class="badge badge-success mb-1">Cotización Estimada</span>
+                  <h3 class="card-title">{{ cot.nombre_habitacion }}</h3>
+                  <p class="card-subtitle">📍 {{ cot.nombre_alojamiento }} · {{ cot.fecha_in }} al {{ cot.fecha_out }}</p>
+                </div>
+              </div>
+
+              <div class="kpi-grid-3 mb-4">
+                <div class="mini-stat">
+                  <span class="mini-stat-label">Duración</span>
+                  <strong class="mini-stat-val">{{ cot.total_noches }} noches</strong>
+                </div>
+                <div class="mini-stat">
+                  <span class="mini-stat-label">Tarifa Regular</span>
+                  <strong class="mini-stat-val">${{ cot.tarifa_baja | number }}</strong>
+                </div>
+                <div class="mini-stat">
+                  <span class="mini-stat-label">Tarifa Alta (+40%)</span>
+                  <strong class="mini-stat-val text-amber">${{ cot.tarifa_alta | number }}</strong>
+                </div>
+              </div>
+
+              <div *ngIf="desgloseNoches().length > 0" class="nights-section">
+                <div class="nights-header">
+                  <h4>Desglose por Noche</h4>
+                  <div class="nights-legend">
+                    <span class="legend-dot regular">Regular</span>
+                    <span class="legend-dot high">Temporada Alta</span>
+                  </div>
+                </div>
+
+                <div class="nights-grid">
+                  <div *ngFor="let n of desgloseNoches(); let i = index" class="night-item" [class.night-high]="n.esAlta">
+                    <div class="night-top">
+                      <span class="night-num">Noche {{ i + 1 }}</span>
+                      <span class="night-date">{{ n.diaSemana }} {{ n.fecha | slice:5 }}</span>
                     </div>
-                  </td>
-                </tr>
-                <tr *ngIf="datosCLV().length === 0">
-                  <td colspan="8" class="text-center text-muted py-4">No se encontraron clientes para el cálculo de CLV.</td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
-      </section>
-
-      <!-- ======================================================== -->
-      <!-- VISTA: ADMINISTRACIÓN DE TABLESPACE HISTÓRICO (DBA)       -->
-      <!-- ======================================================== -->
-      <section *ngIf="tabActivo() === 'tablespace'" class="fade-in">
-        <!-- Barra de herramientas del Tablespace -->
-        <div class="section-toolbar">
-          <div class="section-title-wrap">
-            <h2>Almacenamiento Físico & DBA: <code>TBS_HISTORICO_RESERVAS</code></h2>
-            <p class="section-sub">Aislamiento físico de I/O, arquitectura de extensiones LOCAL ASSM y estrategia de respaldos RMAN para datos de alto volumen.</p>
-          </div>
-          <button class="btn-refresh" (click)="refrescarTablespaceConFeedback()" [disabled]="cargando()">
-            <svg viewBox="0 0 20 20" fill="currentColor" class="w-4 h-4">
-              <path fill-rule="evenodd" d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1zm.008 9.057a1 1 0 011.276.61A5.002 5.002 0 0014.001 13H11a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0v-2.101a7.002 7.002 0 01-11.601-2.566 1 1 0 01.61-1.276z" clip-rule="evenodd" />
-            </svg>
-            <span>{{ cargando() ? 'Sincronizando...' : 'Refrescar Métricas DBA' }}</span>
-          </button>
-        </div>
-
-        <!-- KPIs DBA de Almacenamiento -->
-        <div class="kpi-grid">
-          <div class="kpi-card">
-            <div class="kpi-header">
-              <span class="kpi-title">Estado del Tablespace</span>
-              <span class="kpi-tag success">ONLINE · R/W</span>
-            </div>
-            <div class="kpi-number">{{ tablespaceInfo()?.status || 'ONLINE' }}</div>
-            <div class="kpi-footer text-emerald">
-              <span>● Gestión LOCAL · ASSM (Segment Auto)</span>
-            </div>
-          </div>
-
-          <div class="kpi-card">
-            <div class="kpi-header">
-              <span class="kpi-title">Espacio en Uso (DBA)</span>
-              <span class="kpi-tag info">{{ tablespaceInfo()?.pct_used_of_initial }}% Utilizado</span>
-            </div>
-            <div class="kpi-number">{{ tablespaceInfo()?.used_mb }} MB <span class="text-xs text-muted">/ {{ tablespaceInfo()?.initial_size_mb || 100 }} MB</span></div>
-            <div class="kpi-footer text-muted">
-              <span>● Autoextend: {{ tablespaceInfo()?.autoextend_next_mb || 50 }} MB (Máx: {{ tablespaceInfo()?.max_size_mb || 2048 }} MB)</span>
-            </div>
-          </div>
-
-          <div class="kpi-card">
-            <div class="kpi-header">
-              <span class="kpi-title">Filas Transaccionales Aisladas</span>
-              <span class="kpi-tag purple">100% Fuera de USERS</span>
-            </div>
-            <div class="kpi-number">{{ tablespaceInfo()?.total_filas_historicas | number }}</div>
-            <div class="kpi-footer text-purple">
-              <span>● 5 tablas críticas reubicadas físicamente</span>
-            </div>
-          </div>
-
-          <div class="kpi-card">
-            <div class="kpi-header">
-              <span class="kpi-title">Índices Reconstruidos</span>
-              <span class="kpi-tag emerald">100% VALID</span>
-            </div>
-            <div class="kpi-number">{{ tablespaceInfo()?.indices?.length || 6 }} Índices</div>
-            <div class="kpi-footer text-emerald">
-              <span>● 0 índices en estado UNUSABLE</span>
-            </div>
-          </div>
-        </div>
-
-        <!-- Fila 1: Especificación Técnica del Datafile y Storage -->
-        <div class="card table-card mb-4 fade-in">
-          <div class="table-header-custom">
-            <div>
-              <h3>Especificación del Datafile y Parámetros Físicos en Oracle XE</h3>
-              <p>Parámetros configurados mediante <code>CREATE TABLESPACE TBS_HISTORICO_RESERVAS DATAFILE ...</code></p>
-            </div>
-            <div class="storage-badge-group">
-              <span class="badge-neutral font-mono">Bloque: {{ tablespaceInfo()?.block_size_bytes }} Bytes</span>
-              <span class="badge-neutral font-mono">Cuota: {{ tablespaceInfo()?.quota_user }}</span>
-            </div>
-          </div>
-          <div class="storage-specs-grid">
-            <div class="spec-tile">
-              <span class="spec-k">Archivo Físico (Datafile):</span>
-              <span class="spec-v font-mono text-dark">{{ tablespaceInfo()?.datafile_name }}</span>
-            </div>
-            <div class="spec-tile">
-              <span class="spec-k">Ruta en Disco (XEPDB1):</span>
-              <span class="spec-v font-mono text-xs text-muted truncate" [title]="tablespaceInfo()?.datafile_path">{{ tablespaceInfo()?.datafile_path }}</span>
-            </div>
-            <div class="spec-tile">
-              <span class="spec-k">Tamaño Inicial:</span>
-              <span class="spec-v font-bold">{{ tablespaceInfo()?.initial_size_mb }} MB</span>
-            </div>
-            <div class="spec-tile">
-              <span class="spec-k">Incremento Automático:</span>
-              <span class="spec-v font-bold text-emerald">+{{ tablespaceInfo()?.autoextend_next_mb }} MB por extensión</span>
-            </div>
-            <div class="spec-tile">
-              <span class="spec-k">Capacidad Máxima (MAXSIZE):</span>
-              <span class="spec-v font-bold text-purple">{{ tablespaceInfo()?.max_size_mb }} MB (2 GB)</span>
-            </div>
-            <div class="spec-tile">
-              <span class="spec-k">Gestión de Extensiones:</span>
-              <span class="spec-v font-semibold">LOCAL (Bitmaps en encabezado)</span>
-            </div>
-          </div>
-
-          <!-- Barra de utilización visual -->
-          <div class="storage-meter-wrap">
-            <div class="meter-labels">
-              <span><strong>Consumo Actual:</strong> {{ tablespaceInfo()?.used_mb }} MB ({{ tablespaceInfo()?.pct_used_of_initial }}% de los 100 MB iniciales)</span>
-              <span><strong>Límite Autoextend:</strong> 2.048 MB ({{ tablespaceInfo()?.pct_used_of_max }}% del techo máximo)</span>
-            </div>
-            <div class="progress-bar-storage">
-              <div class="storage-fill" [style.width.%]="tablespaceInfo()?.pct_used_of_initial"></div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Fila 2: Tablas Reubicadas Físicamente en el Tablespace -->
-        <div class="card table-card mb-4 fade-in">
-          <div class="table-header-custom">
-            <div>
-              <h3>Inventario de Tablas Reubicadas Físicamente (Sentencias <code>ALTER TABLE ... MOVE</code>)</h3>
-              <p>Segmentos aislados del tablespace por defecto <code>USERS</code> para prevenir contención de disco y fragmentación.</p>
-            </div>
-            <span class="badge-total">{{ tablespaceInfo()?.tablas?.length || 0 }} Tablas Transaccionales</span>
-          </div>
-          <div class="table-responsive">
-            <table class="luxury-table">
-              <thead>
-                <tr>
-                  <th>Nombre de Tabla</th>
-                  <th>Tablespace Físico</th>
-                  <th>Filas Persistidas</th>
-                  <th>Tamaño Segmento</th>
-                  <th>Bloques (8 KB)</th>
-                  <th>Extensiones</th>
-                  <th>Estado</th>
-                  <th>Naturaleza / Propósito en TurismoUQ</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr *ngFor="let t of tablespaceInfo()?.tablas">
-                  <td class="font-bold text-dark font-mono">{{ t.table_name }}</td>
-                  <td><span class="badge-neutral font-semibold text-purple">{{ t.tablespace_name }}</span></td>
-                  <td><span class="badge-count font-bold">{{ t.num_rows | number }}</span></td>
-                  <td class="font-semibold text-emerald">{{ t.size_mb }} MB</td>
-                  <td class="text-muted">{{ t.blocks | number }}</td>
-                  <td class="text-muted">{{ t.extents }}</td>
-                  <td><span class="status-pill active">{{ t.status }}</span></td>
-                  <td class="text-sm text-dark">{{ t.descripcion }}</td>
-                </tr>
-                <tr *ngIf="!tablespaceInfo() || tablespaceInfo()?.tablas?.length === 0">
-                  <td colspan="8" class="text-center text-muted py-4">Cargando inventario de tablas del tablespace...</td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
-
-        <!-- Fila 3: Índices Reconstruidos en TBS_HISTORICO_RESERVAS -->
-        <div class="card table-card mb-4 fade-in">
-          <div class="table-header-custom">
-            <div>
-              <h3>Índices B-Tree Alojados y Reconstruidos (<code>ALTER INDEX ... REBUILD</code>)</h3>
-              <p>Tras la migración física de tablas, los índices fueron reconstruidos para devolverlos a estado <strong>VALID</strong> y evitar errores <code>ORA-01502</code>.</p>
-            </div>
-            <span class="badge-subtotal">{{ tablespaceInfo()?.indices?.length || 0 }} Índices B-Tree</span>
-          </div>
-          <div class="table-responsive">
-            <table class="luxury-table">
-              <thead>
-                <tr>
-                  <th>Nombre del Índice</th>
-                  <th>Tabla Asociada</th>
-                  <th>Tablespace</th>
-                  <th>Tipo / Unicidad</th>
-                  <th>Tamaño Segmento</th>
-                  <th>Estado de Usabilidad</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr *ngFor="let idx of tablespaceInfo()?.indices">
-                  <td class="font-semibold text-dark font-mono">{{ idx.index_name }}</td>
-                  <td class="font-bold text-dark">{{ idx.table_name }}</td>
-                  <td><span class="badge-neutral">{{ idx.tablespace_name }}</span></td>
-                  <td><span class="badge-neutral text-xs">{{ idx.uniqueness }}</span></td>
-                  <td class="font-medium text-emerald">{{ idx.size_mb }} MB</td>
-                  <td>
-                    <span class="status-pill active" [class.danger]="idx.status === 'UNUSABLE'">
-                      {{ idx.status }}
-                    </span>
-                  </td>
-                </tr>
-                <tr *ngIf="!tablespaceInfo() || tablespaceInfo()?.indices?.length === 0">
-                  <td colspan="6" class="text-center text-muted py-4">Cargando índices del tablespace...</td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
-
-        <!-- Fila 4: Matriz de Justificación Técnica y Comparativa Frente a USERS -->
-        <div class="card table-card fade-in">
-          <div class="table-header-custom">
-            <div>
-              <h3>Matriz de Justificación Técnica de Arquitectura: <code>TBS_HISTORICO_RESERVAS</code> vs <code>USERS</code></h3>
-              <p>Defensa conceptual para la sustentación docente según las mejores prácticas de administración de almacenamiento Oracle 21c.</p>
-            </div>
-          </div>
-          <div class="table-responsive">
-            <table class="luxury-table">
-              <thead>
-                <tr>
-                  <th>Criterio DBA / Arquitectura</th>
-                  <th>Tablespace Catálogos (<code>USERS</code>)</th>
-                  <th>Tablespace Histórico (<code>TBS_HISTORICO_RESERVAS</code>)</th>
-                  <th>Beneficio Operativo en TurismoUQ</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr>
-                  <td class="font-semibold text-dark">Naturaleza de los Datos</td>
-                  <td>Maestros y dimensionales (12 municipios, 60 alojamientos, 400 habitaciones).</td>
-                  <td>Transaccionales masivos (25.000 reservas, 40.000 consumos, 25.000 pagos).</td>
-                  <td>Aísla tablas de alta mutabilidad evitando fragmentación en catálogos base.</td>
-                </tr>
-                <tr>
-                  <td class="font-semibold text-dark">Patrón de Entrada / Salida (I/O)</td>
-                  <td>95% Lecturas en memoria compartida (Buffer Cache).</td>
-                  <td>Escrituras concurrentes continuas (INSERT / UPDATE) y scans masivos.</td>
-                  <td>Elimina la contención de cabezales y bloques entre OLTP transaccional y consultas de catálogo.</td>
-                </tr>
-                <tr>
-                  <td class="font-semibold text-dark">Política de Respaldos (RMAN)</td>
-                  <td>Respaldos completos semanales (baja tasa de cambio).</td>
-                  <td>Respaldos incrementales diarios o multinivel según RPO y RTO.</td>
-                  <td>Permite <strong>TSPIR</strong> (recuperación puntual del histórico) sin apagar catálogos maestros.</td>
-                </tr>
-                <tr>
-                  <td class="font-semibold text-dark">Mantenimiento y Archivo</td>
-                  <td>Siempre READ/WRITE activo para altas comerciales.</td>
-                  <td>Permite conmutar a <code>READ ONLY</code> o activar compresión avanzada para años cerrados.</td>
-                  <td>RMAN omite tablespaces READ ONLY en copias incrementales, reduciendo ventanas de backup.</td>
-                </tr>
-                <tr>
-                  <td class="font-semibold text-dark">Gestión de Espacio (ASSM)</td>
-                  <td>Estándar compartida.</td>
-                  <td><code>AUTOEXTEND ON NEXT 50M MAXSIZE 2048M</code> con cuota ilimitada al esquema.</td>
-                  <td>Escalabilidad controlada con techo máximo para prevenir agotamiento del disco host.</td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
-      </section>
-
-      <!-- ======================================================== -->
-      <!-- VISTA 2: COTIZADOR MULTI-TEMPORADA (fn_valor_estadia)    -->
-      <!-- ======================================================== -->
-      <section *ngIf="tabActivo() === 'cotizador'" class="fade-in">
-        <div class="section-intro">
-          <div class="intro-texts">
-            <h2>Cotizador Inteligente con Discriminación Noche a Noche</h2>
-            <p>
-              Ejecuta la función almacenada <code>fn_valor_estadia(p_id_hab, p_fecha_in, p_fecha_out)</code>.
-              El motor PL/SQL cruza cada noche con la tabla <code>PERIODO_TEMPORADA</code> y aplica el recargo del +40%
-              únicamente a las noches que coincidan con Semana Santa, fin de año o recesos.
-            </p>
-          </div>
-          <div class="intro-actions">
-            <button class="btn-demo-badge" (click)="setDemoCruzado()">
-              <span class="bolt">⚡</span> Cargar Caso de Prueba (Cruzar Semana Santa 2024)
-            </button>
-          </div>
-        </div>
-
-        <div class="cotizador-split-grid">
-          <!-- Columna Izquierda: Formulario y Selección -->
-          <div class="card form-card-luxury">
-            <div class="card-section-title">
-              <span class="step-num">1</span>
-              <h3>Configuración de la Estadía</h3>
-            </div>
-
-            <div class="form-group-luxury">
-              <label>Habitación y Alojamiento:</label>
-              <select [(ngModel)]="cotIdHabitacion" class="input-luxury">
-                <option *ngFor="let h of habitaciones()" [ngValue]="h.id_habitacion">
-                  {{ h.numero_nombre }} · {{ h.nombre_alojamiento }} ({{ h.nombre_municipio }}) | Cap: {{ h.capacidad }} pers.
-                </option>
-              </select>
-            </div>
-
-            <!-- Ficha informativa de la habitación seleccionada -->
-            <div *ngIf="getHabitacionSeleccionada() as selHab" class="room-preview-box">
-              <div class="preview-header">
-                <strong>{{ selHab.nombre_alojamiento }}</strong>
-                <span class="badge-mun">📍 {{ selHab.nombre_municipio }}</span>
-              </div>
-              <div class="preview-specs">
-                <span>Capacidad: <strong>{{ selHab.capacidad }} personas</strong></span>
-                <span>Cama: <strong>{{ selHab.tipo_cama }}</strong></span>
-              </div>
-              <div class="preview-rates">
-                <div class="rate-tag low">
-                  <span class="r-label">Tarifa Temporada Regular:</span>
-                  <span class="r-val">${{ selHab.tarifa_baja | number }} COP/noche</span>
-                </div>
-                <div class="rate-tag high">
-                  <span class="r-label">Tarifa Temporada Alta (+40%):</span>
-                  <span class="r-val">${{ selHab.tarifa_alta | number }} COP/noche</span>
-                </div>
-              </div>
-            </div>
-
-            <div class="card-section-title mt-4">
-              <span class="step-num">2</span>
-              <h3>Fechas del Rango de Hospedaje</h3>
-            </div>
-
-            <div class="date-inputs-row">
-              <div class="form-group-luxury">
-                <label>Fecha Check-In (Llegada):</label>
-                <input type="date" [(ngModel)]="cotFechaIn" class="input-luxury" />
-              </div>
-              <div class="form-group-luxury">
-                <label>Fecha Check-Out (Salida):</label>
-                <input type="date" [(ngModel)]="cotFechaOut" class="input-luxury" />
-              </div>
-            </div>
-
-            <button class="btn-execute-main" (click)="ejecutarCotizacion()" [disabled]="cargando()">
-              <svg *ngIf="!cargando()" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5">
-                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-11a1 1 0 10-2 0v2H7a1 1 0 100 2h2v2a1 1 0 102 0v-2h2a1 1 0 100-2h-2V7z" clip-rule="evenodd" />
-              </svg>
-              <span>{{ cargando() ? 'Cotizando reserva...' : 'Cotizar valor de reserva' }}</span>
-            </button>
-          </div>
-
-          <!-- Columna Derecha: Desglose Visual Noche a Noche & Voucher -->
-          <div class="cotizador-right-col">
-            <!-- Caso cuando hay cotización -->
-            <div *ngIf="cotizacionResultado() as cot" class="card result-card-luxury fade-in">
-              <div class="voucher-top-bar">
-                <span class="oracle-calc-badge">
-                  <svg viewBox="0 0 20 20" fill="currentColor" class="w-4 h-4 text-emerald-600">
-                    <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
-                  </svg>
-                  Liquidado por fn_valor_estadia en Oracle XE
-                </span>
-                <span class="voucher-dates">{{ cot.fecha_in }} → {{ cot.fecha_out }}</span>
-              </div>
-
-              <div class="voucher-hotel-info">
-                <h3>{{ cot.nombre_habitacion }}</h3>
-                <p class="hotel-loc">📍 {{ cot.nombre_alojamiento }}</p>
-              </div>
-
-              <!-- BARRA VISUAL DE DESGLOSE DÍA POR DÍA -->
-              <div class="visual-night-breakdown" *ngIf="desgloseNoches().length > 0">
-                <div class="breakdown-header">
-                  <h4>Calendario de Noches & Detección de Temporada:</h4>
-                  <div class="legend-pills">
-                    <span class="legend-pill low">● Regular</span>
-                    <span class="legend-pill high">● Alta (+40%)</span>
-                  </div>
-                </div>
-
-                <div class="nights-strip">
-                  <div *ngFor="let n of desgloseNoches(); let i = index" class="night-cell" [class.is-high]="n.esAlta">
-                    <div class="night-badge">Noche {{ i + 1 }}</div>
-                    <div class="night-day">{{ n.diaSemana }}</div>
-                    <div class="night-date">{{ n.fecha | slice:5 }}</div>
-                    <div class="night-tariff">${{ n.tarifaNoche | number }}</div>
-                    <div class="night-reason">{{ n.motivoTemporada }}</div>
+                    <div class="night-price">${{ n.tarifaNoche | number }}</div>
+                    <div class="night-tag">{{ n.motivoTemporada }}</div>
                   </div>
                 </div>
               </div>
 
-              <!-- Resumen Financiero en Cuadros -->
-              <div class="summary-metric-boxes">
-                <div class="box-spec">
-                  <span class="label">Total Noches</span>
-                  <span class="val">{{ cot.total_noches }}</span>
+              <div class="total-banner mt-4">
+                <div>
+                  <span class="total-banner-title">Total Estimado de la Estadía</span>
+                  <span class="total-banner-sub">Calculado según calendario de temporadas</span>
                 </div>
-                <div class="box-spec">
-                  <span class="label">Tarifa Baja / noche</span>
-                  <span class="val text-dark">${{ cot.tarifa_baja | number }}</span>
-                </div>
-                <div class="box-spec">
-                  <span class="label">Tarifa Alta (+40%)</span>
-                  <span class="val text-amber">${{ cot.tarifa_alta | number }}</span>
-                </div>
-              </div>
-
-              <!-- Total General Liquidado -->
-              <div class="voucher-total-box">
-                <div class="total-label-wrap">
-                  <span class="main-label">Valor Total Liquidado de la Estadía:</span>
-                  <span class="formula-label">∑(noches_baja * tarifa_baja) + ∑(noches_alta * tarifa_alta)</span>
-                </div>
-                <div class="total-amount">${{ cot.total_calculado | number }} COP</div>
+                <div class="total-banner-amount">${{ cot.total_calculado | number }} COP</div>
               </div>
             </div>
 
-            <!-- Placeholder cuando aún no se ha cotizado -->
-            <div *ngIf="!cotizacionResultado()" class="card empty-state-card">
-              <div class="empty-icon">🏷️</div>
-              <h3>Listo para Cotizar</h3>
-              <p>Selecciona una habitación y un rango de fechas para invocar la función de cálculo en la base de datos.</p>
-              <button class="btn-demo-badge mt-3" (click)="setDemoCruzado()">Probar con Caso Semana Santa</button>
+            <div *ngIf="!cotizacionResultado()" class="card empty-card">
+              <div class="empty-card-icon">🗓️</div>
+              <h3>Cotizador de Tarifas por Noche</h3>
+              <p>Selecciona una habitación y las fechas de viaje para conocer el valor exacto por noche según la temporada.</p>
+              <button class="btn-outline btn-sm mt-2" (click)="setDemoCruzado()">Ver ejemplo en Semana Santa</button>
             </div>
           </div>
         </div>
       </section>
 
-      <!-- ======================================================== -->
-      <!-- VISTA 3: CONSOLA DE RESERVAS & BANCO DE PRUEBAS DOCENTE  -->
-      <!-- ======================================================== -->
+      <!-- =================================================================== -->
+      <!-- MÓDULO 4: GESTIÓN Y REGISTRO DE RESERVAS                            -->
+      <!-- =================================================================== -->
       <section *ngIf="tabActivo() === 'reservas'" class="fade-in">
-        <div class="section-intro">
-          <div class="intro-texts">
-            <h2>Gestión y Registro de Reservas</h2>
-            <p>
-              Registra nuevas reservas en el sistema y comprueba las reglas de integridad y negocio (capacidad de habitación, solapamiento de fechas y validación de checkout).
-            </p>
-          </div>
-        </div>
-
-        <!-- BANCO DE PRUEBAS CON 4 CASOS DE 1 CLIC -->
-        <div class="card test-bench-luxury">
-          <div class="bench-header">
-            <span class="bench-tag">BANCO DE PRUEBAS DOCENTE (1 CLIC)</span>
-            <h4>Selecciona un caso para disparar el procedimiento almacenado y comprobar las excepciones PL/SQL:</h4>
-          </div>
-
-          <div class="bench-cards-grid">
-            <!-- Caso 1: Exitoso -->
-            <div class="test-card test-success" (click)="probarCasoExitoso()">
-              <div class="test-badge-type success">🟢 Caso 1 · Transacción Exitosa</div>
-              <h5>Reserva Válida (Commit)</h5>
-              <p>Huéspedes dentro de capacidad y fechas disponibles (2027-08-10 al 15).</p>
-              <div class="test-expected">Esperado: Estado CONFIRMADA en tabla RESERVA.</div>
-            </div>
-
-            <!-- Caso 2: ORA-20001 -->
-            <div class="test-card test-danger" (click)="probarErrorFechas()">
-              <div class="test-badge-type danger">🔴 Caso 2 · Regla Fechas</div>
-              <h5>Disparo de ORA-20001</h5>
-              <p>Check-out (15 Ago) anterior a Check-in (20 Ago).</p>
-              <div class="test-expected">Esperado: RAISE_APPLICATION_ERROR(-20001)</div>
-            </div>
-
-            <!-- Caso 3: ORA-20002 -->
-            <div class="test-card test-danger" (click)="probarErrorCapacidad()">
-              <div class="test-badge-type danger">🔴 Caso 3 · Regla Sobrecupo</div>
-              <h5>Disparo de ORA-20002</h5>
-              <p>Intento de alojar 99 personas en una habitación estándar.</p>
-              <div class="test-expected">Esperado: RAISE_APPLICATION_ERROR(-20002)</div>
-            </div>
-
-            <!-- Caso 4: ORA-20003 -->
-            <div class="test-card test-danger" (click)="probarErrorSolapamiento()">
-              <div class="test-badge-type danger">🔴 Caso 4 · Solapamiento</div>
-              <h5>Disparo de ORA-20003</h5>
-              <p>Intento de reservar fechas (12 al 14 Ago) ya ocupadas por el Caso 1.</p>
-              <div class="test-expected">Esperado: Trigger de Integridad (-20003)</div>
-            </div>
-
-            <!-- Caso 5: ORA-20006 -->
-            <div class="test-card test-danger" (click)="probarErrorFechaPasada()">
-              <div class="test-badge-type danger">🔴 Caso 5 · Fecha Pasada</div>
-              <h5>Disparo de ORA-20006</h5>
-              <p>Intento de reservar en una fecha anterior a la fecha actual (Pasado).</p>
-              <div class="test-expected">Esperado: RAISE_APPLICATION_ERROR(-20006)</div>
+        <!-- Escenarios rápidos de validación -->
+        <div class="card mb-4">
+          <div class="card-header-flex">
+            <div>
+              <h3 class="card-title">Escenarios Rápidos de Prueba</h3>
+              <p class="card-subtitle">Simula con un clic una reserva válida o comprueba las reglas de validación de fechas, cupo y disponibilidad</p>
             </div>
           </div>
-        </div>
+          <div class="scenario-grid">
+            <button class="scenario-btn scenario-ok" (click)="probarCasoExitoso()">
+              <span class="scenario-status">✓ Reserva Válida</span>
+              <strong>Confirmar Estadía</strong>
+              <small>Fechas disponibles y cupo permitido</small>
+            </button>
 
-        <!-- Formulario y Detalle de Reserva -->
-        <div class="cotizador-split-grid mt-4">
-          <!-- Formulario Manual -->
-          <div class="card form-card-luxury">
-            <div class="card-section-title">
-              <span class="step-num">✎</span>
-              <h3>Parámetros de la Transacción</h3>
-            </div>
+            <button class="scenario-btn scenario-warn" (click)="probarErrorFechas()">
+              <span class="scenario-status">Fechas Inválidas</span>
+              <strong>Salida antes de Llegada</strong>
+              <small>Verifica control de orden de fechas</small>
+            </button>
 
-            <div class="form-group-luxury">
-              <label>Cliente Solicitante:</label>
-              <select [(ngModel)]="resIdCliente" class="input-luxury">
-                <option *ngFor="let c of clientes()" [ngValue]="c.id">
-                  {{ c.nombre }} (ID: {{ c.id }} · {{ c.descripcion || 'Cliente Verificado' }})
-                </option>
-              </select>
-            </div>
+            <button class="scenario-btn scenario-warn" (click)="probarErrorCapacidad()">
+              <span class="scenario-status">Exceso de Cupo</span>
+              <strong>Superar Capacidad</strong>
+              <small>Verifica límite máximo de huéspedes</small>
+            </button>
 
-            <div class="form-group-luxury">
-              <label>Habitación Asignada:</label>
-              <select [(ngModel)]="resIdHabitacion" class="input-luxury">
-                <option *ngFor="let h of habitaciones()" [ngValue]="h.id_habitacion">
-                  {{ h.numero_nombre }} · {{ h.nombre_alojamiento }} (Capacidad: {{ h.capacidad }} personas)
-                </option>
-              </select>
-            </div>
+            <button class="scenario-btn scenario-warn" (click)="probarErrorSolapamiento()">
+              <span class="scenario-status">Habitación Ocupada</span>
+              <strong>Cruce de Fechas</strong>
+              <small>Evita doble reserva en las mismas fechas</small>
+            </button>
 
-            <div class="date-inputs-row">
-              <div class="form-group-luxury">
-                <label>Check-In:</label>
-                <input type="date" [(ngModel)]="resFechaIn" class="input-luxury" />
-              </div>
-              <div class="form-group-luxury">
-                <label>Check-Out:</label>
-                <input type="date" [(ngModel)]="resFechaOut" class="input-luxury" />
-              </div>
-            </div>
-
-            <div class="form-group-luxury">
-              <label>Número de Huéspedes:</label>
-              <input type="number" [(ngModel)]="resNumHuespedes" min="1" max="100" class="input-luxury" />
-            </div>
-
-            <button class="btn-execute-main" (click)="ejecutarCrearReserva()" [disabled]="cargando()">
-              <svg *ngIf="!cargando()" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5">
-                <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
-              </svg>
-              <span>{{ cargando() ? 'Registrando reserva...' : 'Registrar reserva' }}</span>
+            <button class="scenario-btn scenario-warn" (click)="probarErrorFechaPasada()">
+              <span class="scenario-status">Fecha en el Pasado</span>
+              <strong>Reserva Retroactiva</strong>
+              <small>Impide registrar check-in en fechas pasadas</small>
             </button>
           </div>
+        </div>
 
-          <!-- Voucher de Confirmación o Historial -->
-          <div class="cotizador-right-col">
-            <div *ngIf="reservaResultado() as res" class="card result-card-luxury fade-in">
-              <div class="voucher-top-bar">
-                <span class="status-chip-confirmed">● ESTADO: {{ res.estado }}</span>
-                <span class="voucher-dates">ID Transacción: #{{ res.id_reserva }}</span>
+        <div class="split-layout">
+          <!-- Formulario de Reserva -->
+          <div class="card">
+            <h3 class="card-title mb-3">Nueva Reserva</h3>
+
+            <div class="form-stack">
+              <div class="form-group">
+                <label>Huésped Titular</label>
+                <select [(ngModel)]="resIdCliente" class="form-control">
+                  <option *ngFor="let c of clientes()" [ngValue]="c.id">
+                    {{ c.nombre }} (ID #{{ c.id }})
+                  </option>
+                </select>
               </div>
 
-              <div class="voucher-ticket-body">
-                <div class="ticket-row">
-                  <span class="t-label">Titular de la Reserva:</span>
-                  <span class="t-val font-semibold">{{ res.nombre_cliente }}</span>
+              <div class="form-group">
+                <label>Habitación</label>
+                <select [(ngModel)]="resIdHabitacion" class="form-control">
+                  <option *ngFor="let h of habitaciones()" [ngValue]="h.id_habitacion">
+                    {{ h.numero_nombre }} · {{ h.nombre_alojamiento }} (Máx. {{ h.capacidad }} pers.)
+                  </option>
+                </select>
+              </div>
+
+              <div class="form-row-2">
+                <div class="form-group">
+                  <label>Fecha de Llegada</label>
+                  <input type="date" [(ngModel)]="resFechaIn" class="form-control" />
                 </div>
-                <div class="ticket-row">
-                  <span class="t-label">Establecimiento:</span>
-                  <span class="t-val">{{ res.nombre_alojamiento }}</span>
-                </div>
-                <div class="ticket-row">
-                  <span class="t-label">Habitación:</span>
-                  <span class="t-val">{{ res.nombre_habitacion }}</span>
-                </div>
-                <div class="ticket-row">
-                  <span class="t-label">Rango de Estadía:</span>
-                  <span class="t-val">{{ res.fecha_in }} hasta {{ res.fecha_out }}</span>
+                <div class="form-group">
+                  <label>Fecha de Salida</label>
+                  <input type="date" [(ngModel)]="resFechaOut" class="form-control" />
                 </div>
               </div>
 
-              <div class="voucher-total-box">
-                <div class="total-label-wrap">
-                  <span class="main-label">Importe Total Confirmado:</span>
-                  <span class="formula-label">Persistido en tabla RESERVA</span>
+              <div class="form-group">
+                <label>Número de Huéspedes</label>
+                <input type="number" [(ngModel)]="resNumHuespedes" min="1" max="100" class="form-control" />
+              </div>
+
+              <button class="btn-primary btn-block" (click)="ejecutarCrearReserva()" [disabled]="cargando()">
+                {{ cargando() ? 'Procesando reserva...' : 'Confirmar Reserva' }}
+              </button>
+            </div>
+          </div>
+
+          <!-- Comprobante y Reservas Recientes -->
+          <div class="stack-col">
+            <div *ngIf="reservaResultado() as res" class="card fade-in">
+              <div class="card-header-flex">
+                <span class="badge badge-success">● {{ res.estado }}</span>
+                <span class="text-muted font-mono">Reserva #{{ res.id_reserva }}</span>
+              </div>
+
+              <div class="detail-list mt-3">
+                <div class="detail-row">
+                  <span>Huésped titular</span>
+                  <strong>{{ res.nombre_cliente }}</strong>
                 </div>
-                <div class="total-amount text-emerald">${{ res.total | number }} COP</div>
+                <div class="detail-row">
+                  <span>Alojamiento</span>
+                  <strong>{{ res.nombre_alojamiento }}</strong>
+                </div>
+                <div class="detail-row">
+                  <span>Habitación</span>
+                  <strong>{{ res.nombre_habitacion }}</strong>
+                </div>
+                <div class="detail-row">
+                  <span>Fechas de estadía</span>
+                  <strong>{{ res.fecha_in }} al {{ res.fecha_out }}</strong>
+                </div>
+              </div>
+
+              <div class="total-banner mt-4">
+                <div>
+                  <span class="total-banner-title">Total Confirmado</span>
+                  <span class="total-banner-sub">Reserva registrada exitosamente</span>
+                </div>
+                <div class="total-banner-amount">${{ res.total | number }} COP</div>
               </div>
             </div>
 
-            <!-- Historial de reservas de la sesión -->
-            <div *ngIf="historialReservas().length > 0" class="card table-card-compact mt-3">
-              <h4>Historial de Transacciones de la Sesión</h4>
-              <div class="table-responsive">
-                <table class="luxury-table-compact">
+            <div *ngIf="historialReservas().length > 0" class="card">
+              <h4 class="card-title mb-3">Reservas Creadas en esta Sesión</h4>
+              <div class="table-wrap">
+                <table class="data-table">
                   <thead>
                     <tr>
                       <th>#ID</th>
-                      <th>Cliente</th>
+                      <th>Huésped</th>
                       <th>Alojamiento</th>
                       <th>Fechas</th>
                       <th>Total</th>
@@ -1330,66 +980,423 @@
                       <td class="font-bold">#{{ h.id_reserva }}</td>
                       <td>{{ h.nombre_cliente }}</td>
                       <td>{{ h.nombre_alojamiento }}</td>
-                      <td>{{ h.fecha_in }} al {{ h.fecha_out }}</td>
-                      <td class="font-semibold text-emerald">${{ h.total | number }}</td>
+                      <td>{{ h.fecha_in }} → {{ h.fecha_out }}</td>
+                      <td class="font-bold text-emerald">${{ h.total | number }}</td>
                     </tr>
                   </tbody>
                 </table>
               </div>
             </div>
+
+            <div *ngIf="!reservaResultado() && historialReservas().length === 0" class="card empty-card">
+              <div class="empty-card-icon">🛎️</div>
+              <h3>Sin reservas recientes en pantalla</h3>
+              <p>Completa el formulario o utiliza uno de los escenarios rápidos para registrar una reserva.</p>
+            </div>
           </div>
         </div>
       </section>
 
-      <!-- ======================================================== -->
-      <!-- VISTA 4: LIQUIDACIÓN MASIVA POR LOTES                    -->
-      <!-- ======================================================== -->
-      <section *ngIf="tabActivo() === 'liquidacion'" class="fade-in">
-        <div class="section-intro">
-          <div class="intro-texts">
-            <h2>Procesamiento Masivo de Liquidaciones Mensuales (Cursor Explícito)</h2>
-            <p>
-              Ejecuta el procedimiento por lotes <code>sp_liquidacion_mensual(p_mes, p_anio, p_id_alojamiento)</code>.
-              Abre un cursor explícito que totaliza reservas del período, calcula la comisión de la plataforma (10%),
-              el neto a transferir a cada propietario (90%) y persiste el resultado en la tabla <code>LIQUIDACION_MENSUAL_HISTORICO</code>.
-            </p>
-          </div>
-        </div>
-
-        <!-- Barra de Configuración y Ejecución del Lote -->
-        <div class="card batch-config-card">
-          <div class="batch-card-header">
-            <div class="batch-header-title">
-              <div class="batch-header-icon">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-5 h-5">
-                  <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                </svg>
-              </div>
+      <!-- =================================================================== -->
+      <!-- MÓDULO 5: CHECKOUT CON PAGO Y CONTROL DE CUPOS (TRANSACCIONES)      -->
+      <!-- =================================================================== -->
+      <section *ngIf="tabActivo() === 'transacciones'" class="fade-in">
+        <div class="split-layout">
+          <!-- Columna 1: Reserva con Pago Inmediato -->
+          <div class="card">
+            <div class="card-header-flex">
               <div>
-                <h3 class="batch-title-text">Parámetros de Liquidación</h3>
-                <span class="batch-subtitle-text">Configura el período temporal y el alcance de los alojamientos a liquidar</span>
+                <h3 class="card-title">Reserva con Pago Integrado</h3>
+                <p class="card-subtitle">Si el pago es rechazado, la reserva se conserva como PENDIENTE sin perder el cupo del huésped</p>
               </div>
             </div>
-            <div class="batch-header-badges">
-              <span class="badge-oracle-plsql">
-                <span class="pulse-indicator"></span>
-                Cursor BULK COLLECT (100 regs/lote)
-              </span>
-              <button class="btn-reset-batch" (click)="reiniciarLiquidaciones()" title="Vaciar histórico de liquidaciones para probar desde cero" [disabled]="cargando()">
-                🗑️ Vaciar Histórico
+
+            <div class="quick-actions-row mb-3">
+              <button class="btn-outline btn-sm" (click)="probarTransaccionAtomicaExitosa()" [disabled]="cargando()">
+                ✓ Probar Pago Aprobado
+              </button>
+              <button class="btn-outline btn-sm" (click)="probarRollbackParcialSavepoint()" [disabled]="cargando()">
+                ⚡ Simular Rechazo de Pasarela
+              </button>
+            </div>
+
+            <div class="form-stack">
+              <div class="form-row-2">
+                <div class="form-group">
+                  <label>Huésped</label>
+                  <select [(ngModel)]="txIdCliente" class="form-control">
+                    <option *ngFor="let c of clientes()" [ngValue]="c.id">{{ c.nombre }}</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label>Habitación</label>
+                  <select [(ngModel)]="txIdHabitacion" class="form-control">
+                    <option *ngFor="let h of habitaciones()" [ngValue]="h.id_habitacion">
+                      {{ h.numero_nombre }} — {{ h.nombre_alojamiento }}
+                    </option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="form-row-3">
+                <div class="form-group">
+                  <label>Llegada</label>
+                  <input type="date" [(ngModel)]="txFechaIn" class="form-control" />
+                </div>
+                <div class="form-group">
+                  <label>Salida</label>
+                  <input type="date" [(ngModel)]="txFechaOut" class="form-control" />
+                </div>
+                <div class="form-group">
+                  <label>Huéspedes</label>
+                  <input type="number" [(ngModel)]="txNumHuespedes" min="1" max="10" class="form-control" />
+                </div>
+              </div>
+
+              <div class="form-row-2">
+                <div class="form-group">
+                  <label>Medio de Pago</label>
+                  <select [(ngModel)]="txMetodoPago" class="form-control">
+                    <option value="TARJETA">Tarjeta de Crédito / Débito</option>
+                    <option value="PSE">Transferencia PSE</option>
+                    <option value="TRANSFERENCIA">Transferencia Bancaria</option>
+                    <option value="EFECTIVO">Efectivo en Recepción</option>
+                  </select>
+                </div>
+                <div class="form-group checkbox-group-align">
+                  <label class="checkbox-inline">
+                    <input type="checkbox" [(ngModel)]="txSimularFalloPago" />
+                    <span>Simular rechazo del banco al cobrar</span>
+                  </label>
+                </div>
+              </div>
+
+              <button class="btn-primary btn-block" (click)="ejecutarReservaTransaccional()" [disabled]="cargando()">
+                {{ cargando() ? 'Procesando operación...' : 'Registrar Reserva y Procesar Pago' }}
+              </button>
+            </div>
+
+            <!-- Resultado de la operación -->
+            <div *ngIf="txResultado() as tx" class="result-notice mt-4" [class.notice-warn]="tx.rollback_parcial" [class.notice-ok]="!tx.rollback_parcial">
+              <div class="result-notice-top">
+                <span class="badge" [ngClass]="tx.rollback_parcial ? 'badge-amber' : 'badge-success'">
+                  {{ tx.rollback_parcial ? 'PAGO RECHAZADO · RESERVA EN ESPERA' : 'RESERVA Y PAGO CONFIRMADOS' }}
+                </span>
+                <span class="font-mono text-xs">Reserva #{{ tx.id_reserva }}</span>
+              </div>
+              <div class="result-notice-grid">
+                <div><span>Estado Reserva:</span> <strong>{{ tx.estado_reserva }}</strong></div>
+                <div><span>Comprobante Pago:</span> <strong>{{ tx.id_pago ? ('#' + tx.id_pago) : 'No generado' }}</strong></div>
+                <div><span>Monto:</span> <strong>${{ tx.total_reserva | number }} COP</strong></div>
+              </div>
+              <p class="result-notice-msg">{{ tx.mensaje }}</p>
+            </div>
+          </div>
+
+          <!-- Columna 2: Protección contra Reservas Simultáneas -->
+          <div class="card">
+            <div class="card-header-flex">
+              <div>
+                <h3 class="card-title">Protección contra Reservas Simultáneas</h3>
+                <p class="card-subtitle">Comprueba cómo el sistema evita el sobrecupo cuando dos usuarios intentan reservar la misma habitación al mismo instante</p>
+              </div>
+            </div>
+
+            <div class="form-stack">
+              <div class="form-row-3">
+                <div class="form-group">
+                  <label>Habitación</label>
+                  <select [(ngModel)]="concIdHabitacion" class="form-control">
+                    <option *ngFor="let h of habitaciones()" [ngValue]="h.id_habitacion">
+                      {{ h.numero_nombre }} ({{ h.nombre_alojamiento }})
+                    </option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label>Llegada</label>
+                  <input type="date" [(ngModel)]="concFechaIn" class="form-control" />
+                </div>
+                <div class="form-group">
+                  <label>Salida</label>
+                  <input type="date" [(ngModel)]="concFechaOut" class="form-control" />
+                </div>
+              </div>
+
+              <button class="btn-secondary btn-block" (click)="ejecutarExperimentoConcurrencia()" [disabled]="concurrenciaEjecutando()">
+                {{ concurrenciaEjecutando() ? 'Simulando solicitudes simultáneas...' : 'Probar Dos Solicitudes Simultáneas' }}
+              </button>
+            </div>
+
+            <div *ngIf="concurrenciaResultado() as conc" class="mt-4 fade-in">
+              <div class="session-compare-grid">
+                <div class="session-box session-winner">
+                  <div class="session-box-top">
+                    <span class="badge badge-success">Usuario 1 · Primero en llegar</span>
+                    <strong>{{ conc.sesion1_estado }}</strong>
+                  </div>
+                  <p class="session-box-detail">
+                    Reserva confirmada <strong>#{{ conc.sesion1_reserva_id }}</strong>.
+                  </p>
+                  <p class="session-box-msg">{{ conc.sesion1_detalle }}</p>
+                </div>
+
+                <div class="session-box session-blocked">
+                  <div class="session-box-top">
+                    <span class="badge badge-danger">Usuario 2 · Solicitud simultánea</span>
+                    <strong>{{ conc.sesion2_estado }}</strong>
+                  </div>
+                  <p class="session-box-detail">
+                    Tiempo en espera: <strong>{{ conc.tiempo_espera_sesion2_ms }} ms</strong>
+                  </p>
+                  <p class="session-box-msg">{{ conc.sesion2_detalle }}</p>
+                </div>
+              </div>
+            </div>
+
+            <div *ngIf="!concurrenciaResultado()" class="empty-inline mt-4">
+              <p>Al presionar el botón, dos clientes intentarán reservar la misma habitación en las mismas fechas al mismo tiempo. El primer cliente obtendrá la reserva y el segundo recibirá aviso de ocupación.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- =================================================================== -->
+      <!-- MÓDULO 6: ADMINISTRACIÓN DE TARIFAS E HISTORIAL (AUDITORÍA)         -->
+      <!-- =================================================================== -->
+      <section *ngIf="tabActivo() === 'auditoria'" class="fade-in">
+        <!-- Editor de Tarifas -->
+        <div class="card mb-4">
+          <div class="card-header-flex">
+            <div>
+              <h3 class="card-title">{{ tarifaFormEditando ? 'Modificar Tarifa de Habitación' : 'Actualizar Tarifas de Alojamiento' }}</h3>
+              <p class="card-subtitle">Define el valor por noche en temporada regular y el valor en temporada alta (+40%)</p>
+            </div>
+            <div class="header-actions">
+              <button class="btn-outline btn-sm" (click)="refrescarAuditoriaConFeedback()" [disabled]="cargando()">
+                Refrescar
+              </button>
+              <button class="btn-danger-soft btn-sm" (click)="limpiarHistorialAuditoria()" [disabled]="cargando()">
+                Limpiar Historial
               </button>
             </div>
           </div>
 
-          <div class="batch-form-grid">
-            <div class="form-field-group">
-              <label class="field-label">
-                <svg viewBox="0 0 20 20" fill="currentColor" class="field-icon">
-                  <path fill-rule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clip-rule="evenodd" />
-                </svg>
-                <span>Mes de Liquidación</span>
-              </label>
-              <select [(ngModel)]="liqMes" (ngModelChange)="onCambioPeriodo()" class="input-luxury-field">
+          <div class="rate-editor-grid">
+            <div class="form-group">
+              <label>Habitación / Alojamiento</label>
+              <select [(ngModel)]="tarifaFormIdHabitacion" (ngModelChange)="onHabitacionSelectChange($event)" class="form-control">
+                <option [ngValue]="null">-- Selecciona una habitación --</option>
+                <option *ngFor="let h of habitaciones()" [ngValue]="h.id_habitacion">
+                  {{ h.numero_nombre }} — {{ h.nombre_alojamiento }} ({{ h.nombre_municipio }})
+                </option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label>Tarifa Temporada Regular (COP)</label>
+              <input
+                type="number"
+                [(ngModel)]="tarifaFormPrecioBaja"
+                (ngModelChange)="onPrecioBajaChange()"
+                step="5000"
+                min="50000"
+                class="form-control"
+                placeholder="Ej: 180000"
+              />
+            </div>
+
+            <div class="form-group">
+              <label>Tarifa Temporada Alta (+40% COP)</label>
+              <input
+                type="number"
+                [(ngModel)]="tarifaFormPrecioAlta"
+                [disabled]="tarifaFormCalculoAutoAlta"
+                step="5000"
+                min="50000"
+                class="form-control"
+                placeholder="Ej: 252000"
+              />
+            </div>
+
+            <div class="form-group form-actions-end">
+              <button class="btn-primary" (click)="guardarTarifaFormulario()" [disabled]="cargando()">
+                {{ cargando() ? 'Guardando...' : (tarifaFormEditando ? 'Guardar Cambios' : 'Guardar Tarifa') }}
+              </button>
+              <button *ngIf="tarifaFormEditando" class="btn-outline" (click)="cancelarEdicionTarifa()">
+                Cancelar
+              </button>
+            </div>
+          </div>
+
+          <div class="mt-2">
+            <label class="checkbox-inline">
+              <input type="checkbox" [(ngModel)]="tarifaFormCalculoAutoAlta" (change)="onPrecioBajaChange()" />
+              <span>Calcular automáticamente la tarifa de Temporada Alta (+40% sobre la tarifa regular)</span>
+            </label>
+          </div>
+        </div>
+
+        <!-- Selector entre Tarifas Vigentes e Historial -->
+        <div class="subnav-bar">
+          <button class="subnav-btn" [class.active]="auditoriaSubTab() === 'tarifas'" (click)="cambiarAuditoriaSubTab('tarifas')">
+            Tarifas Activas ({{ tarifasFiltradas().length }})
+          </button>
+          <button class="subnav-btn" [class.active]="auditoriaSubTab() === 'filas'" (click)="cambiarAuditoriaSubTab('filas')">
+            Historial de Cambios de Tarifa ({{ auditoriaFilasFiltradas().length }})
+          </button>
+        </div>
+
+        <!-- Subvista 1: Tarifas Activas -->
+        <div *ngIf="auditoriaSubTab() === 'tarifas'" class="card fade-in">
+          <div class="filter-row mb-3">
+            <div class="form-group w-64">
+              <label>Filtrar por Alojamiento</label>
+              <select [(ngModel)]="filtroTarifasAlojamiento" class="form-control form-control-sm">
+                <option [ngValue]="null">Todos los alojamientos</option>
+                <option *ngFor="let a of alojamientos()" [ngValue]="a.id">{{ a.nombre }}</option>
+              </select>
+            </div>
+
+            <div class="form-group flex-1">
+              <label>Buscar habitación o municipio</label>
+              <input
+                type="text"
+                placeholder="Ej: Habitación 101, Salento, King..."
+                [(ngModel)]="filtroTarifasQuery"
+                class="form-control form-control-sm"
+              />
+            </div>
+
+            <div class="form-group form-actions-end">
+              <button class="btn-outline btn-sm" (click)="exportarCSVTarifas()">
+                Exportar CSV
+              </button>
+            </div>
+          </div>
+
+          <div class="table-wrap">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Habitación</th>
+                  <th>Alojamiento y Municipio</th>
+                  <th>Capacidad</th>
+                  <th>Tarifa Regular</th>
+                  <th>Tarifa Alta (+40%)</th>
+                  <th>Diferencia</th>
+                  <th>Acciones</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let t of tarifasFiltradas()">
+                  <td>
+                    <div class="font-semibold">{{ t.numero_habitacion || t.numeroHabitacion }}</div>
+                    <small class="text-muted">ID #{{ t.id_habitacion || t.idHabitacion }}</small>
+                  </td>
+                  <td>
+                    <div class="font-semibold">{{ t.nombre_alojamiento || t.nombreAlojamiento }}</div>
+                    <small class="text-muted">📍 {{ t.nombre_municipio || t.nombreMunicipio }}</small>
+                  </td>
+                  <td>
+                    <span class="badge badge-neutral">{{ t.capacidad }} pers.</span>
+                    <small class="text-muted ml-1">{{ t.tipo_cama || t.tipoCama }}</small>
+                  </td>
+                  <td class="font-semibold">${{ (t.precio_baja || t.precioBaja || 0) | number }}</td>
+                  <td class="font-bold text-amber">${{ (t.precio_alta || t.precioAlta || 0) | number }}</td>
+                  <td class="text-emerald font-semibold">+${{ (t.recargo_alta || t.recargoAlta || 0) | number }}</td>
+                  <td>
+                    <button class="btn-outline btn-xs" (click)="abrirEditorTarifa(t)">
+                      Editar
+                    </button>
+                  </td>
+                </tr>
+                <tr *ngIf="tarifasFiltradas().length === 0">
+                  <td colspan="7" class="empty-cell">No se encontraron habitaciones con ese criterio de búsqueda.</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Subvista 2: Historial de Cambios -->
+        <div *ngIf="auditoriaSubTab() === 'filas'" class="card fade-in">
+          <div class="filter-row mb-3">
+            <div class="form-group flex-1">
+              <label>Buscar en el historial</label>
+              <input
+                type="text"
+                placeholder="Filtrar por habitación, alojamiento o temporada..."
+                [(ngModel)]="filtroBusquedaAuditoria"
+                class="form-control form-control-sm"
+              />
+            </div>
+            <div class="form-group form-actions-end">
+              <button class="btn-outline btn-sm" (click)="exportarCSVAuditoria()">
+                Exportar CSV
+              </button>
+            </div>
+          </div>
+
+          <div class="table-wrap">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>Fecha y Hora</th>
+                  <th>Habitación y Alojamiento</th>
+                  <th>Temporada</th>
+                  <th>Precio Anterior</th>
+                  <th>Precio Nuevo</th>
+                  <th>Variación</th>
+                  <th>Operación</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let fila of auditoriaFilasFiltradas()">
+                  <td class="text-muted font-mono">#{{ fila.id_auditoria || fila.idAuditoria }}</td>
+                  <td class="font-mono text-xs">{{ fila.fecha }}</td>
+                  <td>
+                    <div class="font-semibold">{{ fila.numero_habitacion || fila.numeroHabitacion || ('Tarifa #' + (fila.id_tarifa || fila.idTarifa)) }}</div>
+                    <small class="text-muted">{{ fila.nombre_alojamiento || fila.nombreAlojamiento }}</small>
+                  </td>
+                  <td><span class="badge badge-neutral">{{ fila.nombre_temporada || fila.nombreTemporada }}</span></td>
+                  <td class="text-muted">${{ (fila.precio_anterior || fila.precioAnterior || 0) | number }}</td>
+                  <td class="font-bold">${{ (fila.precio_nuevo || fila.precioNuevo || 0) | number }}</td>
+                  <td>
+                    <span class="badge" [ngClass]="fila.variacion >= 0 ? 'badge-success' : 'badge-danger'">
+                      {{ fila.variacion > 0 ? '+' : '' }}${{ (fila.variacion || 0) | number }}
+                    </span>
+                  </td>
+                  <td><span class="badge badge-info">{{ fila.accion }}</span></td>
+                </tr>
+                <tr *ngIf="auditoriaFilasFiltradas().length === 0">
+                  <td colspan="8" class="empty-cell">No hay modificaciones de tarifas registradas todavía.</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- =================================================================== -->
+      <!-- MÓDULO 7: LIQUIDACIÓN MENSUAL A PROPIETARIOS                        -->
+      <!-- =================================================================== -->
+      <section *ngIf="tabActivo() === 'liquidacion'" class="fade-in">
+        <div class="card mb-4">
+          <div class="card-header-flex">
+            <div>
+              <h3 class="card-title">Liquidación de Ingresos y Comisiones</h3>
+              <p class="card-subtitle">Calcula los ingresos brutos del mes, la comisión del 10% de la plataforma y el neto (90%) a transferir a cada propietario</p>
+            </div>
+            <button class="btn-danger-soft btn-sm" (click)="reiniciarLiquidaciones()" [disabled]="cargando()">
+              Vaciar Histórico
+            </button>
+          </div>
+
+          <div class="rate-editor-grid">
+            <div class="form-group">
+              <label>Mes</label>
+              <select [(ngModel)]="liqMes" (ngModelChange)="onCambioPeriodo()" class="form-control">
                 <option [ngValue]="1">01 - Enero</option>
                 <option [ngValue]="2">02 - Febrero</option>
                 <option [ngValue]="3">03 - Marzo</option>
@@ -1405,153 +1412,99 @@
               </select>
             </div>
 
-            <div class="form-field-group">
-              <label class="field-label">
-                <svg viewBox="0 0 20 20" fill="currentColor" class="field-icon">
-                  <path fill-rule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm10 5H4v9h12V7z" clip-rule="evenodd" />
-                </svg>
-                <span>Año Fiscal</span>
-              </label>
-              <select [(ngModel)]="liqAnio" (ngModelChange)="onCambioPeriodo()" class="input-luxury-field">
+            <div class="form-group">
+              <label>Año</label>
+              <select [(ngModel)]="liqAnio" (ngModelChange)="onCambioPeriodo()" class="form-control">
                 <option [ngValue]="2024">2024</option>
                 <option [ngValue]="2025">2025</option>
                 <option [ngValue]="2026">2026</option>
               </select>
             </div>
 
-            <div class="form-field-group flex-wide">
-              <label class="field-label">
-                <svg viewBox="0 0 20 20" fill="currentColor" class="field-icon">
-                  <path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z" />
-                </svg>
-                <span>Alcance / Alojamiento</span>
-              </label>
-              <select [(ngModel)]="liqIdAlojamiento" (ngModelChange)="onCambioPeriodo()" class="input-luxury-field">
-                <option [ngValue]="null">Todos los Alojamientos (Lote Completo Departamental)</option>
+            <div class="form-group">
+              <label>Alojamiento</label>
+              <select [(ngModel)]="liqIdAlojamiento" (ngModelChange)="onCambioPeriodo()" class="form-control">
+                <option [ngValue]="null">Todos los alojamientos</option>
                 <option *ngFor="let a of alojamientos()" [ngValue]="a.id">{{ a.nombre }}</option>
               </select>
             </div>
 
-            <div class="form-field-group flex-action">
-              <label class="field-label-spacer">&nbsp;</label>
-              <button class="btn-process-batches" (click)="ejecutarLiquidacion()" [disabled]="cargando()">
-                <svg *ngIf="!cargando()" viewBox="0 0 20 20" fill="currentColor" class="btn-icon">
-                  <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clip-rule="evenodd" />
-                </svg>
-                <svg *ngIf="cargando()" class="btn-icon spinner" viewBox="0 0 24 24" fill="none">
-                  <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                  <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                </svg>
-                <span>{{ cargando() ? 'Procesando lotes...' : 'Procesar lotes' }}</span>
+            <div class="form-group form-actions-end">
+              <button class="btn-primary" (click)="ejecutarLiquidacion()" [disabled]="cargando()">
+                {{ cargando() ? 'Procesando...' : 'Generar Liquidación' }}
               </button>
             </div>
           </div>
-
-          <div class="batch-card-footer">
-            <div class="footer-rule-pill">
-              <span class="rule-icon">⚖️</span>
-              <span class="rule-text">Distribución automática: <strong>10% comisión</strong> TurismoUQ • <strong>90% transferencia</strong> a propietarios</span>
-            </div>
-            <div class="footer-meta-pill">
-              <span class="meta-dot"></span>
-              <span>Tabla destino: <code>LIQUIDACION_MENSUAL_HISTORICO</code> en <code>TBS_HISTORICO_RESERVAS</code></span>
-            </div>
-          </div>
         </div>
 
-        <!-- Estado Vacío: Cuando NO se ha hecho la liquidación para la fecha seleccionada -->
-        <div *ngIf="liquidaciones().length === 0" class="card batch-empty-card mt-4 fade-in">
-          <div class="batch-empty-icon-wrap">
-            <div class="batch-empty-icon">📭</div>
-          </div>
-          <h3 class="batch-empty-title">
-            No se ha hecho la liquidación para {{ getNombreMes(liqMes) }} de {{ liqAnio }}
-          </h3>
-          <p class="batch-empty-desc">
-            Aún no se ha realizado la liquidación correspondiente a <strong>{{ getNombreMes(liqMes) }} de {{ liqAnio }}</strong>.
-            Presiona el botón <strong>"Procesar lotes"</strong> para calcular comisiones y registrar la liquidación de este período en la base de datos.
-          </p>
-          <div class="batch-empty-actions">
-            <button class="btn-process-batches auto-width" (click)="ejecutarLiquidacion()" [disabled]="cargando()">
-              <svg *ngIf="!cargando()" viewBox="0 0 20 20" fill="currentColor" class="btn-icon">
-                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clip-rule="evenodd" />
-              </svg>
-              <span>{{ cargando() ? 'Procesando lotes...' : 'Procesar lotes de ' + getNombreMes(liqMes) + ' ' + liqAnio }}</span>
-            </button>
-          </div>
+        <!-- Estado vacío cuando no se ha generado para el mes -->
+        <div *ngIf="liquidaciones().length === 0" class="card empty-card">
+          <div class="empty-card-icon">📄</div>
+          <h3>Sin liquidación generada para {{ getNombreMes(liqMes) }} de {{ liqAnio }}</h3>
+          <p>Presiona el botón para consolidar las reservas finalizadas y calcular las transferencias de este período.</p>
+          <button class="btn-primary btn-sm mt-2" (click)="ejecutarLiquidacion()" [disabled]="cargando()">
+            Generar liquidación de {{ getNombreMes(liqMes) }} {{ liqAnio }}
+          </button>
         </div>
 
-        <!-- KPIs del Proceso de Liquidación -->
-        <div *ngIf="liquidaciones().length > 0" class="kpi-grid mt-4 fade-in">
+        <!-- KPIs de Liquidación -->
+        <div *ngIf="liquidaciones().length > 0" class="kpi-grid-3 mb-4 fade-in">
           <div class="kpi-card">
-            <div class="kpi-header">
-              <span class="kpi-title">Ingreso Bruto del Lote</span>
-              <span class="kpi-tag info">{{ liquidaciones().length }} Alojamientos</span>
-            </div>
-            <div class="kpi-number">${{ kpiLiqBruto() | number }} COP</div>
-            <div class="kpi-footer text-muted">Hospedajes + Servicios Adicionales</div>
+            <span class="kpi-label">Ingreso Bruto del Período</span>
+            <div class="kpi-value">${{ kpiLiqBruto() | number }}</div>
+            <span class="kpi-sub">{{ liquidaciones().length }} alojamientos liquidados</span>
           </div>
 
           <div class="kpi-card">
-            <div class="kpi-header">
-              <span class="kpi-title">Comisión TurismoUQ (10%)</span>
-              <span class="kpi-tag amber">Tarifa Plataforma</span>
-            </div>
-            <div class="kpi-number text-amber">${{ kpiLiqComision() | number }} COP</div>
-            <div class="kpi-footer text-amber">Retenido por la plataforma</div>
+            <span class="kpi-label">Comisión Plataforma (10%)</span>
+            <div class="kpi-value text-amber">${{ kpiLiqComision() | number }}</div>
+            <span class="kpi-sub">Retención por operación comercial</span>
           </div>
 
           <div class="kpi-card">
-            <div class="kpi-header">
-              <span class="kpi-title">Neto a Transferir (90%)</span>
-              <span class="kpi-tag success">A Propietarios</span>
-            </div>
-            <div class="kpi-number text-emerald">${{ kpiLiqNeto() | number }} COP</div>
-            <div class="kpi-footer text-emerald">Dispersión bancaria programada</div>
+            <span class="kpi-label">Neto a Transferir (90%)</span>
+            <div class="kpi-value text-emerald">${{ kpiLiqNeto() | number }}</div>
+            <span class="kpi-sub">Pago programado a propietarios</span>
           </div>
         </div>
 
-        <!-- Tabla con Buscador y Exportación -->
-        <div *ngIf="liquidaciones().length > 0" class="card table-card mt-4 fade-in">
-          <div class="table-header-custom">
+        <!-- Tabla de Liquidaciones -->
+        <div *ngIf="liquidaciones().length > 0" class="card fade-in">
+          <div class="card-header-flex">
             <div>
-              <h3>Registros Persistidos en LIQUIDACION_MENSUAL_HISTORICO</h3>
-              <p>Período: {{ getNombreMes(liqMes) }} de {{ liqAnio }}</p>
+              <h3 class="card-title">Detalle por Alojamiento — {{ getNombreMes(liqMes) }} {{ liqAnio }}</h3>
             </div>
-            <div class="table-actions">
+            <div class="inline-filters">
               <input
                 type="text"
-                placeholder="Buscar por alojamiento o ID..."
+                placeholder="Buscar alojamiento..."
                 [(ngModel)]="filtroBusquedaLiquidacion"
-                class="input-search-table"
+                class="form-control form-control-sm"
               />
-              <button class="btn-export-csv" (click)="exportarCSVLiquidacion()">
-                <svg viewBox="0 0 20 20" fill="currentColor" class="w-4 h-4">
-                  <path fill-rule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clip-rule="evenodd" />
-                </svg>
-                <span>Exportar CSV</span>
+              <button class="btn-outline btn-sm" (click)="exportarCSVLiquidacion()">
+                Exportar CSV
               </button>
             </div>
           </div>
 
-          <div class="table-responsive">
-            <table class="luxury-table">
+          <div class="table-wrap">
+            <table class="data-table">
               <thead>
                 <tr>
                   <th>ID</th>
                   <th>Alojamiento</th>
                   <th>Reservas</th>
-                  <th>Ingreso Hospedaje</th>
-                  <th>Ingreso Servicios</th>
+                  <th>Hospedaje</th>
+                  <th>Servicios</th>
                   <th>Ingreso Bruto</th>
-                  <th>Comisión 10%</th>
-                  <th>Neto a Pagar (90%)</th>
+                  <th>Comisión (10%)</th>
+                  <th>Neto Propietario (90%)</th>
                 </tr>
               </thead>
               <tbody>
                 <tr *ngFor="let item of liquidacionesFiltradas()">
-                  <td class="font-bold text-muted">#{{ item.id_alojamiento }}</td>
-                  <td class="font-semibold text-dark">{{ item.nombre_alojamiento }}</td>
+                  <td class="text-muted font-mono">#{{ item.id_alojamiento }}</td>
+                  <td class="font-semibold">{{ item.nombre_alojamiento }}</td>
                   <td>{{ item.total_reservas }}</td>
                   <td>${{ item.ingreso_hospedaje | number }}</td>
                   <td>${{ item.ingreso_servicios | number }}</td>
@@ -1559,439 +1512,269 @@
                   <td class="text-amber font-semibold">${{ item.comision_plataforma | number }}</td>
                   <td class="text-emerald font-bold">${{ item.neto_pagar | number }}</td>
                 </tr>
-                <tr *ngIf="liquidacionesFiltradas().length === 0">
-                  <td colspan="8" class="text-center py-5 text-muted">
-                    <div class="empty-table-state">
-                      <span class="empty-table-icon">🔍</span>
-                      <p class="font-semibold text-dark mt-2">No se encontraron alojamientos</p>
-                      <p class="text-xs text-muted">Ningún registro coincide con el filtro "{{ filtroBusquedaLiquidacion }}".</p>
-                    </div>
-                  </td>
-                </tr>
               </tbody>
             </table>
           </div>
         </div>
       </section>
 
-      <!-- ======================================================== -->
-      <!-- VISTA: AUDITORÍA Y TARIFAS MULTI-TEMPORADA (ORACLE XE)   -->
-      <!-- ======================================================== -->
-      <section *ngIf="tabActivo() === 'auditoria'" class="fade-in">
-        <!-- Barra de herramientas superior -->
-        <div class="section-toolbar">
-          <div class="section-title-wrap">
-            <h2>Gestión y Auditoría de Tarifas</h2>
-            <p class="section-sub">
-              Administración de tarifas de hospedaje (Temporada Baja y Alta +40%) con trazabilidad e historial de cambios en Oracle XE.
-            </p>
-          </div>
-          <div class="toolbar-actions-group">
-            <button class="btn-refresh" (click)="refrescarAuditoriaConFeedback()" [disabled]="cargando()" title="Sincronizar tarifas y registros desde Oracle XE">
-              <svg viewBox="0 0 20 20" fill="currentColor" class="w-4 h-4">
-                <path fill-rule="evenodd" d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1zm.008 9.057a1 1 0 011.276.61A5.002 5.002 0 0014.001 13H11a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0v-2.101a7.002 7.002 0 01-11.601-2.566 1 1 0 01.61-1.276z" clip-rule="evenodd" />
-              </svg>
-              <span>{{ cargando() ? 'Sincronizando...' : 'Refrescar' }}</span>
-            </button>
-            <button class="btn-reset-batch" (click)="limpiarHistorialAuditoria()" [disabled]="cargando()" title="Vaciar historial de auditoría">
-              <svg viewBox="0 0 20 20" fill="currentColor" class="w-4 h-4">
-                <path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd" />
-              </svg>
-              <span>Limpiar Historial</span>
+      <!-- =================================================================== -->
+      <!-- MÓDULO 8: RECEPCIÓN Y PERFILES DE ACCESO (SEGURIDAD)                -->
+      <!-- =================================================================== -->
+      <section *ngIf="tabActivo() === 'seguridad'" class="fade-in">
+        <!-- Vista de Recepción en Vivo -->
+        <div class="card mb-4">
+          <div class="card-header-flex">
+            <div>
+              <h3 class="card-title">Panel Operativo de Recepción (Check-In / Reservas)</h3>
+              <p class="card-subtitle">Información de huéspedes con protección de datos personales y financieros para el personal de recepción</p>
+            </div>
+            <button class="btn-outline btn-sm" (click)="cargarSeguridad()" [disabled]="cargando()">
+              Actualizar
             </button>
           </div>
-        </div>
 
-        <!-- Formulario: Asignación y Actualización de Tarifas en Alojamientos -->
-        <div class="card p-4 mb-4 luxury-editor-card">
-          <div class="editor-header">
-            <div class="editor-header-title">
-              <div class="editor-icon-badge">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-5 h-5">
-                  <path stroke-linecap="round" stroke-linejoin="round" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-              </div>
-              <div>
-                <h3 class="editor-title">{{ tarifaFormEditando ? 'Modificar Tarifas de Habitación' : 'Asignar / Actualizar Tarifas de Alojamiento' }}</h3>
-                <p class="editor-sub">
-                  Configura el precio base (Temporada Baja). El sistema calcula automáticamente el valor de Temporada Alta (+40%). Al guardar, se actualiza la tabla <code>TARIFA</code> en Oracle XE y el trigger <code>TRG_AUDITORIA_TARIFA</code> registrará la traza de auditoría.
-                </p>
-              </div>
-            </div>
-            <span *ngIf="tarifaFormEditando" class="badge-edit-mode">Modo Edición Activo</span>
-          </div>
-
-          <div class="editor-form-grid">
-            <div class="form-field-group">
-              <label>Habitación / Alojamiento:</label>
-              <select [(ngModel)]="tarifaFormIdHabitacion" (ngModelChange)="onHabitacionSelectChange($event)" class="input-luxury-compact">
-                <option [ngValue]="null">-- Selecciona una habitación --</option>
-                <option *ngFor="let h of habitaciones()" [ngValue]="h.id_habitacion">
-                  {{ h.numero_nombre }} — {{ h.nombre_alojamiento }} ({{ h.nombre_municipio }})
-                </option>
-              </select>
-            </div>
-
-            <div class="form-field-group">
-              <label>Tarifa Temporada Baja (Precio Base COP):</label>
-              <div class="input-money-wrap">
-                <span class="money-prefix">$</span>
-                <input
-                  type="number"
-                  [(ngModel)]="tarifaFormPrecioBaja"
-                  (ngModelChange)="onPrecioBajaChange()"
-                  step="5000"
-                  min="50000"
-                  class="input-luxury-compact input-with-prefix"
-                  placeholder="Ej: 180000"
-                />
-              </div>
-            </div>
-
-            <div class="form-field-group">
-              <div class="label-with-badge">
-                <label>Tarifa Temporada Alta (COP):</label>
-                <span class="badge-formula">+40% Oficial</span>
-              </div>
-              <div class="input-money-wrap">
-                <span class="money-prefix">$</span>
-                <input
-                  type="number"
-                  [(ngModel)]="tarifaFormPrecioAlta"
-                  [disabled]="tarifaFormCalculoAutoAlta"
-                  step="5000"
-                  min="50000"
-                  class="input-luxury-compact input-with-prefix"
-                  placeholder="Ej: 252000"
-                />
-              </div>
-            </div>
-
-            <div class="form-actions-inline">
-              <button class="btn-save-tarifa" (click)="guardarTarifaFormulario()" [disabled]="cargando()">
-                <svg viewBox="0 0 20 20" fill="currentColor" class="w-4 h-4">
-                  <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
-                </svg>
-                <span>{{ cargando() ? 'Guardando...' : (tarifaFormEditando ? 'Actualizar en Oracle' : 'Guardar Tarifas') }}</span>
-              </button>
-
-              <button *ngIf="tarifaFormEditando" class="btn-cancel-edit" (click)="cancelarEdicionTarifa()">
-                Cancelar
-              </button>
-            </div>
-          </div>
-
-          <div class="editor-footer-help">
-            <label class="checkbox-label-compact">
-              <input type="checkbox" [(ngModel)]="tarifaFormCalculoAutoAlta" (change)="onPrecioBajaChange()" />
-              <span>Calcular automáticamente el valor de Temporada Alta (+40% sobre el precio base redondeado a miles)</span>
-            </label>
+          <div class="table-wrap">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Reserva</th>
+                  <th>Estado</th>
+                  <th>Llegada</th>
+                  <th>Salida</th>
+                  <th>Noches</th>
+                  <th>Alojamiento y Habitación</th>
+                  <th>Huésped</th>
+                  <th>Documento</th>
+                  <th>Estado Pago</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let item of vistaRecepcionItems()">
+                  <td class="font-bold font-mono">#{{ item.id_reserva }}</td>
+                  <td><span class="badge badge-success">{{ item.estado_reserva }}</span></td>
+                  <td>{{ item.fecha_check_in }}</td>
+                  <td>{{ item.fecha_check_out }}</td>
+                  <td>{{ item.noches_estadia }}</td>
+                  <td>
+                    <div class="font-semibold">{{ item.alojamiento }} ({{ item.municipio }})</div>
+                    <small class="text-muted">{{ item.habitacion }}</small>
+                  </td>
+                  <td class="font-semibold">{{ item.nombre_huesped }}</td>
+                  <td class="font-mono text-xs text-muted">{{ item.documento_cliente }}</td>
+                  <td><span class="badge badge-info">{{ item.estado_pago }} · {{ item.medio_pago }}</span></td>
+                </tr>
+              </tbody>
+            </table>
           </div>
         </div>
 
-        <!-- Subpestañas del Módulo de Tarifas y Auditoría -->
-        <div class="audit-subtabs-nav-luxury">
-          <button
-            class="tab-pill-btn"
-            [class.active]="auditoriaSubTab() === 'tarifas'"
-            (click)="cambiarAuditoriaSubTab('tarifas')">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-4 h-4">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
-            </svg>
-            <span>Tarifas Activas (Baja vs Alta +40%)</span>
-            <span class="tab-badge-counter">{{ tarifasFiltradas().length }}</span>
-          </button>
-
-          <button
-            class="tab-pill-btn"
-            [class.active]="auditoriaSubTab() === 'filas'"
-            (click)="cambiarAuditoriaSubTab('filas')">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-4 h-4">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
-            </svg>
-            <span>Historial de Tarifas de Alojamientos</span>
-            <span class="tab-badge-counter">{{ auditoriaFilasFiltradas().length }}</span>
-          </button>
-        </div>
-
-        <!-- ======================================================== -->
-        <!-- SUBTAB 1: TABLA DE TARIFAS ACTIVAS (BAJA VS ALTA +40%)   -->
-        <!-- ======================================================== -->
-        <div *ngIf="auditoriaSubTab() === 'tarifas'" class="fade-in">
-          <!-- Barra de Filtros y Búsqueda -->
-          <div class="card p-3 mb-3 filter-bar-luxury">
-            <div class="filter-controls-inline">
-              <div class="form-group-compact">
-                <label>Filtrar por Alojamiento:</label>
-                <select [(ngModel)]="filtroTarifasAlojamiento" class="input-luxury-compact">
-                  <option [ngValue]="null">-- Todos los Alojamientos (60) --</option>
-                  <option *ngFor="let a of alojamientos()" [ngValue]="a.id">
-                    {{ a.nombre }}
-                  </option>
-                </select>
-              </div>
-
-              <div class="form-group-compact flex-grow">
-                <label>Buscar por habitación, alojamiento o municipio:</label>
-                <input
-                  type="text"
-                  placeholder="Ej: Habitación 101, Hacienda, Salento, King..."
-                  [(ngModel)]="filtroTarifasQuery"
-                  class="input-luxury-compact"
-                />
-              </div>
-
-              <div class="filter-action-end">
-                <label>&nbsp;</label>
-                <button class="btn-export-csv" (click)="exportarCSVTarifas()" title="Exportar catálogo de tarifas a CSV">
-                  <svg viewBox="0 0 20 20" fill="currentColor" class="w-4 h-4">
-                    <path fill-rule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clip-rule="evenodd" />
-                  </svg>
-                  <span>Exportar CSV</span>
-                </button>
+        <!-- Roles y Políticas -->
+        <div class="split-layout">
+          <div class="card">
+            <h3 class="card-title mb-3">Perfiles de Usuario del Sistema</h3>
+            <div class="role-list">
+              <div *ngFor="let r of rolesSeguridad()" class="role-item">
+                <div class="role-item-top">
+                  <strong>{{ r.titulo_rol || r.nombre_rol }}</strong>
+                  <span class="badge badge-info">{{ r.nombre_rol }}</span>
+                </div>
+                <p class="role-item-desc">{{ r.justificacion }}</p>
+                <small class="text-muted">Permisos: {{ r.privilegios_dml }} sobre {{ r.objetos_permitidos }}</small>
               </div>
             </div>
           </div>
 
-          <!-- Tabla de Tarifas -->
-          <div class="card table-card">
-            <div class="table-responsive">
-              <table class="luxury-table">
-                <thead>
-                  <tr>
-                    <th>Habitación</th>
-                    <th>Alojamiento & Municipio</th>
-                    <th>Capacidad & Cama</th>
-                    <th>Tarifa Baja (Normal)</th>
-                    <th>Tarifa Alta (+40%)</th>
-                    <th>Recargo Alta</th>
-                    <th>Acciones</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr *ngFor="let t of tarifasFiltradas()">
-                    <td>
-                      <div class="font-bold text-dark">{{ t.numero_habitacion || t.numeroHabitacion }}</div>
-                      <div class="text-xs text-muted font-mono">ID Hab #{{ t.id_habitacion || t.idHabitacion }}</div>
-                    </td>
-                    <td>
-                      <div class="font-semibold text-dark">{{ t.nombre_alojamiento || t.nombreAlojamiento }}</div>
-                      <div class="text-xs text-muted">📍 {{ t.nombre_municipio || t.nombreMunicipio }}</div>
-                    </td>
-                    <td>
-                      <span class="badge-neutral">{{ t.capacidad }} pers.</span>
-                      <span class="text-xs text-muted ml-1">{{ t.tipo_cama || t.tipoCama }}</span>
-                    </td>
-                    <td>
-                      <span class="price-baja-tag">${{ (t.precio_baja || t.precioBaja || 0) | number }} COP</span>
-                    </td>
-                    <td>
-                      <span class="price-alta-tag">
-                        ${{ (t.precio_alta || t.precioAlta || 0) | number }} COP
-                        <small class="alta-calc-pill">+{{ t.porcentaje_recargo || t.porcentajeRecargo || 40 }}%</small>
-                      </span>
-                    </td>
-                    <td>
-                      <span class="recargo-diff-pill">+${{ (t.recargo_alta || t.recargoAlta || 0) | number }} COP</span>
-                    </td>
-                    <td>
-                      <button class="btn-action-edit-tarifa" (click)="abrirEditorTarifa(t)" title="Modificar tarifas de esta habitación">
-                        <svg viewBox="0 0 20 20" fill="currentColor" class="w-3.5 h-3.5">
-                          <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
-                        </svg>
-                        <span>Editar</span>
-                      </button>
-                    </td>
-                  </tr>
-
-                  <tr *ngIf="tarifasFiltradas().length === 0">
-                    <td colspan="7" class="text-center py-5 text-muted">
-                      <div class="empty-table-state">
-                        <span class="empty-table-icon">🔍</span>
-                        <p class="font-semibold text-dark mt-2">No se encontraron habitaciones coincidentes</p>
-                        <p class="text-xs text-muted">Ajusta los filtros de alojamiento o término de búsqueda.</p>
-                      </div>
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-          </div>
-        </div>
-
-        <!-- ======================================================== -->
-        <!-- SUBTAB 2: HISTORIAL DE TARIFAS (AUDITORIA_TARIFA)        -->
-        <!-- ======================================================== -->
-        <div *ngIf="auditoriaSubTab() === 'filas'" class="fade-in">
-          <div class="card p-3 mb-3 filter-bar-luxury">
-            <div class="filter-controls-inline">
-              <div class="form-group-compact flex-grow">
-                <label>Buscar en auditoría:</label>
-                <input
-                  type="text"
-                  placeholder="Filtrar por habitación, hotel, usuario, temporada..."
-                  [(ngModel)]="filtroBusquedaAuditoria"
-                  class="input-luxury-compact"
-                />
+          <div class="card">
+            <h3 class="card-title mb-3">Políticas de Sesión y Seguridad</h3>
+            <div class="role-list">
+              <div *ngFor="let p of perfilesSeguridad()" class="role-item">
+                <div class="role-item-top">
+                  <strong>{{ p.recurso }}</strong>
+                  <span class="badge badge-amber">{{ p.valor_limite }} ({{ p.unidad }})</span>
+                </div>
+                <p class="role-item-desc">{{ p.proposito }}</p>
               </div>
-
-              <div class="filter-action-end">
-                <label>&nbsp;</label>
-                <button class="btn-export-csv" (click)="exportarCSVAuditoria()" title="Exportar traza de fila a CSV">
-                  <svg viewBox="0 0 20 20" fill="currentColor" class="w-4 h-4">
-                    <path fill-rule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clip-rule="evenodd" />
-                  </svg>
-                  <span>Exportar CSV</span>
-                </button>
-              </div>
-            </div>
-          </div>
-
-          <div class="card table-card">
-            <div class="table-responsive">
-              <table class="luxury-table">
-                <thead>
-                  <tr>
-                    <th>ID</th>
-                    <th>Fecha y Hora</th>
-                    <th>Usuario BD</th>
-                    <th>Habitación & Alojamiento</th>
-                    <th>Temporada</th>
-                    <th>Precio Anterior</th>
-                    <th>Precio Nuevo</th>
-                    <th>Variación</th>
-                    <th>Acción</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr *ngFor="let fila of auditoriaFilasFiltradas()">
-                    <td class="font-mono text-xs text-muted">#{{ fila.id_auditoria || fila.idAuditoria }}</td>
-                    <td class="text-xs font-mono">{{ fila.fecha }}</td>
-                    <td>
-                      <span class="user-pill">{{ fila.usuario }}</span>
-                    </td>
-                    <td>
-                      <div class="cell-primary font-medium text-dark">
-                        {{ fila.numero_habitacion || fila.numeroHabitacion || ('Tarifa #' + (fila.id_tarifa || fila.idTarifa)) }}
-                      </div>
-                      <div class="cell-sub text-xs text-muted">
-                        {{ fila.nombre_alojamiento || fila.nombreAlojamiento || 'Alojamiento Quindío' }}
-                      </div>
-                    </td>
-                    <td>
-                      <span class="badge-neutral">{{ fila.nombre_temporada || fila.nombreTemporada || 'Estándar' }}</span>
-                    </td>
-                    <td class="font-mono text-muted">
-                      ${{ (fila.precio_anterior || fila.precioAnterior || 0) | number }}
-                    </td>
-                    <td class="font-mono font-bold text-dark">
-                      ${{ (fila.precio_nuevo || fila.precioNuevo || 0) | number }}
-                    </td>
-                    <td>
-                      <span
-                        class="diff-pill"
-                        [class.positive]="fila.variacion > 0"
-                        [class.negative]="fila.variacion < 0">
-                        {{ fila.variacion > 0 ? '+' : '' }}${{ (fila.variacion || 0) | number }}
-                      </span>
-                    </td>
-                    <td>
-                      <span class="badge-action-update">{{ fila.accion }}</span>
-                    </td>
-                  </tr>
-
-                  <tr *ngIf="auditoriaFilasFiltradas().length === 0">
-                    <td colspan="9" class="text-center py-5 text-muted">
-                      <div class="empty-table-state">
-                        <span class="empty-table-icon">🛡️</span>
-                        <p class="font-semibold text-dark mt-2">No se encontraron registros de auditoría por fila</p>
-                        <p class="text-xs text-muted">
-                          {{ filtroBusquedaAuditoria ? 'Ningún registro coincide con el filtro de búsqueda.' : 'Modifica una tarifa en el formulario superior para activar el trigger TRG_AUDITORIA_TARIFA.' }}
-                        </p>
-                      </div>
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
             </div>
           </div>
         </div>
       </section>
 
-      <!-- ======================================================== -->
-      <!-- VISTA 5: DIRECTORIO DE ALOJAMIENTOS                      -->
-      <!-- ======================================================== -->
-      <section *ngIf="tabActivo() === 'directorio'" class="fade-in">
-        <div class="section-intro">
-          <div class="intro-texts">
-            <h2>Directorio Turístico del Paisaje Cultural Cafetero</h2>
-            <p>
-              Explora la red de haciendas tradicionales, glampings boutique y hoteles rurales de los 12 municipios
-              del Quindío administrados en la base de datos TurismoUQ.
-            </p>
+      <!-- =================================================================== -->
+      <!-- MÓDULO 9: RENDIMIENTO DE CONSULTAS (ÍNDICES)                        -->
+      <!-- =================================================================== -->
+      <section *ngIf="tabActivo() === 'indices'" class="fade-in">
+        <div class="card mb-4">
+          <div class="card-header-flex">
+            <div>
+              <h3 class="card-title">Optimización y Tiempos de Respuesta</h3>
+              <p class="card-subtitle">Comparativa de costo de consulta antes y después de indexar el histórico de reservas y servicios</p>
+            </div>
+            <button class="btn-outline btn-sm" (click)="cargarPlanesOptimizacion()" [disabled]="cargando()">
+              Actualizar métricas
+            </button>
+          </div>
+
+          <div class="subnav-bar mb-0">
+            <button
+              *ngFor="let p of planesOptimizacion()"
+              class="subnav-btn"
+              [class.active]="casoIndiceSeleccionado() === p.id_caso"
+              (click)="casoIndiceSeleccionado.set(p.id_caso)">
+              Caso #{{ p.id_caso }}: {{ p.titulo }} ({{ p.reduccion_costo_pct }}% mejora)
+            </button>
           </div>
         </div>
 
-        <!-- Filtros del Directorio -->
-        <div class="card filter-bar-luxury mb-4">
-          <div class="filter-controls-inline">
-            <div class="form-group-compact flex-grow">
-              <label>Buscar Alojamiento o Experiencia:</label>
-              <input
-                type="text"
-                placeholder="Ej: Hacienda, Glamping, Salento, Filandia..."
-                [(ngModel)]="filtroDirectorioQuery"
-                class="input-luxury-compact"
-              />
+        <div *ngIf="planSeleccionadoActual() as plan" class="fade-in">
+          <div class="kpi-grid-4 mb-4">
+            <div class="kpi-card">
+              <span class="kpi-label">Índice Aplicado</span>
+              <div class="kpi-value kpi-value-text font-mono">{{ plan.nombre_indice }}</div>
+              <span class="kpi-sub">{{ plan.tipo_indice }}</span>
             </div>
 
-            <div class="form-group-compact">
-              <label>Municipio:</label>
-              <select [(ngModel)]="filtroDirectorioMunicipio" class="input-luxury-compact">
-                <option value="TODOS">Todos los Municipios</option>
-                <option *ngFor="let m of municipios()" [value]="m.nombre">{{ m.nombre }}</option>
-              </select>
+            <div class="kpi-card">
+              <span class="kpi-label">Costo Sin Índice</span>
+              <div class="kpi-value text-danger">{{ plan.costo_antes }}</div>
+              <span class="kpi-sub">{{ plan.operacion_antes }}</span>
+            </div>
+
+            <div class="kpi-card">
+              <span class="kpi-label">Costo Optimizado</span>
+              <div class="kpi-value text-emerald">{{ plan.costo_despues }}</div>
+              <span class="kpi-sub">{{ plan.operacion_despues }}</span>
+            </div>
+
+            <div class="kpi-card">
+              <span class="kpi-label">Reducción de Costo</span>
+              <div class="kpi-value text-emerald">{{ plan.reduccion_costo_pct }}%</div>
+              <span class="kpi-sub">Mejora medida en el motor</span>
+            </div>
+          </div>
+
+          <div class="card mb-4">
+            <h4 class="card-title mb-2">Análisis de Rendimiento</h4>
+            <p class="text-muted">{{ plan.explicacion_tecnica }}</p>
+          </div>
+
+          <div class="split-layout">
+            <div class="card">
+              <div class="card-header-flex">
+                <h4 class="card-title">Plan de Ejecución Anterior</h4>
+                <span class="badge badge-danger">Costo: {{ plan.costo_antes }}</span>
+              </div>
+              <pre class="plan-code-box">{{ plan.plan_texto_antes }}</pre>
+            </div>
+
+            <div class="card">
+              <div class="card-header-flex">
+                <h4 class="card-title">Plan de Ejecución Optimizado</h4>
+                <span class="badge badge-success">Costo: {{ plan.costo_despues }}</span>
+              </div>
+              <pre class="plan-code-box">{{ plan.plan_texto_despues }}</pre>
             </div>
           </div>
         </div>
+      </section>
 
-        <!-- Grid de Tarjetas Estilo Airbnb Luxe -->
-        <div class="directory-cards-grid">
-          <div *ngFor="let a of directorioFiltrado()" class="hotel-card-luxe">
-            <div class="card-image-wrap">
-              <img [src]="a.imagen" [alt]="a.nombre" loading="lazy" />
-              <div class="img-badge-mun">📍 {{ a.municipio }}</div>
-              <div *ngIf="a.destacado" class="img-badge-destacado">★ Recomendado PCC</div>
+      <!-- =================================================================== -->
+      <!-- MÓDULO 10: ESTADO DE ALMACENAMIENTO (TABLESPACE)                    -->
+      <!-- =================================================================== -->
+      <section *ngIf="tabActivo() === 'tablespace'" class="fade-in">
+        <div *ngIf="tablespaceInfo() as tbs">
+          <div class="kpi-grid-4 mb-4">
+            <div class="kpi-card">
+              <span class="kpi-label">Espacio Reservado</span>
+              <div class="kpi-value">{{ tbs.initial_size_mb | number:'1.1-2' }} MB</div>
+              <span class="kpi-sub">Capacidad máxima: {{ tbs.max_size_mb | number:'1.0-0' }} MB</span>
             </div>
 
-            <div class="card-content-luxe">
-              <div class="card-header-row">
-                <span class="property-type">{{ a.tipo }}</span>
-                <div class="rating-badge">
-                  ★ {{ a.rating }} <span class="reviews-count">({{ a.resenas }})</span>
-                </div>
+            <div class="kpi-card">
+              <span class="kpi-label">Espacio en Uso</span>
+              <div class="kpi-value text-emerald">{{ tbs.used_mb | number:'1.1-2' }} MB</div>
+              <span class="kpi-sub">{{ tbs.pct_used_of_initial }}% de ocupación actual</span>
+            </div>
+
+            <div class="kpi-card">
+              <span class="kpi-label">Espacio Disponible</span>
+              <div class="kpi-value">{{ (tbs.initial_size_mb - tbs.used_mb) | number:'1.1-2' }} MB</div>
+              <span class="kpi-sub">Crecimiento automático (+{{ tbs.autoextend_next_mb }} MB)</span>
+            </div>
+
+            <div class="kpi-card">
+              <span class="kpi-label">Objetos Almacenados</span>
+              <div class="kpi-value">{{ tbs.tablas.length }} Tablas · {{ tbs.indices.length }} Índices</div>
+              <span class="kpi-sub">Estado: {{ tbs.status }}</span>
+            </div>
+          </div>
+
+          <div class="card mb-4">
+            <div class="card-header-flex">
+              <div>
+                <h3 class="card-title">Ocupación del Almacenamiento ({{ tbs.tablespace_name }})</h3>
+                <p class="card-subtitle">Archivo de datos: {{ tbs.datafile_name }} · Bloque: {{ tbs.block_size_bytes / 1024 }} KB</p>
               </div>
+              <button class="btn-outline btn-sm" (click)="refrescarTablespaceConFeedback()" [disabled]="cargando()">
+                Sincronizar
+              </button>
+            </div>
 
-              <h3 class="property-title">{{ a.nombre }}</h3>
+            <div class="storage-bar-track">
+              <div class="storage-bar-fill" [style.width.%]="tbs.pct_used_of_initial > 5 ? tbs.pct_used_of_initial : 6"></div>
+            </div>
+            <div class="storage-bar-labels">
+              <span>En uso: {{ tbs.used_mb }} MB ({{ tbs.pct_used_of_initial }}%)</span>
+              <span>Disponible: {{ (tbs.initial_size_mb - tbs.used_mb) | number:'1.1-2' }} MB</span>
+            </div>
+          </div>
 
-              <div class="property-tags">
-                <span *ngFor="let tag of a.etiquetas" class="prop-tag">{{ tag }}</span>
+          <div class="split-layout">
+            <div class="card">
+              <h3 class="card-title mb-3">Tablas Históricas ({{ tbs.tablas.length }})</h3>
+              <div class="table-wrap">
+                <table class="data-table">
+                  <thead>
+                    <tr>
+                      <th>Tabla</th>
+                      <th>Filas</th>
+                      <th>Tamaño (MB)</th>
+                      <th>Extents</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr *ngFor="let t of tbs.tablas">
+                      <td class="font-semibold font-mono">{{ t.table_name }}</td>
+                      <td>{{ t.num_rows | number }}</td>
+                      <td class="font-bold text-emerald">{{ t.size_mb | number:'1.2-2' }} MB</td>
+                      <td>{{ t.extents }}</td>
+                    </tr>
+                  </tbody>
+                </table>
               </div>
+            </div>
 
-              <div class="property-specs-row">
-                <span>Capacidad hasta <strong>{{ a.capacidadMax }} personas</strong></span>
-                <span>Habitaciones: <strong>{{ a.habitacionesCount }}</strong></span>
-              </div>
-
-              <div class="card-footer-luxe">
-                <div class="price-wrap">
-                  <span class="price-from">Desde</span>
-                  <span class="price-val">${{ a.precioNocheMin | number }}</span>
-                  <span class="price-period">COP / noche</span>
-                </div>
-                <button class="btn-quote-property" (click)="irACotizarDesdeAlojamiento(a.id)">
-                  Cotizar
-                </button>
+            <div class="card">
+              <h3 class="card-title mb-3">Índices Asociados ({{ tbs.indices.length }})</h3>
+              <div class="table-wrap">
+                <table class="data-table">
+                  <thead>
+                    <tr>
+                      <th>Índice</th>
+                      <th>Tabla</th>
+                      <th>Tipo</th>
+                      <th>Tamaño (MB)</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr *ngFor="let idx of tbs.indices">
+                      <td class="font-semibold font-mono">{{ idx.index_name }}</td>
+                      <td>{{ idx.table_name }}</td>
+                      <td><span class="badge badge-neutral">{{ idx.uniqueness }}</span></td>
+                      <td class="font-bold">{{ idx.size_mb | number:'1.2-2' }} MB</td>
+                    </tr>
+                  </tbody>
+                </table>
               </div>
             </div>
           </div>

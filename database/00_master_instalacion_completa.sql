@@ -22,50 +22,75 @@ PROMPT === PROYECTO INTEGRADOR BDII: TURISMOUQ - INSTALACION COMPLETA           
 PROMPT ============================================================================
 
 PROMPT ----------------------------------------------------------------------------
-PROMPT [PASO 1/9] Creacion del Modelo Relacional Limpio (14 Entidades y Reglas)
+PROMPT [PASO 1/14] Creacion del Modelo Relacional Limpio (14 Entidades y Reglas)
 PROMPT ----------------------------------------------------------------------------
 @@"entrega 1/01_ddl_esquema_completo.sql";
 
 PROMPT ----------------------------------------------------------------------------
-PROMPT [PASO 2/9] Poblacion y Generacion del Volumen Minimo de Datos
-PROMPT           (12 mun, 60 aloj, 400 hab, 3.000 cli, 25.000 res, 40.000 serv)
+PROMPT [PASO 2/14] Poblacion y Generacion del Volumen Minimo de Datos
+PROMPT            (12 mun, 60 aloj, 400 hab, 3.000 cli, 25.000 res, 40.000 serv)
 PROMPT ----------------------------------------------------------------------------
 @@"entrega 1/02_carga_datos_minimos.sql";
 
 PROMPT ----------------------------------------------------------------------------
-PROMPT [PASO 3/9] Configuracion de Tablespace Dedicado TBS_HISTORICO_RESERVAS
+PROMPT [PASO 3/14] Configuracion de Tablespace Dedicado TBS_HISTORICO_RESERVAS
 PROMPT ----------------------------------------------------------------------------
 @@"entrega 1/03_tablespace_historico.sql";
 
 PROMPT ----------------------------------------------------------------------------
-PROMPT [PASO 4/9] Verificacion de las Ocho Consultas Analiticas Obligatorias y MV
+PROMPT [PASO 4/14] Verificacion de las Ocho Consultas Analiticas Obligatorias y MV
 PROMPT ----------------------------------------------------------------------------
 @@"entrega 1/04_consultas_analisis.sql";
 
 PROMPT ----------------------------------------------------------------------------
-PROMPT [PASO 5/9] Ajuste de Periodos de Temporada Alta y Recalculo de Tarifas (+40%)
+PROMPT [PASO 5/14] Ajuste de Periodos de Temporada Alta y Recalculo de Tarifas (+40%)
 PROMPT ----------------------------------------------------------------------------
 @@"entrega 2/01_ajuste_temporadas_tarifas.sql";
 
 PROMPT ----------------------------------------------------------------------------
-PROMPT [PASO 6/9] Compilacion de Triggers (Auditoria de Sentencia y Anti-Mutante)
+PROMPT [PASO 6/14] Compilacion de Triggers (Auditoria de Sentencia y Anti-Mutante)
 PROMPT ----------------------------------------------------------------------------
 @@"entrega 2/04_triggers.sql";
 
 PROMPT ----------------------------------------------------------------------------
-PROMPT [PASO 7/9] Compilacion de Especificacion del Paquete PKG_TURISMO_RESERVAS
+PROMPT [PASO 7/14] Compilacion de Especificacion del Paquete PKG_TURISMO_RESERVAS
 PROMPT ----------------------------------------------------------------------------
 @@"entrega 2/02_pkg_turismo_reservas_spec.sql";
 
 PROMPT ----------------------------------------------------------------------------
-PROMPT [PASO 8/9] Compilacion de Cuerpo del Paquete PKG_TURISMO_RESERVAS
+PROMPT [PASO 8/14] Compilacion de Cuerpo del Paquete PKG_TURISMO_RESERVAS
 PROMPT ----------------------------------------------------------------------------
 @@"entrega 2/03_pkg_turismo_reservas_body.sql";
 
 PROMPT ----------------------------------------------------------------------------
-PROMPT [PASO 9/9] Ejecucion de Bateria Automatizada de Pruebas PL/SQL (Entrega 2)
+PROMPT [PASO 9/14] Ejecucion de Bateria Automatizada de Pruebas PL/SQL (Entrega 2)
 PROMPT ----------------------------------------------------------------------------
 @@"entrega 2/05_test_entrega2.sql";
+
+PROMPT ----------------------------------------------------------------------------
+PROMPT [PASO 10/14] Transacciones Atomicas con SAVEPOINT y Rollback Parcial (Entrega 3)
+PROMPT ----------------------------------------------------------------------------
+@@"entrega 3/01_transacciones_savepoint.sql";
+
+PROMPT ----------------------------------------------------------------------------
+PROMPT [PASO 11/14] Control de Concurrencia y Bloqueo de Fila SELECT FOR UPDATE (Entrega 3)
+PROMPT ----------------------------------------------------------------------------
+@@"entrega 3/02_concurrencia_bloqueos.sql";
+
+PROMPT ----------------------------------------------------------------------------
+PROMPT [PASO 12/14] Optimizacion con Indices, Planes CBO y Caso Negativo (Entrega 3)
+PROMPT ----------------------------------------------------------------------------
+@@"entrega 3/03_indices_optimizacion.sql";
+
+PROMPT ----------------------------------------------------------------------------
+PROMPT [PASO 13/14] Seguridad: 4 Roles, Vistas de Recepcion y Perfil Operativo (Entrega 3)
+PROMPT ----------------------------------------------------------------------------
+@@"entrega 3/04_seguridad_roles_perfiles.sql";
+
+PROMPT ----------------------------------------------------------------------------
+PROMPT [PASO 14/14] Ejecucion de Bateria Automatizada de Pruebas (Entrega 3)
+PROMPT ----------------------------------------------------------------------------
+@@"entrega 3/05_test_entrega3.sql";
 
 PROMPT ============================================================================
 PROMPT === VERIFICACION DE ESTADO DE OBJETOS EN EL ESQUEMA TURISMO_UQ           ===

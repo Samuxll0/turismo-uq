@@ -237,9 +237,57 @@ Para cumplir simultáneamente el requerimiento de disparador a nivel de sentenci
 
 ---
 
-## 7. Instrucciones de Despliegue en Base Limpia
+## 7. Entrega 3: Transacciones, Concurrencia, Índices (CBO) y Seguridad
 
-Para calificar el proyecto en una instalación limpia de Oracle Database 21c XE:
+### 7.1 Transacción Atómica con `SAVEPOINT` y Rollback Parcial (`01_transacciones_savepoint.sql`)
+El procedimiento `TURISMO_UQ.sp_reserva_transaccional_pago` registra la reserva y su pago en una misma unidad lógica de trabajo:
+1. Inserta el encabezado en `RESERVA` (estado inicial `'PENDIENTE'`) y el detalle en `RESERVA_HABITACION`.
+2. Establece el punto de salvaguarda: `SAVEPOINT sp_reserva_creada;`.
+3. En un sub-bloque transaccional intenta registrar el pago en `PAGO`.
+4. **Si el pago es exitoso:** actualiza la reserva a `'CONFIRMADA'` y ejecuta `COMMIT` total.
+5. **Si el pago falla (`ORA-20007` o error de restricción):** captura la excepción, ejecuta `ROLLBACK TO SAVEPOINT sp_reserva_creada` (revirtiendo únicamente el pago) y ejecuta `COMMIT` para resguardar la reserva en estado `'PENDIENTE'` sin que el huésped pierda su disponibilidad.
+
+### 7.2 Concurrencia y Bloqueo Pesimista de Fila (`02_concurrencia_bloqueos.sql`)
+El procedimiento `TURISMO_UQ.sp_reservar_con_bloqueo` serializa el intento concurrente de dos sesiones sobre la misma habitación mediante:
+```sql
+SELECT capacidad, numero_nombre
+INTO v_capacidad, v_numero_hab
+FROM TURISMO_UQ.HABITACION
+WHERE id_habitacion = p_id_habitacion
+FOR UPDATE WAIT 5;
+```
+- **Antes (Sin `FOR UPDATE`):** Bajo aislamiento `READ COMMITTED`, dos sesiones simultáneas leen `0` solapamientos antes de que cualquiera confirme (`COMMIT`), entrando en condición de carrera (*Race Condition*).
+- **Después (Con `FOR UPDATE`):** La Sesión 1 adquiere el candado exclusivo de fila (`Row-X TX Lock`) sobre la habitación. La Sesión 2 queda en espera (`enq: TX - row lock contention`). Cuando la Sesión 1 hace `COMMIT`, la Sesión 2 despierta, consulta las reservas confirmadas actualizadas y rechaza limpiamente con `ORA-20003`.
+
+### 7.3 Optimización con Índices y Caso Negativo del CBO (`03_indices_optimizacion.sql`)
+Se evaluaron los planes de ejecución (`EXPLAIN PLAN` + `DBMS_XPLAN.DISPLAY`) sobre las 25.000 reservas y 40.000 servicios:
+
+| Caso | Índice Evaluado | Tipo | Operación Antes (Costo) | Operación Después (Costo) | Impacto |
+| :--- | :--- | :--- | :---: | :---: | :---: |
+| **Q1** | `IDX_COMP_RESERVA_EST_CREA` | Compuesto B-Tree `(estado, fecha_creacion, total)` | `TABLE ACCESS FULL` (**73**) | `INDEX RANGE SCAN DESC` (**2**) | **-97.26%** |
+| **Q2** | `IDX_FBI_RESERVA_ANIO_MES` | Basado en Función `(TO_CHAR(fecha_check_in,'YYYY-MM-DD'), UPPER(TRIM(estado)))` | `TABLE ACCESS FULL` (**72**) | `INDEX RANGE SCAN` (**23**) | **-68.06%** |
+| **Q3** | `IDX_COMP_RESSERV_SERV_CANT` | Compuesto Cobertura `(id_servicio, cantidad, subtotal)` | `TABLE ACCESS FULL` (**42**) | `INDEX RANGE SCAN` (**2**) | **-95.24%** |
+| **Q4 (Caso Negativo)** | `IDX_COMP_RESERVA_EST_CREA` | Filtro baja selectividad `estado IN ('CONFIRMADA','FINALIZADA','PENDIENTE')` | `TABLE ACCESS FULL` Natural (**72**) | `INDEX RANGE SCAN` Forzado con Hint (**24.986**) | **+34.602% (347x peor)** |
+
+**¿Por qué el índice NO ayuda en el Caso 4?**
+1. **Baja Selectividad:** El predicado filtra más del 85%-95% de las 25.000 filas de `RESERVA`.
+2. **Lecturas Single-Block vs Multi-Block:** Al forzar el índice con `/*+ INDEX(r IDX_COMP_RESERVA_EST_CREA) */`, Oracle debe recorrer las hojas del índice y realizar ~25.000 saltos aleatorios por `ROWID` hacia los bloques de la tabla (`TABLE ACCESS BY INDEX ROWID BATCHED`) para recuperar columnas no cubiertas (`id_cliente`, `fecha_check_in`, `fecha_check_out`).
+3. **Clustering Factor:** Un mismo bloque físico de la tabla es leído repetidas veces en lecturas unitarias (`db file sequential read`), mientras que un `TABLE ACCESS FULL` lee bloques contiguos en ráfagas (`db_file_multiblock_read_count`), costando **72** frente a **24.986**.
+
+### 7.4 Seguridad: 4 Roles, Aislamiento por Vistas y Perfil (`04_seguridad_roles_perfiles.sql`)
+- **4 Roles Diferenciados:**
+  1. `ROL_RECEPCION`: **0 permisos sobre tablas directas**. Opera exclusivamente sobre las vistas `VW_RECEPCION_RESERVAS` (con `Trigger INSTEAD OF UPDATE`), `VW_RECEPCION_CHECKIN` y `VW_RECEPCION_HABITACIONES_DISP`.
+  2. `ROL_ADMIN_ALOJAMIENTO`: Permisos `SELECT, INSERT, UPDATE` sobre `ALOJAMIENTO`, `HABITACION`, `TARIFA`, `SERVICIO` y ejecución de `PKG_TURISMO_RESERVAS`.
+  3. `ROL_GERENTE`: Lectura sobre `MV_OCUPACION_MENSUAL`, `LIQUIDACION_MENSUAL_HISTORICO` y tablas de facturación.
+  4. `ROL_AUDITOR`: Lectura inmutable sobre `AUDITORIA_TARIFA`, `LOG_SENTENCIA_TARIFA` y `AUDITORIA_PLANES_INDICES`.
+- **Perfil de Recursos (`PERFIL_TURISMO_OPERATIVO`):**
+  - `SESSIONS_PER_USER 2`, `IDLE_TIME 30`, `CONNECT_TIME 480`, `FAILED_LOGIN_ATTEMPTS 3`, `PASSWORD_LIFE_TIME 90`.
+
+---
+
+## 8. Instrucciones de Despliegue en Base Limpia
+
+Para calificar el proyecto completo (Entregas 1, 2 y 3) en una instalación limpia de Oracle Database 21c XE:
 
 ```powershell
 # 1. Conectarse a la PDB XEPDB1 en SQL*Plus o SQL Developer
@@ -249,4 +297,4 @@ sqlplus TURISMO_UQ/TurismoUQ2026#@localhost:1521/XEPDB1
 @database/00_master_instalacion_completa.sql
 ```
 
-El script ejecutará secuencialmente del paso 1 al 9, imprimirá el progreso en consola, verificará que existan **0 objetos inválidos** y emitirá el reporte de conteo con el volumen mínimo verificado al 100%.
+El script ejecutará secuencialmente del paso 1 al 14, imprimirá el progreso en consola, ejecutará las suites de pruebas automatizadas de Entrega 2 y Entrega 3, verificará que existan **0 objetos inválidos** y emitirá el reporte de conteo con el volumen mínimo verificado al 100%.

@@ -80,6 +80,14 @@ public class GlobalExceptionHandler {
                 status = HttpStatus.BAD_REQUEST;
                 code = "ERR_FECHA_PASADA";
             }
+            case 20007 -> {
+                status = HttpStatus.PAYMENT_REQUIRED;
+                code = "ERR_FALLO_PAGO";
+            }
+            case 20008 -> {
+                status = HttpStatus.CONFLICT;
+                code = "ERR_CONCURRENCIA_BLOQUEO";
+            }
             default -> {
                 if (errorCode >= 20000 && errorCode <= 20999) {
                     status = HttpStatus.BAD_REQUEST;

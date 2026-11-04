@@ -284,6 +284,121 @@ export interface ToastNotificacion {
   duracionMs?: number;
 }
 
+// ==========================================
+// Interfaces Entrega 3: Transacciones, Índices y Seguridad
+// ==========================================
+export interface ReservaTransaccionalRequest {
+  id_cliente: number;
+  id_habitacion: number;
+  fecha_in: string;
+  fecha_out: string;
+  num_huespedes: number;
+  monto_pago?: number | null;
+  metodo_pago: string;
+  simular_fallo_pago: boolean;
+}
+
+export interface ReservaTransaccionalResponse {
+  id_reserva: number;
+  id_pago: number | null;
+  id_cliente: number;
+  nombre_cliente: string;
+  id_habitacion: number;
+  nombre_habitacion: string;
+  nombre_alojamiento: string;
+  fecha_in: string;
+  fecha_out: string;
+  total_reserva: number;
+  monto_pago: number;
+  metodo_pago: string;
+  estado_reserva: string;
+  estado_pago: string;
+  rollback_parcial: boolean;
+  savepoint_utilizado: string;
+  mensaje: string;
+  duracion_ms: number;
+}
+
+export interface SimulacionConcurrenciaResponse {
+  id_habitacion: number;
+  nombre_habitacion: string;
+  nombre_alojamiento: string;
+  fecha_in: string;
+  fecha_out: string;
+  sentencia_bloqueo: string;
+  sesion1_estado: string;
+  sesion1_reserva_id: number;
+  sesion1_detalle: string;
+  sesion2_estado: string;
+  sesion2_codigo_error: string;
+  sesion2_detalle: string;
+  tiempo_espera_sesion2_ms: number;
+  eventos_timeline: string[];
+  comportamiento_antes: string;
+  comportamiento_despues: string;
+}
+
+export interface PlanEjecucionIndice {
+  id_caso: number;
+  codigo_consulta: string;
+  titulo: string;
+  tipo_indice: string;
+  nombre_indice: string;
+  ddl_indice: string;
+  sql_consulta: string;
+  operacion_antes: string;
+  costo_antes: number;
+  cardinalidad_antes: number;
+  bytes_antes: number;
+  tiempo_ms_antes: number;
+  plan_texto_antes: string;
+  operacion_despues: string;
+  costo_despues: number;
+  cardinalidad_despues: number;
+  bytes_despues: number;
+  tiempo_ms_despues: number;
+  plan_texto_despues: string;
+  reduccion_costo_pct: number;
+  es_caso_negativo: boolean;
+  explicacion_tecnica: string;
+}
+
+export interface RolSeguridad {
+  id_rol: number;
+  nombre_rol: string;
+  titulo_rol: string;
+  acceso_tablas_base: string;
+  objetos_permitidos: string;
+  privilegios_dml: string;
+  aislamiento_vistas: boolean;
+  justificacion: string;
+}
+
+export interface PerfilLimite {
+  id_parametro: number;
+  nombre_perfil: string;
+  recurso: string;
+  valor_limite: string;
+  unidad: string;
+  proposito: string;
+}
+
+export interface VistaRecepcionItem {
+  id_reserva: number;
+  fecha_check_in: string;
+  fecha_check_out: string;
+  noches_estadia: number;
+  estado_reserva: string;
+  valor_total: number;
+  documento_cliente: string;
+  nombre_huesped: string;
+  habitacion: string;
+  alojamiento: string;
+  municipio: string;
+  estado_pago: string;
+  medio_pago: string;
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -449,5 +564,41 @@ export class TurismoService {
 
   guardarTarifa(req: GuardarTarifaRequest): Observable<{ mensaje: string; tarifa: TarifaDetalle }> {
     return this.http.post<{ mensaje: string; tarifa: TarifaDetalle }>(`${this.baseUrl}/auditoria/guardar-tarifa`, req);
+  }
+
+  // ==========================================
+  // Entrega 3: Transacciones, Concurrencia, Índices y Seguridad
+  // ==========================================
+  registrarReservaConPago(req: ReservaTransaccionalRequest): Observable<ReservaTransaccionalResponse> {
+    return this.http.post<ReservaTransaccionalResponse>(`${this.baseUrl}/transacciones/reserva-con-pago`, req);
+  }
+
+  simularConcurrencia(payload?: {
+    id_habitacion?: number;
+    id_cliente_sesion1?: number;
+    id_cliente_sesion2?: number;
+    fecha_in?: string;
+    fecha_out?: string;
+    num_huespedes?: number;
+  }): Observable<SimulacionConcurrenciaResponse> {
+    return this.http.post<SimulacionConcurrenciaResponse>(`${this.baseUrl}/transacciones/simular-concurrencia`, payload || {});
+  }
+
+  getPlanesOptimizacion(): Observable<PlanEjecucionIndice[]> {
+    return this.http.get<PlanEjecucionIndice[]>(`${this.baseUrl}/indices/planes`);
+  }
+
+  getRolesSeguridad(): Observable<RolSeguridad[]> {
+    return this.http.get<RolSeguridad[]>(`${this.baseUrl}/seguridad/roles`);
+  }
+
+  getPerfilesSeguridad(): Observable<PerfilLimite[]> {
+    return this.http.get<PerfilLimite[]>(`${this.baseUrl}/seguridad/perfiles`);
+  }
+
+  getVistaRecepcion(limite: number = 12): Observable<VistaRecepcionItem[]> {
+    return this.http.get<VistaRecepcionItem[]>(`${this.baseUrl}/seguridad/vista-recepcion`, {
+      params: new HttpParams().set('limite', limite)
+    });
   }
 }

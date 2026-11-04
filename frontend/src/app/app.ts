@@ -26,7 +26,14 @@ import {
   AuditoriaSentencia,
   TarifaDetalle,
   PeriodoTemporada,
-  GuardarTarifaRequest
+  GuardarTarifaRequest,
+  ReservaTransaccionalRequest,
+  ReservaTransaccionalResponse,
+  SimulacionConcurrenciaResponse,
+  PlanEjecucionIndice,
+  RolSeguridad,
+  PerfilLimite,
+  VistaRecepcionItem
 } from './turismo.service';
 import { Chart, registerables } from 'chart.js';
 
@@ -60,7 +67,7 @@ export class App implements OnInit, OnDestroy {
   // ==========================================
   // Navegación Principal
   // ==========================================
-  tabActivo = signal<'analitica' | 'tablespace' | 'cotizador' | 'reservas' | 'liquidacion' | 'directorio' | 'auditoria'>('analitica');
+  tabActivo = signal<'analitica' | 'tablespace' | 'cotizador' | 'reservas' | 'liquidacion' | 'directorio' | 'auditoria' | 'transacciones' | 'indices' | 'seguridad'>('analitica');
   tablespaceInfo = signal<TablespaceInfo | null>(null);
   analiticaSubTab = signal<'graficos' | 'pivot' | 'lag' | 'rollup' | 'rank' | 'bind' | 'mv' | 'unpivot' | 'clv'>('graficos');
 
@@ -294,6 +301,32 @@ export class App implements OnInit, OnDestroy {
   filtroTarifasAlojamiento: number | null = null;
   filtroTarifasQuery: string = '';
 
+  // ==========================================
+  // 7. Entrega 3: Transacciones, Concurrencia, Índices y Seguridad
+  // ==========================================
+  txIdCliente: number = 1;
+  txIdHabitacion: number = 1;
+  txFechaIn: string = '2028-05-10';
+  txFechaOut: string = '2028-05-14';
+  txNumHuespedes: number = 2;
+  txMetodoPago: string = 'TARJETA';
+  txSimularFalloPago: boolean = false;
+  txResultado = signal<ReservaTransaccionalResponse | null>(null);
+  txHistorial = signal<ReservaTransaccionalResponse[]>([]);
+
+  concIdHabitacion: number = 1;
+  concFechaIn: string = '2028-07-15';
+  concFechaOut: string = '2028-07-19';
+  concurrenciaResultado = signal<SimulacionConcurrenciaResponse | null>(null);
+  concurrenciaEjecutando = signal<boolean>(false);
+
+  planesOptimizacion = signal<PlanEjecucionIndice[]>([]);
+  casoIndiceSeleccionado = signal<number>(1);
+
+  rolesSeguridad = signal<RolSeguridad[]>([]);
+  perfilesSeguridad = signal<PerfilLimite[]>([]);
+  vistaRecepcionItems = signal<VistaRecepcionItem[]>([]);
+
   constructor() {
     effect(() => {
       const tab = this.tabActivo();
@@ -335,7 +368,7 @@ export class App implements OnInit, OnDestroy {
   // ==========================================
   // Navegación
   // ==========================================
-  cambiarTab(tab: 'analitica' | 'tablespace' | 'cotizador' | 'reservas' | 'liquidacion' | 'directorio' | 'auditoria') {
+  cambiarTab(tab: 'analitica' | 'tablespace' | 'cotizador' | 'reservas' | 'liquidacion' | 'directorio' | 'auditoria' | 'transacciones' | 'indices' | 'seguridad') {
     this.tabActivo.set(tab);
     if (tab === 'analitica') {
       setTimeout(() => this.actualizarTodosLosGraficos(), 150);
@@ -347,6 +380,10 @@ export class App implements OnInit, OnDestroy {
       this.consultarLiquidacionPeriodo();
     } else if (tab === 'auditoria') {
       this.cargarAuditoria();
+    } else if (tab === 'indices') {
+      this.cargarPlanesOptimizacion();
+    } else if (tab === 'seguridad') {
+      this.cargarSeguridad();
     }
   }
 
@@ -475,11 +512,11 @@ export class App implements OnInit, OnDestroy {
         this.cargando.set(false);
         this.datosBind.set(d);
         this.renderChartBind();
-        this.mostrarToast('success', 'Variables de Enlace Aplicadas', 'Filtrado ' + this.filtroBindInicio + ' al ' + this.filtroBindFin + ' con Soft Parse.');
+        this.mostrarToast('success', 'Filtro Aplicado', 'Recaudación actualizada del ' + this.filtroBindInicio + ' al ' + this.filtroBindFin + '.');
       },
       error: err => {
         this.cargando.set(false);
-        this.mostrarToast('error', 'Error en Bind Variables', err.error?.message || 'Error en consulta');
+        this.mostrarToast('error', 'Error en Consulta', err.error?.message || 'Error en consulta');
       }
     });
   }
@@ -490,11 +527,11 @@ export class App implements OnInit, OnDestroy {
       next: d => {
         this.cargando.set(false);
         this.datosMV.set(d);
-        this.mostrarToast('info', 'Vista Materializada', 'Cargados ' + d.length + ' registros desde MV_OCUPACION_MENSUAL.');
+        this.mostrarToast('info', 'Consolidado Mensual', 'Se cargaron ' + d.length + ' registros del período seleccionado.');
       },
       error: err => {
         this.cargando.set(false);
-        this.mostrarToast('error', 'Error en MV', err.error?.message || 'Error en vista materializada');
+        this.mostrarToast('error', 'Error en Consolidado', err.error?.message || 'Error al cargar el resumen mensual');
       }
     });
   }
@@ -505,11 +542,11 @@ export class App implements OnInit, OnDestroy {
       next: d => {
         this.cargando.set(false);
         this.datosUnpivot.set(d);
-        this.mostrarToast('info', 'UNPIVOT Dinámico', 'Despivotado de métricas para ' + this.filtroUnpivotMes + '.');
+        this.mostrarToast('info', 'Desglose Actualizado', 'Comparativa actualizada para el período ' + this.filtroUnpivotMes + '.');
       },
       error: err => {
         this.cargando.set(false);
-        this.mostrarToast('error', 'Error en UNPIVOT', err.error?.message || 'Error despivotando');
+        this.mostrarToast('error', 'Error al Actualizar', err.error?.message || 'Error al consultar métricas');
       }
     });
   }
@@ -521,11 +558,11 @@ export class App implements OnInit, OnDestroy {
         this.cargando.set(false);
         this.datosCLV.set(d);
         this.renderChartClv();
-        this.mostrarToast('info', 'Top 10 CLV', 'Cargados ' + d.length + ' clientes con mayor valor de vida transaccional.');
+        this.mostrarToast('info', 'Clientes Frecuentes', 'Listado actualizado con los ' + d.length + ' clientes de mayor facturación.');
       },
       error: err => {
         this.cargando.set(false);
-        this.mostrarToast('error', 'Error en CLV', err.error?.message || 'Error cargando Top Clientes CLV');
+        this.mostrarToast('error', 'Error al Cargar', err.error?.message || 'Error cargando clientes frecuentes');
       }
     });
   }
@@ -712,8 +749,8 @@ export class App implements OnInit, OnDestroy {
 
         this.mostrarToast(
           'success',
-          'Tarifa Actualizada en Oracle XE',
-          `Se actualizó ${num} ${aloj ? '(' + aloj + ')' : ''}: Baja $${baja.toLocaleString()} | Alta $${alta.toLocaleString()} (+40%). Trigger TRG_AUDITORIA_TARIFA disparado.`
+          'Tarifa Actualizada',
+          `Se actualizó ${num} ${aloj ? '(' + aloj + ')' : ''}: Regular $${baja.toLocaleString()} | Alta $${alta.toLocaleString()} (+40%).`
         );
         this.cargarTarifas();
         this.cargarAuditoria();
@@ -1463,8 +1500,8 @@ export class App implements OnInit, OnDestroy {
         this.calcularDesgloseNoches(resp);
         this.mostrarToast(
           'success',
-          'Cotización Exitosa',
-          `fn_valor_estadia calculó $${resp.total_calculado.toLocaleString()} COP para ${resp.total_noches} noches.`
+          'Cotización Calculada',
+          `Valor estimado de $${resp.total_calculado.toLocaleString()} COP por ${resp.total_noches} noches.`
         );
       },
       error: err => {
@@ -1743,5 +1780,149 @@ export class App implements OnInit, OnDestroy {
 
   getHabitacionReservaSeleccionada(): HabitacionDetalle | undefined {
     return this.habitaciones().find(h => h.id_habitacion === Number(this.resIdHabitacion));
+  }
+
+  // ==========================================
+  // Entrega 3: Transacciones, Concurrencia, Índices y Seguridad
+  // ==========================================
+  ejecutarReservaTransaccional() {
+    this.cargando.set(true);
+    const payload: ReservaTransaccionalRequest = {
+      id_cliente: Number(this.txIdCliente || 1),
+      id_habitacion: Number(this.txIdHabitacion || 1),
+      fecha_in: this.txFechaIn,
+      fecha_out: this.txFechaOut,
+      num_huespedes: Number(this.txNumHuespedes || 2),
+      metodo_pago: this.txMetodoPago || 'TARJETA',
+      simular_fallo_pago: this.txSimularFalloPago
+    };
+
+    this.api.registrarReservaConPago(payload).subscribe({
+      next: resp => {
+        this.cargando.set(false);
+        this.txResultado.set(resp);
+        this.txHistorial.update(list => [resp, ...list]);
+        if (resp.rollback_parcial) {
+          this.mostrarToast(
+            'warning',
+            'Pago Rechazado · Reserva en Espera',
+            resp.mensaje,
+            'PENDIENTE',
+            9000
+          );
+        } else {
+          this.mostrarToast(
+            'success',
+            'Reserva y Pago Confirmados',
+            resp.mensaje,
+            'CONFIRMADA',
+            7000
+          );
+        }
+      },
+      error: err => {
+        this.cargando.set(false);
+        const code = err.error?.code || 'ORA-ERROR';
+        const msg = err.error?.message || 'Error en procedimiento transaccional';
+        this.mostrarToast('error', `Error Transaccional [${code}]`, msg, code, 8000);
+      }
+    });
+  }
+
+  probarTransaccionAtomicaExitosa() {
+    this.txIdCliente = this.clientes().length > 0 ? this.clientes()[0].id : 1;
+    this.txIdHabitacion = this.habitaciones().length > 0 ? this.habitaciones()[0].id_habitacion : 1;
+    this.txFechaIn = '2028-05-10';
+    this.txFechaOut = '2028-05-14';
+    this.txNumHuespedes = 2;
+    this.txMetodoPago = 'TARJETA';
+    this.txSimularFalloPago = false;
+    this.ejecutarReservaTransaccional();
+  }
+
+  probarRollbackParcialSavepoint() {
+    this.txIdCliente = this.clientes().length > 1 ? this.clientes()[1].id : 2;
+    this.txIdHabitacion = this.habitaciones().length > 1 ? this.habitaciones()[1].id_habitacion : 2;
+    this.txFechaIn = '2028-06-12';
+    this.txFechaOut = '2028-06-16';
+    this.txNumHuespedes = 2;
+    this.txMetodoPago = 'PSE';
+    this.txSimularFalloPago = true;
+    this.ejecutarReservaTransaccional();
+  }
+
+  ejecutarExperimentoConcurrencia() {
+    this.concurrenciaEjecutando.set(true);
+    this.cargando.set(true);
+    this.api.simularConcurrencia({
+      id_habitacion: Number(this.concIdHabitacion || 1),
+      id_cliente_sesion1: 1,
+      id_cliente_sesion2: 2,
+      fecha_in: this.concFechaIn,
+      fecha_out: this.concFechaOut,
+      num_huespedes: 2
+    }).subscribe({
+      next: resp => {
+        this.concurrenciaEjecutando.set(false);
+        this.cargando.set(false);
+        this.concurrenciaResultado.set(resp);
+        this.mostrarToast(
+          'info',
+          'Experimento de Concurrencia Completado',
+          `Sesión 1 confirmó Reserva #${resp.sesion1_reserva_id} con SELECT FOR UPDATE. Sesión 2 esperó ${resp.tiempo_espera_sesion2_ms} ms y fue rechazada con ${resp.sesion2_codigo_error}.`,
+          'FOR UPDATE',
+          9000
+        );
+      },
+      error: err => {
+        this.concurrenciaEjecutando.set(false);
+        this.cargando.set(false);
+        this.mostrarToast('error', 'Error en Concurrencia', err.error?.message || 'Error al ejecutar experimento de 2 sesiones');
+      }
+    });
+  }
+
+  cargarPlanesOptimizacion() {
+    this.cargando.set(true);
+    this.api.getPlanesOptimizacion().subscribe({
+      next: data => {
+        this.cargando.set(false);
+        this.planesOptimizacion.set(data);
+        if (data.length > 0 && !this.casoIndiceSeleccionado()) {
+          this.casoIndiceSeleccionado.set(data[0].id_caso);
+        }
+      },
+      error: err => {
+        this.cargando.set(false);
+        console.error('Error cargando planes de ejecución', err);
+      }
+    });
+  }
+
+  planSeleccionadoActual(): PlanEjecucionIndice | undefined {
+    const id = this.casoIndiceSeleccionado();
+    return this.planesOptimizacion().find(p => p.id_caso === id) || this.planesOptimizacion()[0];
+  }
+
+  cargarSeguridad() {
+    this.cargando.set(true);
+    this.api.getRolesSeguridad().subscribe({
+      next: roles => this.rolesSeguridad.set(roles),
+      error: err => console.error('Error cargando roles', err)
+    });
+    this.api.getPerfilesSeguridad().subscribe({
+      next: perf => this.perfilesSeguridad.set(perf),
+      error: err => console.error('Error cargando perfiles', err)
+    });
+    this.api.getVistaRecepcion(12).subscribe({
+      next: items => {
+        this.cargando.set(false);
+        this.vistaRecepcionItems.set(items);
+      },
+      error: err => {
+        this.cargando.set(false);
+        console.error('Error cargando vista de recepción', err);
+      }
+    });
   }
 }
