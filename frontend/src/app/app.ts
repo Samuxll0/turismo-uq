@@ -33,7 +33,8 @@ import {
   PlanEjecucionIndice,
   RolSeguridad,
   PerfilLimite,
-  VistaRecepcionItem
+  VistaRecepcionItem,
+  UsuarioAutenticado
 } from './turismo.service';
 import { Chart, registerables } from 'chart.js';
 
@@ -327,17 +328,62 @@ export class App implements OnInit, OnDestroy {
   perfilesSeguridad = signal<PerfilLimite[]>([]);
   vistaRecepcionItems = signal<VistaRecepcionItem[]>([]);
 
+  // ==========================================
+  // 8. Autenticación, Roles y Gestión de Cuentas
+  // ==========================================
+  usuarioActual = signal<UsuarioAutenticado | null>(null);
+  authModo = signal<'login' | 'registro'>('login');
+  mostrarModalCrearCuenta = signal<boolean>(false);
+  usuariosSistema = signal<UsuarioAutenticado[]>([]);
+
+  loginUsername: string = 'admin_uq';
+  loginPassword: string = '123456';
+
+  regUsername: string = '';
+  regPassword: string = '';
+  regRol: string = 'RECEPCION';
+
+  rolesDisponibles = [
+    {
+      codigo: 'SUPER_ADMIN',
+      nombre: 'Administrador General (Acceso Total)',
+      resumen: 'Acceso completo a los 10 módulos del sistema'
+    },
+    {
+      codigo: 'RECEPCION',
+      nombre: 'Operador de Recepción y Check-In',
+      resumen: 'Catálogo, Cotizador, Reservas, Checkout y Recepción'
+    },
+    {
+      codigo: 'ADMIN_ALOJAMIENTO',
+      nombre: 'Administrador de Alojamiento y Tarifas',
+      resumen: 'Catálogo, Cotizador, Reservas y Gestión de Tarifas'
+    },
+    {
+      codigo: 'GERENTE',
+      nombre: 'Gerente de Inteligencia de Negocios',
+      resumen: 'Reportes e Indicadores (8 consultas), Liquidación y Catálogo'
+    },
+    {
+      codigo: 'AUDITOR',
+      nombre: 'Auditor Interno de Tarifas y Rendimiento',
+      resumen: 'Auditoría de Tarifas (solo lectura), Índices, Almacenamiento y Recepción'
+    }
+  ];
+
   constructor() {
     effect(() => {
+      const user = this.usuarioActual();
       const tab = this.tabActivo();
       const sub = this.analiticaSubTab();
-      if (tab === 'analitica' && sub === 'graficos') {
+      if (user && tab === 'analitica' && sub === 'graficos') {
         setTimeout(() => this.actualizarTodosLosGraficos(), 100);
       }
     });
   }
 
   ngOnInit() {
+    this.cargarUsuariosSistema();
     this.cargarCatalogos();
     this.cargarAnalitica();
     this.cargarTablespaceInfo();
@@ -366,9 +412,131 @@ export class App implements OnInit, OnDestroy {
   }
 
   // ==========================================
+  // Autenticación y Control de Permisos por Rol
+  // ==========================================
+  cargarUsuariosSistema() {
+    this.api.getUsuariosSistema().subscribe({
+      next: lista => this.usuariosSistema.set(lista),
+      error: err => console.error('Error cargando usuarios del sistema', err)
+    });
+  }
+
+  tienePermisoModulo(modulo: string): boolean {
+    const user = this.usuarioActual();
+    if (!user) return false;
+    if (user.rol === 'SUPER_ADMIN') return true;
+    return Array.isArray(user.modulos_permitidos) && user.modulos_permitidos.includes(modulo);
+  }
+
+  puedeEditarTarifas(): boolean {
+    const user = this.usuarioActual();
+    if (!user) return false;
+    return !!user.puede_editar_tarifas || user.rol === 'SUPER_ADMIN' || user.rol === 'ADMIN_ALOJAMIENTO';
+  }
+
+  seleccionarCuentaEnLogin(cuenta: UsuarioAutenticado) {
+    this.authModo.set('login');
+    this.loginUsername = cuenta.username;
+    const cuentasBase = ['admin_uq', 'recepcion_uq', 'admin_alojamiento_uq', 'gerente_uq', 'auditor_uq'];
+    if (cuentasBase.includes(cuenta.username.toLowerCase())) {
+      this.loginPassword = '123456';
+    }
+  }
+
+  iniciarSesion() {
+    if (!this.loginUsername.trim() || !this.loginPassword.trim()) {
+      this.mostrarToast('warning', 'Datos Incompletos', 'Ingresa tu nombre de usuario y contraseña.');
+      return;
+    }
+
+    this.cargando.set(true);
+    this.api.login({
+      username: this.loginUsername.trim(),
+      password: this.loginPassword.trim()
+    }).subscribe({
+      next: resp => {
+        this.cargando.set(false);
+        this.aplicarSesionUsuario(resp);
+        this.mostrarToast('success', `Bienvenido, ${resp.username}`, resp.mensaje || `Rol activo: ${resp.titulo_rol}`);
+      },
+      error: err => {
+        this.cargando.set(false);
+        this.mostrarToast('error', 'Error de Inicio de Sesión', err.error?.message || 'Credenciales inválidas.');
+      }
+    });
+  }
+
+  crearNuevaCuenta(iniciarInmediatamente: boolean = true) {
+    if (!this.regUsername.trim() || this.regUsername.trim().length < 3) {
+      this.mostrarToast('warning', 'Usuario Inválido', 'El nombre de usuario debe tener al menos 3 caracteres.');
+      return;
+    }
+    if (!this.regPassword.trim() || this.regPassword.trim().length < 4) {
+      this.mostrarToast('warning', 'Contraseña Corta', 'La contraseña debe tener al menos 4 caracteres.');
+      return;
+    }
+
+    const claveCreada = this.regPassword.trim();
+    this.cargando.set(true);
+    this.api.registrarUsuario({
+      username: this.regUsername.trim(),
+      password: claveCreada,
+      rol: this.regRol
+    }).subscribe({
+      next: resp => {
+        this.cargando.set(false);
+        this.cargarUsuariosSistema();
+        this.regUsername = '';
+        this.regPassword = '';
+        this.mostrarModalCrearCuenta.set(false);
+
+        if (iniciarInmediatamente) {
+          this.aplicarSesionUsuario(resp);
+          this.mostrarToast('success', 'Cuenta Creada y Sesión Iniciada', resp.mensaje);
+        } else {
+          this.loginUsername = resp.username;
+          this.loginPassword = claveCreada;
+          this.mostrarToast('success', 'Cuenta Creada', `${resp.mensaje} Puedes cambiar a esta cuenta cuando desees.`);
+        }
+      },
+      error: err => {
+        this.cargando.set(false);
+        this.mostrarToast('error', 'No se pudo crear la cuenta', err.error?.message || 'Error al registrar el usuario.');
+      }
+    });
+  }
+
+  private aplicarSesionUsuario(user: UsuarioAutenticado) {
+    this.usuarioActual.set(user);
+    const permitidos = user.modulos_permitidos || [];
+    if (user.rol === 'SUPER_ADMIN' || permitidos.includes('analitica')) {
+      this.cambiarTab('analitica');
+    } else if (permitidos.length > 0) {
+      this.cambiarTab(permitidos[0] as any);
+    } else {
+      this.cambiarTab('directorio');
+    }
+  }
+
+  cerrarSesion() {
+    const anterior = this.usuarioActual()?.username;
+    this.usuarioActual.set(null);
+    this.mostrarModalCrearCuenta.set(false);
+    this.authModo.set('login');
+    this.cargarUsuariosSistema();
+    if (anterior) {
+      this.mostrarToast('info', 'Sesión Cerrada', `Has cerrado la sesión de ${anterior}.`);
+    }
+  }
+
+  // ==========================================
   // Navegación
   // ==========================================
   cambiarTab(tab: 'analitica' | 'tablespace' | 'cotizador' | 'reservas' | 'liquidacion' | 'directorio' | 'auditoria' | 'transacciones' | 'indices' | 'seguridad') {
+    if (this.usuarioActual() && !this.tienePermisoModulo(tab)) {
+      this.mostrarToast('warning', 'Acceso Restringido', `Tu rol (${this.usuarioActual()?.titulo_rol}) no tiene permisos para acceder a este módulo.`);
+      return;
+    }
     this.tabActivo.set(tab);
     if (tab === 'analitica') {
       setTimeout(() => this.actualizarTodosLosGraficos(), 150);
@@ -1906,14 +2074,6 @@ export class App implements OnInit, OnDestroy {
 
   cargarSeguridad() {
     this.cargando.set(true);
-    this.api.getRolesSeguridad().subscribe({
-      next: roles => this.rolesSeguridad.set(roles),
-      error: err => console.error('Error cargando roles', err)
-    });
-    this.api.getPerfilesSeguridad().subscribe({
-      next: perf => this.perfilesSeguridad.set(perf),
-      error: err => console.error('Error cargando perfiles', err)
-    });
     this.api.getVistaRecepcion(12).subscribe({
       next: items => {
         this.cargando.set(false);
@@ -1921,7 +2081,7 @@ export class App implements OnInit, OnDestroy {
       },
       error: err => {
         this.cargando.set(false);
-        console.error('Error cargando vista de recepción', err);
+        console.error('Error cargando panel de recepción', err);
       }
     });
   }

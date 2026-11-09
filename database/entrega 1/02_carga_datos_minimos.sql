@@ -314,21 +314,24 @@ END;
 PROMPT [8/9] 25.000 Reservas, 25.000 Habitaciones, 40.000 Servicios y 25.000 Pagos generados con éxito.
 
 -- ----------------------------------------------------------------------------
--- 9. USUARIOS DEL SISTEMA Y ROLES (4 Perfiles Administrativos)
+-- 9. USUARIOS DEL SISTEMA Y ROLES (5 Perfiles del Sistema)
 -- ----------------------------------------------------------------------------
 INSERT INTO USUARIO_SISTEMA (username, password_hash, rol, activo)
-VALUES ('recepcion_uq', '$2a$12$N.zmdr9k7uOCQb376NoUnuTJ8iAt6Z5EHsM8lE9lBo88wP3.KWy0q', 'RECEPCION', 1);
+VALUES ('admin_uq', '8d969eef6ecad3c29a3a629280e686cf0c3f5d5a86aff3ca12020c923adc6c92', 'SUPER_ADMIN', 1);
 
 INSERT INTO USUARIO_SISTEMA (username, password_hash, rol, activo)
-VALUES ('admin_alojamiento_uq', '$2a$12$N.zmdr9k7uOCQb376NoUnuTJ8iAt6Z5EHsM8lE9lBo88wP3.KWy0q', 'ADMIN_ALOJAMIENTO', 1);
+VALUES ('recepcion_uq', '8d969eef6ecad3c29a3a629280e686cf0c3f5d5a86aff3ca12020c923adc6c92', 'RECEPCION', 1);
 
 INSERT INTO USUARIO_SISTEMA (username, password_hash, rol, activo)
-VALUES ('gerente_uq', '$2a$12$N.zmdr9k7uOCQb376NoUnuTJ8iAt6Z5EHsM8lE9lBo88wP3.KWy0q', 'GERENTE', 1);
+VALUES ('admin_alojamiento_uq', '8d969eef6ecad3c29a3a629280e686cf0c3f5d5a86aff3ca12020c923adc6c92', 'ADMIN_ALOJAMIENTO', 1);
 
 INSERT INTO USUARIO_SISTEMA (username, password_hash, rol, activo)
-VALUES ('auditor_uq', '$2a$12$N.zmdr9k7uOCQb376NoUnuTJ8iAt6Z5EHsM8lE9lBo88wP3.KWy0q', 'AUDITOR', 1);
+VALUES ('gerente_uq', '8d969eef6ecad3c29a3a629280e686cf0c3f5d5a86aff3ca12020c923adc6c92', 'GERENTE', 1);
+
+INSERT INTO USUARIO_SISTEMA (username, password_hash, rol, activo)
+VALUES ('auditor_uq', '8d969eef6ecad3c29a3a629280e686cf0c3f5d5a86aff3ca12020c923adc6c92', 'AUDITOR', 1);
 COMMIT;
-PROMPT [9/9] 4 Usuarios del sistema configurados.
+PROMPT [9/9] 5 Usuarios del sistema configurados.
 
 PROMPT ============================================================================
 PROMPT === CARGA Y POBLACION DE VOLUMEN MINIMO COMPLETADA AL 100%               ===

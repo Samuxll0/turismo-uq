@@ -16,9 +16,200 @@
 </div>
 
 <!-- ========================================================================= -->
+<!-- PANTALLA DE INICIO DE SESIÓN Y CREACIÓN DE CUENTAS                        -->
+<!-- ========================================================================= -->
+<div *ngIf="!usuarioActual()" class="auth-screen fade-in">
+  <div class="auth-container">
+
+    <!-- Panel Izquierdo: Formulario de Login o Registro -->
+    <div class="auth-card">
+      <div class="auth-brand">
+        <div class="brand-logo">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+          </svg>
+        </div>
+        <div>
+          <h1 class="auth-title">TurismoUQ</h1>
+          <p class="auth-subtitle">Plataforma de Gestión Hotelera · Quindío</p>
+        </div>
+      </div>
+
+      <div class="auth-tabs">
+        <button class="auth-tab-btn" [class.active]="authModo() === 'login'" (click)="authModo.set('login')">
+          Iniciar Sesión
+        </button>
+        <button class="auth-tab-btn" [class.active]="authModo() === 'registro'" (click)="authModo.set('registro')">
+          Crear Nueva Cuenta
+        </button>
+      </div>
+
+      <!-- MODO 1: INICIAR SESIÓN -->
+      <div *ngIf="authModo() === 'login'" class="form-stack fade-in">
+        <div class="form-group">
+          <label>Nombre de Usuario</label>
+          <input
+            type="text"
+            [(ngModel)]="loginUsername"
+            (keyup.enter)="iniciarSesion()"
+            placeholder="Ej: admin_uq, recepcion_uq..."
+            class="form-control"
+          />
+        </div>
+
+        <div class="form-group">
+          <label>Contraseña</label>
+          <input
+            type="password"
+            [(ngModel)]="loginPassword"
+            (keyup.enter)="iniciarSesion()"
+            placeholder="Ingresa tu contraseña"
+            class="form-control"
+          />
+          <small class="text-muted">Contraseña de las cuentas base del sistema: <strong>123456</strong></small>
+        </div>
+
+        <button class="btn-primary btn-block mt-2" (click)="iniciarSesion()" [disabled]="cargando()">
+          {{ cargando() ? 'Verificando credenciales...' : 'Ingresar al Sistema' }}
+        </button>
+      </div>
+
+      <!-- MODO 2: CREAR NUEVA CUENTA -->
+      <div *ngIf="authModo() === 'registro'" class="form-stack fade-in">
+        <div class="form-group">
+          <label>Nuevo Nombre de Usuario</label>
+          <input
+            type="text"
+            [(ngModel)]="regUsername"
+            placeholder="Ej: carlos_gerente, laura_recepcion..."
+            class="form-control"
+          />
+        </div>
+
+        <div class="form-group">
+          <label>Contraseña</label>
+          <input
+            type="password"
+            [(ngModel)]="regPassword"
+            placeholder="Mínimo 4 caracteres"
+            class="form-control"
+          />
+        </div>
+
+        <div class="form-group">
+          <label>Rol y Nivel de Acceso</label>
+          <select [(ngModel)]="regRol" class="form-control">
+            <option *ngFor="let r of rolesDisponibles" [value]="r.codigo">
+              {{ r.nombre }} ({{ r.codigo }})
+            </option>
+          </select>
+        </div>
+
+        <div class="role-preview-box">
+          <ng-container *ngFor="let r of rolesDisponibles">
+            <div *ngIf="r.codigo === regRol">
+              <strong>{{ r.nombre }}</strong>
+              <p>{{ r.resumen }}</p>
+            </div>
+          </ng-container>
+        </div>
+
+        <button class="btn-primary btn-block mt-2" (click)="crearNuevaCuenta(true)" [disabled]="cargando()">
+          {{ cargando() ? 'Registrando cuenta...' : 'Crear Cuenta e Iniciar Sesión' }}
+        </button>
+      </div>
+    </div>
+
+    <!-- Panel Derecho: Selector Rápido de Cuentas del Sistema -->
+    <div class="auth-accounts-panel">
+      <div class="accounts-header">
+        <h2>Cuentas Disponibles en el Sistema</h2>
+        <p>Selecciona cualquier usuario registrado para cargar sus datos e ingresar con sus permisos asignados:</p>
+      </div>
+
+      <div class="accounts-list">
+        <button
+          *ngFor="let u of usuariosSistema()"
+          class="account-item-btn"
+          [class.selected]="loginUsername.toLowerCase() === u.username.toLowerCase()"
+          (click)="seleccionarCuentaEnLogin(u)">
+          <div class="account-item-top">
+            <span class="account-username">{{ u.username }}</span>
+            <span class="badge"
+              [class.badge-success]="u.rol === 'SUPER_ADMIN'"
+              [class.badge-info]="u.rol === 'RECEPCION' || u.rol === 'ADMIN_ALOJAMIENTO'"
+              [class.badge-amber]="u.rol === 'GERENTE'"
+              [class.badge-neutral]="u.rol === 'AUDITOR'">
+              {{ u.rol }}
+            </span>
+          </div>
+          <span class="account-role-title">{{ u.titulo_rol }}</span>
+          <span class="account-modules-count">{{ u.modulos_permitidos.length }} módulos habilitados</span>
+        </button>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ========================================================================= -->
+<!-- MODAL PARA CREAR NUEVA CUENTA DESDE LA SESIÓN ACTIVA                      -->
+<!-- ========================================================================= -->
+<div *ngIf="mostrarModalCrearCuenta()" class="modal-backdrop fade-in">
+  <div class="modal-card">
+    <div class="card-header-flex">
+      <div>
+        <h3 class="card-title">Crear Nueva Cuenta de Usuario</h3>
+        <p class="card-subtitle">Registra un nuevo usuario asignándole cualquiera de los roles del sistema</p>
+      </div>
+      <button class="toast-close" (click)="mostrarModalCrearCuenta.set(false)">✕</button>
+    </div>
+
+    <div class="form-stack">
+      <div class="form-group">
+        <label>Nombre de Usuario</label>
+        <input type="text" [(ngModel)]="regUsername" placeholder="Ej: camilo_auditor" class="form-control" />
+      </div>
+
+      <div class="form-group">
+        <label>Contraseña</label>
+        <input type="password" [(ngModel)]="regPassword" placeholder="Mínimo 4 caracteres" class="form-control" />
+      </div>
+
+      <div class="form-group">
+        <label>Rol del Sistema</label>
+        <select [(ngModel)]="regRol" class="form-control">
+          <option *ngFor="let r of rolesDisponibles" [value]="r.codigo">
+            {{ r.nombre }} ({{ r.codigo }})
+          </option>
+        </select>
+      </div>
+
+      <div class="role-preview-box">
+        <ng-container *ngFor="let r of rolesDisponibles">
+          <div *ngIf="r.codigo === regRol">
+            <strong>{{ r.nombre }}</strong>
+            <p>{{ r.resumen }}</p>
+          </div>
+        </ng-container>
+      </div>
+
+      <div class="form-row-2 mt-2">
+        <button class="btn-outline" (click)="crearNuevaCuenta(false)" [disabled]="cargando()">
+          Crear Cuenta
+        </button>
+        <button class="btn-primary" (click)="crearNuevaCuenta(true)" [disabled]="cargando()">
+          Crear y Cambiar a esta Cuenta
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ========================================================================= -->
 <!-- LAYOUT PRINCIPAL DE LA APLICACIÓN                                         -->
 <!-- ========================================================================= -->
-<div class="app-layout">
+<div *ngIf="usuarioActual() as user" class="app-layout">
 
   <!-- ======================================================================= -->
   <!-- BARRA LATERAL (SIDEBAR)                                                 -->
@@ -37,31 +228,31 @@
     </div>
 
     <nav class="sidebar-nav">
-      <div class="nav-group">
+      <div class="nav-group" *ngIf="tienePermisoModulo('directorio') || tienePermisoModulo('cotizador') || tienePermisoModulo('reservas') || tienePermisoModulo('transacciones')">
         <span class="nav-group-label">Operación y Reservas</span>
 
-        <button class="nav-link" [class.active]="tabActivo() === 'directorio'" (click)="cambiarTab('directorio')">
+        <button *ngIf="tienePermisoModulo('directorio')" class="nav-link" [class.active]="tabActivo() === 'directorio'" (click)="cambiarTab('directorio')">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" class="nav-icon">
             <path stroke-linecap="round" stroke-linejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
           </svg>
           <span>Catálogo de Alojamientos</span>
         </button>
 
-        <button class="nav-link" [class.active]="tabActivo() === 'cotizador'" (click)="cambiarTab('cotizador')">
+        <button *ngIf="tienePermisoModulo('cotizador')" class="nav-link" [class.active]="tabActivo() === 'cotizador'" (click)="cambiarTab('cotizador')">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" class="nav-icon">
             <path stroke-linecap="round" stroke-linejoin="round" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
           </svg>
           <span>Cotizador de Estadías</span>
         </button>
 
-        <button class="nav-link" [class.active]="tabActivo() === 'reservas'" (click)="cambiarTab('reservas')">
+        <button *ngIf="tienePermisoModulo('reservas')" class="nav-link" [class.active]="tabActivo() === 'reservas'" (click)="cambiarTab('reservas')">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" class="nav-icon">
             <path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
           </svg>
           <span>Gestión de Reservas</span>
         </button>
 
-        <button class="nav-link" [class.active]="tabActivo() === 'transacciones'" (click)="cambiarTab('transacciones')">
+        <button *ngIf="tienePermisoModulo('transacciones')" class="nav-link" [class.active]="tabActivo() === 'transacciones'" (click)="cambiarTab('transacciones')">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" class="nav-icon">
             <path stroke-linecap="round" stroke-linejoin="round" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
           </svg>
@@ -69,17 +260,17 @@
         </button>
       </div>
 
-      <div class="nav-group">
+      <div class="nav-group" *ngIf="tienePermisoModulo('auditoria') || tienePermisoModulo('liquidacion')">
         <span class="nav-group-label">Finanzas y Tarifas</span>
 
-        <button class="nav-link" [class.active]="tabActivo() === 'auditoria'" (click)="cambiarTab('auditoria')">
+        <button *ngIf="tienePermisoModulo('auditoria')" class="nav-link" [class.active]="tabActivo() === 'auditoria'" (click)="cambiarTab('auditoria')">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" class="nav-icon">
             <path stroke-linecap="round" stroke-linejoin="round" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
           </svg>
           <span>Tarifas e Historial</span>
         </button>
 
-        <button class="nav-link" [class.active]="tabActivo() === 'liquidacion'" (click)="cambiarTab('liquidacion')">
+        <button *ngIf="tienePermisoModulo('liquidacion')" class="nav-link" [class.active]="tabActivo() === 'liquidacion'" (click)="cambiarTab('liquidacion')">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" class="nav-icon">
             <path stroke-linecap="round" stroke-linejoin="round" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
           </svg>
@@ -87,31 +278,31 @@
         </button>
       </div>
 
-      <div class="nav-group">
+      <div class="nav-group" *ngIf="tienePermisoModulo('analitica') || tienePermisoModulo('seguridad') || tienePermisoModulo('indices') || tienePermisoModulo('tablespace')">
         <span class="nav-group-label">Analítica y Administración</span>
 
-        <button class="nav-link" [class.active]="tabActivo() === 'analitica'" (click)="cambiarTab('analitica')">
+        <button *ngIf="tienePermisoModulo('analitica')" class="nav-link" [class.active]="tabActivo() === 'analitica'" (click)="cambiarTab('analitica')">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" class="nav-icon">
             <path stroke-linecap="round" stroke-linejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
           </svg>
           <span>Reportes e Indicadores</span>
         </button>
 
-        <button class="nav-link" [class.active]="tabActivo() === 'seguridad'" (click)="cambiarTab('seguridad')">
+        <button *ngIf="tienePermisoModulo('seguridad')" class="nav-link" [class.active]="tabActivo() === 'seguridad'" (click)="cambiarTab('seguridad')">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" class="nav-icon">
             <path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
           </svg>
-          <span>Recepción y Accesos</span>
+          <span>Panel de Recepción</span>
         </button>
 
-        <button class="nav-link" [class.active]="tabActivo() === 'indices'" (click)="cambiarTab('indices')">
+        <button *ngIf="tienePermisoModulo('indices')" class="nav-link" [class.active]="tabActivo() === 'indices'" (click)="cambiarTab('indices')">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" class="nav-icon">
             <path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" />
           </svg>
           <span>Rendimiento de Consultas</span>
         </button>
 
-        <button class="nav-link" [class.active]="tabActivo() === 'tablespace'" (click)="cambiarTab('tablespace')">
+        <button *ngIf="tienePermisoModulo('tablespace')" class="nav-link" [class.active]="tabActivo() === 'tablespace'" (click)="cambiarTab('tablespace')">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" class="nav-icon">
             <path stroke-linecap="round" stroke-linejoin="round" d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4" />
           </svg>
@@ -121,9 +312,14 @@
     </nav>
 
     <div class="sidebar-footer">
-      <div class="status-pill">
-        <span class="status-dot"></span>
-        <span>Sistema en línea · Quindío</span>
+      <div class="sidebar-user-box">
+        <div class="sidebar-user-info">
+          <span class="sidebar-username">{{ user.username }}</span>
+          <span class="sidebar-userrole">{{ user.rol }}</span>
+        </div>
+        <button class="btn-logout-sidebar" (click)="cerrarSesion()" title="Cambiar de usuario o cerrar sesión">
+          Salir
+        </button>
       </div>
     </div>
   </aside>
@@ -143,24 +339,19 @@
         <h1 *ngIf="tabActivo() === 'transacciones'">Checkout con Pago y Control de Cupos</h1>
         <h1 *ngIf="tabActivo() === 'auditoria'">Administración de Tarifas e Historial</h1>
         <h1 *ngIf="tabActivo() === 'liquidacion'">Liquidación Mensual a Propietarios</h1>
-        <h1 *ngIf="tabActivo() === 'seguridad'">Recepción y Perfiles de Acceso</h1>
+        <h1 *ngIf="tabActivo() === 'seguridad'">Panel Operativo de Recepción</h1>
         <h1 *ngIf="tabActivo() === 'indices'">Diagnóstico de Rendimiento de Consultas</h1>
         <h1 *ngIf="tabActivo() === 'tablespace'">Estado de Almacenamiento del Sistema</h1>
       </div>
 
       <div class="topbar-meta">
-        <div class="meta-chip">
-          <span class="meta-label">Municipios</span>
-          <span class="meta-val">{{ municipios().length || 12 }}</span>
-        </div>
-        <div class="meta-chip">
-          <span class="meta-label">Alojamientos</span>
-          <span class="meta-val">{{ alojamientos().length || 60 }}</span>
-        </div>
-        <div class="meta-chip">
-          <span class="meta-label">Habitaciones</span>
-          <span class="meta-val">{{ habitaciones().length || 180 }}</span>
-        </div>
+        <span class="badge badge-success">{{ user.titulo_rol }}</span>
+        <button class="btn-outline btn-xs" (click)="mostrarModalCrearCuenta.set(true)">
+          + Crear Cuenta
+        </button>
+        <button class="btn-danger-soft btn-xs" (click)="cerrarSesion()">
+          Cambiar Usuario
+        </button>
       </div>
     </header>
 
@@ -1164,8 +1355,8 @@
       <!-- MÓDULO 6: ADMINISTRACIÓN DE TARIFAS E HISTORIAL (AUDITORÍA)         -->
       <!-- =================================================================== -->
       <section *ngIf="tabActivo() === 'auditoria'" class="fade-in">
-        <!-- Editor de Tarifas -->
-        <div class="card mb-4">
+        <!-- Editor de Tarifas (Solo para roles con permiso de edición: SUPER_ADMIN y ADMIN_ALOJAMIENTO) -->
+        <div *ngIf="puedeEditarTarifas()" class="card mb-4">
           <div class="card-header-flex">
             <div>
               <h3 class="card-title">{{ tarifaFormEditando ? 'Modificar Tarifa de Habitación' : 'Actualizar Tarifas de Alojamiento' }}</h3>
@@ -1236,6 +1427,19 @@
           </div>
         </div>
 
+        <!-- Barra informativa para el rol AUDITOR (Solo Lectura) -->
+        <div *ngIf="!puedeEditarTarifas()" class="card mb-4">
+          <div class="card-header-flex mb-0">
+            <div>
+              <h3 class="card-title">Fiscalización de Tarifas e Historial (Modo Solo Lectura)</h3>
+              <p class="card-subtitle">Consulta inmutable de tarifas vigentes y registro de cambios realizados</p>
+            </div>
+            <button class="btn-outline btn-sm" (click)="refrescarAuditoriaConFeedback()" [disabled]="cargando()">
+              Refrescar
+            </button>
+          </div>
+        </div>
+
         <!-- Selector entre Tarifas Vigentes e Historial -->
         <div class="subnav-bar">
           <button class="subnav-btn" [class.active]="auditoriaSubTab() === 'tarifas'" (click)="cambiarAuditoriaSubTab('tarifas')">
@@ -1284,7 +1488,7 @@
                   <th>Tarifa Regular</th>
                   <th>Tarifa Alta (+40%)</th>
                   <th>Diferencia</th>
-                  <th>Acciones</th>
+                  <th *ngIf="puedeEditarTarifas()">Acciones</th>
                 </tr>
               </thead>
               <tbody>
@@ -1304,7 +1508,7 @@
                   <td class="font-semibold">${{ (t.precio_baja || t.precioBaja || 0) | number }}</td>
                   <td class="font-bold text-amber">${{ (t.precio_alta || t.precioAlta || 0) | number }}</td>
                   <td class="text-emerald font-semibold">+${{ (t.recargo_alta || t.recargoAlta || 0) | number }}</td>
-                  <td>
+                  <td *ngIf="puedeEditarTarifas()">
                     <button class="btn-outline btn-xs" (click)="abrirEditorTarifa(t)">
                       Editar
                     </button>
@@ -1519,11 +1723,11 @@
       </section>
 
       <!-- =================================================================== -->
-      <!-- MÓDULO 8: RECEPCIÓN Y PERFILES DE ACCESO (SEGURIDAD)                -->
+      <!-- MÓDULO 8: PANEL OPERATIVO DE RECEPCIÓN                              -->
       <!-- =================================================================== -->
       <section *ngIf="tabActivo() === 'seguridad'" class="fade-in">
         <!-- Vista de Recepción en Vivo -->
-        <div class="card mb-4">
+        <div class="card">
           <div class="card-header-flex">
             <div>
               <h3 class="card-title">Panel Operativo de Recepción (Check-In / Reservas)</h3>
@@ -1566,36 +1770,6 @@
                 </tr>
               </tbody>
             </table>
-          </div>
-        </div>
-
-        <!-- Roles y Políticas -->
-        <div class="split-layout">
-          <div class="card">
-            <h3 class="card-title mb-3">Perfiles de Usuario del Sistema</h3>
-            <div class="role-list">
-              <div *ngFor="let r of rolesSeguridad()" class="role-item">
-                <div class="role-item-top">
-                  <strong>{{ r.titulo_rol || r.nombre_rol }}</strong>
-                  <span class="badge badge-info">{{ r.nombre_rol }}</span>
-                </div>
-                <p class="role-item-desc">{{ r.justificacion }}</p>
-                <small class="text-muted">Permisos: {{ r.privilegios_dml }} sobre {{ r.objetos_permitidos }}</small>
-              </div>
-            </div>
-          </div>
-
-          <div class="card">
-            <h3 class="card-title mb-3">Políticas de Sesión y Seguridad</h3>
-            <div class="role-list">
-              <div *ngFor="let p of perfilesSeguridad()" class="role-item">
-                <div class="role-item-top">
-                  <strong>{{ p.recurso }}</strong>
-                  <span class="badge badge-amber">{{ p.valor_limite }} ({{ p.unidad }})</span>
-                </div>
-                <p class="role-item-desc">{{ p.proposito }}</p>
-              </div>
-            </div>
           </div>
         </div>
       </section>

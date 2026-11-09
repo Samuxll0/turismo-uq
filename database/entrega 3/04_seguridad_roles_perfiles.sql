@@ -278,6 +278,87 @@ INSERT INTO TURISMO_UQ.CATALOGO_SEGURIDAD_ROLES VALUES (
     'Fiscaliza el rastro dejado por los triggers de fila y de sentencia sobre cambios en tarifas, asi como los planes de ejecucion medidos, sin facultad para modificar registros ni borrar huellas.'
 );
 
+INSERT INTO TURISMO_UQ.CATALOGO_SEGURIDAD_ROLES VALUES (
+    5, 'ROL_SUPER_ADMIN', 'Administrador General del Sistema',
+    'ACCESO TOTAL (14 Tablas y Paquetes)',
+    'TODOS LOS OBJETOS DEL ESQUEMA TURISMO_UQ',
+    'ALL PRIVILEGES (SELECT, INSERT, UPDATE, DELETE, EXECUTE)',
+    'N',
+    'Cuenta maestra de administracion integral con acceso completo a los 10 modulos operativos, financieros, analiticos y de configuracion de seguridad.'
+);
+
+-- ============================================================================
+-- 5. ACTUALIZACION DE USUARIO_SISTEMA PARA SOPORTAR SUPER_ADMIN Y CUENTAS BASE
+-- ============================================================================
+DECLARE
+    v_col_exists NUMBER := 0;
+BEGIN
+    SELECT COUNT(*) INTO v_col_exists
+    FROM all_tab_columns
+    WHERE owner = 'TURISMO_UQ'
+      AND table_name = 'USUARIO_SISTEMA'
+      AND column_name = 'USERNAME';
+
+    IF v_col_exists = 0 THEN
+        BEGIN
+            EXECUTE IMMEDIATE 'DROP TABLE TURISMO_UQ.USUARIO_SISTEMA CASCADE CONSTRAINTS PURGE';
+        EXCEPTION WHEN OTHERS THEN NULL;
+        END;
+
+        EXECUTE IMMEDIATE '
+            CREATE TABLE TURISMO_UQ.USUARIO_SISTEMA (
+                id_usuario      NUMBER GENERATED ALWAYS AS IDENTITY,
+                username        VARCHAR2(50) NOT NULL,
+                password_hash   VARCHAR2(255) NOT NULL,
+                rol             VARCHAR2(50) NOT NULL,
+                activo          NUMBER(1) DEFAULT 1 NOT NULL,
+                CONSTRAINT pk_usuario_sistema PRIMARY KEY (id_usuario),
+                CONSTRAINT uk_usuario_username UNIQUE (username),
+                CONSTRAINT chk_usuario_rol CHECK (rol IN (''SUPER_ADMIN'', ''RECEPCION'', ''ADMIN_ALOJAMIENTO'', ''GERENTE'', ''AUDITOR'')),
+                CONSTRAINT chk_usuario_activo CHECK (activo IN (0, 1))
+            )
+        ';
+        EXECUTE IMMEDIATE 'GRANT SELECT ON TURISMO_UQ.USUARIO_SISTEMA TO ROL_AUDITOR';
+    ELSE
+        BEGIN
+            EXECUTE IMMEDIATE 'ALTER TABLE TURISMO_UQ.USUARIO_SISTEMA DROP CONSTRAINT chk_usuario_rol';
+        EXCEPTION WHEN OTHERS THEN NULL;
+        END;
+
+        EXECUTE IMMEDIATE '
+            ALTER TABLE TURISMO_UQ.USUARIO_SISTEMA
+            ADD CONSTRAINT chk_usuario_rol
+            CHECK (rol IN (''SUPER_ADMIN'', ''RECEPCION'', ''ADMIN_ALOJAMIENTO'', ''GERENTE'', ''AUDITOR''))
+        ';
+    END IF;
+END;
+/
+
+DECLARE
+    PROCEDURE pr_asegurar_usuario(p_user VARCHAR2, p_hash VARCHAR2, p_rol VARCHAR2) IS
+        v_cnt NUMBER := 0;
+    BEGIN
+        EXECUTE IMMEDIATE 'SELECT COUNT(*) FROM TURISMO_UQ.USUARIO_SISTEMA WHERE LOWER(username) = LOWER(:1)'
+            INTO v_cnt USING p_user;
+        IF v_cnt = 0 THEN
+            EXECUTE IMMEDIATE 'INSERT INTO TURISMO_UQ.USUARIO_SISTEMA (username, password_hash, rol, activo) VALUES (:1, :2, :3, 1)'
+                USING p_user, p_hash, p_rol;
+        ELSE
+            EXECUTE IMMEDIATE 'UPDATE TURISMO_UQ.USUARIO_SISTEMA SET rol = :1, password_hash = :2, activo = 1 WHERE LOWER(username) = LOWER(:3)'
+                USING p_rol, p_hash, p_user;
+        END IF;
+    END;
+BEGIN
+    -- Hash SHA-256 de "123456": 8d969eef6ecad3c29a3a629280e686cf0c3f5d5a86aff3ca12020c923adc6c92
+    pr_asegurar_usuario('admin_uq', '8d969eef6ecad3c29a3a629280e686cf0c3f5d5a86aff3ca12020c923adc6c92', 'SUPER_ADMIN');
+    pr_asegurar_usuario('recepcion_uq', '8d969eef6ecad3c29a3a629280e686cf0c3f5d5a86aff3ca12020c923adc6c92', 'RECEPCION');
+    pr_asegurar_usuario('admin_alojamiento_uq', '8d969eef6ecad3c29a3a629280e686cf0c3f5d5a86aff3ca12020c923adc6c92', 'ADMIN_ALOJAMIENTO');
+    pr_asegurar_usuario('gerente_uq', '8d969eef6ecad3c29a3a629280e686cf0c3f5d5a86aff3ca12020c923adc6c92', 'GERENTE');
+    pr_asegurar_usuario('auditor_uq', '8d969eef6ecad3c29a3a629280e686cf0c3f5d5a86aff3ca12020c923adc6c92', 'AUDITOR');
+    DBMS_OUTPUT.PUT_LINE('5 usuarios base verificados en TURISMO_UQ.USUARIO_SISTEMA.');
+END;
+/
+
 CREATE TABLE TURISMO_UQ.CATALOGO_PERFIL_LIMITES (
     id_parametro    NUMBER PRIMARY KEY,
     nombre_perfil   VARCHAR2(50) NOT NULL,

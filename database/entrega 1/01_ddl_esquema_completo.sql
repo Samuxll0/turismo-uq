@@ -222,7 +222,7 @@ CREATE TABLE USUARIO_SISTEMA (
     activo          NUMBER(1) DEFAULT 1 NOT NULL,
     CONSTRAINT pk_usuario_sistema PRIMARY KEY (id_usuario),
     CONSTRAINT uk_usuario_username UNIQUE (username),
-    CONSTRAINT chk_usuario_rol CHECK (rol IN ('RECEPCION', 'ADMIN_ALOJAMIENTO', 'GERENTE', 'AUDITOR')),
+    CONSTRAINT chk_usuario_rol CHECK (rol IN ('SUPER_ADMIN', 'RECEPCION', 'ADMIN_ALOJAMIENTO', 'GERENTE', 'AUDITOR')),
     CONSTRAINT chk_usuario_activo CHECK (activo IN (0, 1))
 );
 

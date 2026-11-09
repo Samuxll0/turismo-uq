@@ -399,6 +399,28 @@ export interface VistaRecepcionItem {
   medio_pago: string;
 }
 
+export interface LoginRequest {
+  username: string;
+  password: string;
+}
+
+export interface RegistroUsuarioRequest {
+  username: string;
+  password: string;
+  rol: string;
+}
+
+export interface UsuarioAutenticado {
+  id_usuario: number;
+  username: string;
+  rol: 'SUPER_ADMIN' | 'RECEPCION' | 'ADMIN_ALOJAMIENTO' | 'GERENTE' | 'AUDITOR' | string;
+  titulo_rol: string;
+  activo: boolean;
+  modulos_permitidos: string[];
+  puede_editar_tarifas: boolean;
+  mensaje: string;
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -600,5 +622,17 @@ export class TurismoService {
     return this.http.get<VistaRecepcionItem[]>(`${this.baseUrl}/seguridad/vista-recepcion`, {
       params: new HttpParams().set('limite', limite)
     });
+  }
+
+  login(req: LoginRequest): Observable<UsuarioAutenticado> {
+    return this.http.post<UsuarioAutenticado>(`${this.baseUrl}/seguridad/login`, req);
+  }
+
+  registrarUsuario(req: RegistroUsuarioRequest): Observable<UsuarioAutenticado> {
+    return this.http.post<UsuarioAutenticado>(`${this.baseUrl}/seguridad/registro`, req);
+  }
+
+  getUsuariosSistema(): Observable<UsuarioAutenticado[]> {
+    return this.http.get<UsuarioAutenticado[]>(`${this.baseUrl}/seguridad/usuarios`);
   }
 }
