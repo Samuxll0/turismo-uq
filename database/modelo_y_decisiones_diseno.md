@@ -4,7 +4,7 @@
 **Programa:** Ingeniería de Sistemas y Computación  
 **Asignatura:** Bases de Datos II (Código 12338) — Periodo 2026-2  
 **Proyecto Integrador:** TurismoUQ — Plataforma de Reservas Turísticas del Quindío  
-**Estudiante:** Samuel Ortiz  
+**Estudiantes:** Samuel Ortiz, Samuel Zuluaga Castaño  
 **Motor:** Oracle Database 21c Express Edition (`XEPDB1`) — Esquema `TURISMO_UQ`  
 
 ---
@@ -233,7 +233,21 @@ Para cumplir simultáneamente el requerimiento de disparador a nivel de sentenci
 | **Líneas de Servicios** | 40.000 | **40.000** consumos en `RESERVA_SERVICIO` | ✅ Cumplido |
 | **Pagos** | — | **25.000** pagos atómicos asociados | ✅ Cumplido |
 | **Tarifas** | — | **800** (400 baja + 400 alta con regla +40%) | ✅ Cumplido |
-| **Usuarios Sistema** | — | **4** (recepción, admin, gerente, auditor) | ✅ Cumplido |
+| **Usuarios Sistema (App)** | — | **5** (`admin_uq`, `recepcion_uq`, `admin_alojamiento_uq`, `gerente_uq`, `auditor_uq`) | ✅ Cumplido |
+| **Usuarios BD Oracle** | — | **4** (`USR_RECEPCION`, `USR_ADMIN_ALOJ`, `USR_GERENTE`, `USR_AUDITOR`) con `PERFIL_TURISMO_OPERATIVO` | ✅ Cumplido |
+
+---
+
+### 6.1 Nuevas Consultas Analíticas Adicionales (`04_consultas_analisis.sql`)
+
+Además de las 8 consultas obligatorias, se incorporaron en SQL, Backend REST (`/api/analitica/...`) y Frontend Angular:
+
+1. **Consulta 9 — Habitación con más reservas en Temporada Alta:**
+   - Cruza `RESERVA`, `RESERVA_HABITACION`, `HABITACION`, `ALOJAMIENTO`, `MUNICIPIO` y verifica mediante `EXISTS` sobre `PERIODO_TEMPORADA (id_temporada = 2)` excluyendo canceladas, aplicando `DENSE_RANK()` para identificar la líder.
+   - Resultado verificado sobre los 25.035 registros del entorno local: **Habitación 105 (`ID #291`) — Alojamiento Turistico UQ 42 (Montenegro)** con **23 reservas** en temporada alta y **$18.562.000 COP**.
+2. **Consulta 10 — Listado de clientes con más municipios visitados:**
+   - Agrupa por cliente calculando `COUNT(DISTINCT m.id_municipio)`, `COUNT(DISTINCT r.id_reserva)`, `SUM(r.total)` y consolidando los nombres de municipios con `LISTAGG(DISTINCT m.nombre, ', ') WITHIN GROUP (ORDER BY m.nombre)`.
+   - Resultado verificado en el entorno local: **Carlos Perez (`ID #1902`)** con **12 de 12 municipios del Quindío** visitados (17 reservas), seguido de clientes con 11 y 10 municipios.
 
 ---
 
@@ -256,45 +270,81 @@ FROM TURISMO_UQ.HABITACION
 WHERE id_habitacion = p_id_habitacion
 FOR UPDATE WAIT 5;
 ```
-- **Antes (Sin `FOR UPDATE`):** Bajo aislamiento `READ COMMITTED`, dos sesiones simultáneas leen `0` solapamientos antes de que cualquiera confirme (`COMMIT`), entrando en condición de carrera (*Race Condition*).
-- **Después (Con `FOR UPDATE`):** La Sesión 1 adquiere el candado exclusivo de fila (`Row-X TX Lock`) sobre la habitación. La Sesión 2 queda en espera (`enq: TX - row lock contention`). Cuando la Sesión 1 hace `COMMIT`, la Sesión 2 despierta, consulta las reservas confirmadas actualizadas y rechaza limpiamente con `ORA-20003`.
+
+**Comparativa Antes vs Después:**
+
+| Aspecto | Sin `SELECT ... FOR UPDATE` (Antes) | Con `SELECT ... FOR UPDATE` (Después) |
+| :--- | :--- | :--- |
+| **Lectura bajo `READ COMMITTED`** | Ambas sesiones leen `0` solapamientos antes del primer `COMMIT` (*Race Condition*). | Sesión 1 toma candado exclusivo de fila (`Row-X TX Lock`) sobre `HABITACION`. |
+| **Comportamiento Sesión 2** | Avanza paralelamente e intenta insertar la misma habitación en las mismas fechas. | Espera en cola (`enq: TX - row lock contention`) hasta que Sesión 1 haga `COMMIT`/`ROLLBACK`. |
+| **Resolución de contención** | Conflicto tardío en inserción / inconsistencia de cupo. | Si Sesión 1 no libera a tiempo: `ORA-20008`; si libera tras confirmar: `ORA-20003` (rechazo limpio). |
+
+**Comandos reproducibles del experimento en dos sesiones (SQL*Plus / SQL Developer) y monitoreo en `V$LOCK`:**
+```sql
+-- SESIÓN 1 (Terminal A): Adquiere bloqueo exclusivo de fila sin confirmar aún
+ALTER SESSION SET CONTAINER = XEPDB1;
+SELECT id_habitacion, numero_nombre, capacidad
+FROM TURISMO_UQ.HABITACION WHERE id_habitacion = 1 FOR UPDATE;
+
+-- SESIÓN 2 (Terminal B, en paralelo): Queda bloqueada esperando en row lock contention
+ALTER SESSION SET CONTAINER = XEPDB1;
+DECLARE v_id NUMBER; v_tot NUMBER; v_msg VARCHAR2(500);
+BEGIN
+    TURISMO_UQ.sp_reservar_con_bloqueo(2, 1, DATE '2027-09-10', DATE '2027-09-14', 2, 5, v_id, v_tot, v_msg);
+END;
+/
+
+-- MONITOREO DBA (Sesión C): Visualizar bloqueador, bloqueado y evento de espera
+SELECT s1.sid AS sid_bloqueador, s1.username, s2.sid AS sid_esperando,
+       s2.event AS evento_espera, s2.seconds_in_wait
+FROM v$lock l1
+JOIN v$session s1 ON l1.sid = s1.sid
+JOIN v$lock l2    ON l1.id1 = l2.id1 AND l1.id2 = l2.id2
+JOIN v$session s2 ON l2.sid = s2.sid
+WHERE l1.block = 1 AND l2.request > 0;
+```
 
 ### 7.3 Optimización con Índices y Caso Negativo del CBO (`03_indices_optimizacion.sql`)
-Se evaluaron los planes de ejecución (`EXPLAIN PLAN` + `DBMS_XPLAN.DISPLAY`) sobre las 25.000 reservas y 40.000 servicios:
+Se evaluaron los planes de ejecución (`EXPLAIN PLAN` + `DBMS_XPLAN.DISPLAY`) sobre las **25.035 reservas** y **40.000 servicios** y se incorporó medición dinámica de tiempos de ejecución con `DBMS_SQL` + `SYSTIMESTAMP`:
 
-| Caso | Índice Evaluado | Tipo | Operación Antes (Costo) | Operación Después (Costo) | Impacto |
+| Caso | Índice Evaluado | Tipo | Operación Antes (Costo CBO) | Operación Después (Costo CBO) | Impacto CBO |
 | :--- | :--- | :--- | :---: | :---: | :---: |
-| **Q1** | `IDX_COMP_RESERVA_EST_CREA` | Compuesto B-Tree `(estado, fecha_creacion, total)` | `TABLE ACCESS FULL` (**73**) | `INDEX RANGE SCAN DESC` (**2**) | **-97.26%** |
-| **Q2** | `IDX_FBI_RESERVA_ANIO_MES` | Basado en Función `(TO_CHAR(fecha_check_in,'YYYY-MM-DD'), UPPER(TRIM(estado)))` | `TABLE ACCESS FULL` (**72**) | `INDEX RANGE SCAN` (**23**) | **-68.06%** |
-| **Q3** | `IDX_COMP_RESSERV_SERV_CANT` | Compuesto Cobertura `(id_servicio, cantidad, subtotal)` | `TABLE ACCESS FULL` (**42**) | `INDEX RANGE SCAN` (**2**) | **-95.24%** |
-| **Q4 (Caso Negativo)** | `IDX_COMP_RESERVA_EST_CREA` | Filtro baja selectividad `estado IN ('CONFIRMADA','FINALIZADA','PENDIENTE')` | `TABLE ACCESS FULL` Natural (**72**) | `INDEX RANGE SCAN` Forzado con Hint (**24.986**) | **+34.602% (347x peor)** |
+| **Q1** | `IDX_COMP_RESERVA_EST_CREA` | Compuesto B-Tree `(estado, fecha_creacion, total)` | `TABLE ACCESS (FULL)` (**73**) | `INDEX (RANGE SCAN DESCENDING)` (**2**) | **-97.26%** |
+| **Q2** | `IDX_FBI_RESERVA_ANIO_MES` | Basado en Función `(TO_CHAR(fecha_check_in,'YYYY-MM-DD'), UPPER(TRIM(estado)))` | `TABLE ACCESS (FULL)` (**72**) | `INDEX (RANGE SCAN)` (**23**) | **-68.06%** |
+| **Q3** | `IDX_COMP_RESSERV_SERV_CANT` | Compuesto Cobertura `(id_servicio, cantidad, subtotal)` | `TABLE ACCESS (FULL)` (**42**) | `INDEX (RANGE SCAN)` (**2**) | **-95.24%** |
+| **Q4 (Caso Negativo)** | `IDX_COMP_RESERVA_EST_CREA` | Filtro baja selectividad `estado IN ('CONFIRMADA','FINALIZADA','PENDIENTE')` | `TABLE ACCESS (FULL)` Natural (**72**) | `INDEX (RANGE SCAN)` + `ROWID BATCHED` Forzado (**24.986**) | **+34.602% (347x peor)** |
 
 **¿Por qué el índice NO ayuda en el Caso 4?**
-1. **Baja Selectividad:** El predicado filtra más del 85%-95% de las 25.000 filas de `RESERVA`.
+1. **Baja Selectividad:** El predicado filtra casi el 100% de las filas de `RESERVA`.
 2. **Lecturas Single-Block vs Multi-Block:** Al forzar el índice con `/*+ INDEX(r IDX_COMP_RESERVA_EST_CREA) */`, Oracle debe recorrer las hojas del índice y realizar ~25.000 saltos aleatorios por `ROWID` hacia los bloques de la tabla (`TABLE ACCESS BY INDEX ROWID BATCHED`) para recuperar columnas no cubiertas (`id_cliente`, `fecha_check_in`, `fecha_check_out`).
 3. **Clustering Factor:** Un mismo bloque físico de la tabla es leído repetidas veces en lecturas unitarias (`db file sequential read`), mientras que un `TABLE ACCESS FULL` lee bloques contiguos en ráfagas (`db_file_multiblock_read_count`), costando **72** frente a **24.986**.
 
-### 7.4 Seguridad: 4 Roles, Aislamiento por Vistas y Perfil (`04_seguridad_roles_perfiles.sql`)
+### 7.4 Seguridad: 4 Roles, Aislamiento por Vistas, Perfil y Usuarios Oracle (`04_seguridad_roles_perfiles.sql`)
 - **4 Roles Diferenciados:**
-  1. `ROL_RECEPCION`: **0 permisos sobre tablas directas**. Opera exclusivamente sobre las vistas `VW_RECEPCION_RESERVAS` (con `Trigger INSTEAD OF UPDATE`), `VW_RECEPCION_CHECKIN` y `VW_RECEPCION_HABITACIONES_DISP`.
-  2. `ROL_ADMIN_ALOJAMIENTO`: Permisos `SELECT, INSERT, UPDATE` sobre `ALOJAMIENTO`, `HABITACION`, `TARIFA`, `SERVICIO` y ejecución de `PKG_TURISMO_RESERVAS`.
+  1. `ROL_RECEPCION`: **0 permisos sobre tablas directas**. Opera exclusivamente sobre las vistas `VW_RECEPCION_RESERVAS` (con `Trigger INSTEAD OF UPDATE`), `VW_RECEPCION_CHECKIN` y `VW_RECEPCION_HABITACIONES_DISP` (+ `CREATE SESSION`).
+  2. `ROL_ADMIN_ALOJAMIENTO`: Permisos `SELECT, INSERT, UPDATE` sobre `ALOJAMIENTO`, `HABITACION`, `TARIFA`, `SERVICIO`, lectura de temporadas y ejecución de `PKG_TURISMO_RESERVAS`.
   3. `ROL_GERENTE`: Lectura sobre `MV_OCUPACION_MENSUAL`, `LIQUIDACION_MENSUAL_HISTORICO` y tablas de facturación.
-  4. `ROL_AUDITOR`: Lectura inmutable sobre `AUDITORIA_TARIFA`, `LOG_SENTENCIA_TARIFA` y `AUDITORIA_PLANES_INDICES`.
+  4. `ROL_AUDITOR`: Lectura inmutable sobre `AUDITORIA_TARIFA`, `LOG_SENTENCIA_TARIFA`, `AUDITORIA_PLANES_INDICES`, `TARIFA` y `USUARIO_SISTEMA`.
+- **4 Usuarios reales en Oracle XE (`XEPDB1`) con `PERFIL_TURISMO_OPERATIVO` (`RESOURCE_LIMIT = TRUE`):**
+  - `USR_RECEPCION` (`ROL_RECEPCION`) · `USR_ADMIN_ALOJ` (`ROL_ADMIN_ALOJAMIENTO`) · `USR_GERENTE` (`ROL_GERENTE`) · `USR_AUDITOR` (`ROL_AUDITOR`).
 - **Perfil de Recursos (`PERFIL_TURISMO_OPERATIVO`):**
-  - `SESSIONS_PER_USER 2`, `IDLE_TIME 30`, `CONNECT_TIME 480`, `FAILED_LOGIN_ATTEMPTS 3`, `PASSWORD_LIFE_TIME 90`.
+  - `SESSIONS_PER_USER 2`, `IDLE_TIME 30`, `CONNECT_TIME 480`, `FAILED_LOGIN_ATTEMPTS 3`, `PASSWORD_LIFE_TIME 90`, `PASSWORD_LOCK_TIME 1`, `PASSWORD_GRACE_TIME 7`.
+- **Verificación de aislamiento de recepción en SQL*Plus (conectando como `USR_RECEPCION`):**
+  - `SELECT * FROM TURISMO_UQ.VW_RECEPCION_RESERVAS FETCH FIRST 5 ROWS ONLY;` → **Permitido**.
+  - `SELECT * FROM TURISMO_UQ.RESERVA FETCH FIRST 5 ROWS ONLY;` → **Denegado (`ORA-00942`)**.
 
 ---
 
 ## 8. Instrucciones de Despliegue en Base Limpia
 
-Para calificar el proyecto completo (Entregas 1, 2 y 3) en una instalación limpia de Oracle Database 21c XE:
+Para instalar y validar el proyecto completo (Entregas 1, 2 y 3) en una instancia limpia de Oracle Database 21c XE (`XEPDB1`):
 
 ```powershell
-# 1. Conectarse a la PDB XEPDB1 en SQL*Plus o SQL Developer
-sqlplus TURISMO_UQ/TurismoUQ2026#@localhost:1521/XEPDB1
+# 1. Conectarse como administrador DBA (necesario para crear esquema, tablespace, roles, perfil y usuarios)
+sqlplus / as sysdba
 
-# 2. Ejecutar el script maestro único:
+# 2. Ejecutar el script maestro único de arriba a abajo (Pasos 0 al 14):
 @database/00_master_instalacion_completa.sql
 ```
 
-El script ejecutará secuencialmente del paso 1 al 14, imprimirá el progreso en consola, ejecutará las suites de pruebas automatizadas de Entrega 2 y Entrega 3, verificará que existan **0 objetos inválidos** y emitirá el reporte de conteo con el volumen mínimo verificado al 100%.
+El script creará/verificará de forma idempotente el usuario `TURISMO_UQ` (`00_prerequisitos_dba_esquema.sql`), ejecutará del paso 1 al 14, correrá las baterías de pruebas automatizadas de Entrega 2 y Entrega 3, verificará que existan **0 objetos inválidos** y emitirá el reporte de conteo final.

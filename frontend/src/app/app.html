@@ -418,6 +418,12 @@
           <button class="subnav-btn" [class.active]="analiticaSubTab() === 'clv'" (click)="cambiarAnaliticaSubTab('clv')">
             Clientes Frecuentes
           </button>
+          <button class="subnav-btn" [class.active]="analiticaSubTab() === 'top_hab_alta'" (click)="cambiarAnaliticaSubTab('top_hab_alta')">
+            Top Habitación Temp. Alta
+          </button>
+          <button class="subnav-btn" [class.active]="analiticaSubTab() === 'clientes_mun'" (click)="cambiarAnaliticaSubTab('clientes_mun')">
+            Clientes por Municipios
+          </button>
         </div>
 
         <!-- SUBVISTA: PANORAMA GENERAL (GRÁFICOS) -->
@@ -822,6 +828,125 @@
                   <td>${{ c.ticket_promedio | number }}</td>
                   <td class="font-bold text-emerald">${{ c.gasto_historico_total | number }}</td>
                   <td><span class="badge badge-info">{{ c.pct_facturacion_global }}%</span></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- SUBVISTA 9: HABITACIÓN CON MÁS RESERVAS EN TEMPORADA ALTA -->
+        <div *ngIf="analiticaSubTab() === 'top_hab_alta'" class="fade-in">
+          <div *ngIf="datosTopHabAlta().length > 0" class="card mb-4">
+            <div class="card-header-flex">
+              <div>
+                <span class="badge badge-amber mb-1">★ Habitación #1 en Temporada Alta</span>
+                <h3 class="card-title">{{ datosTopHabAlta()[0].habitacion }} · {{ datosTopHabAlta()[0].alojamiento }}</h3>
+                <p class="card-subtitle">📍 {{ datosTopHabAlta()[0].municipio }} · {{ datosTopHabAlta()[0].tipo_cama }} (Cap. {{ datosTopHabAlta()[0].capacidad }} pers.)</p>
+              </div>
+              <button class="btn-outline btn-sm" (click)="cargarTopHabitacionTempAlta()" [disabled]="cargando()">
+                Actualizar
+              </button>
+            </div>
+            <div class="kpi-grid-3">
+              <div class="mini-stat">
+                <span class="mini-stat-label">Reservas en Temporada Alta</span>
+                <strong class="mini-stat-val text-amber">{{ datosTopHabAlta()[0].reservas_temporada_alta | number }} reservas</strong>
+              </div>
+              <div class="mini-stat">
+                <span class="mini-stat-label">Ingresos Generados</span>
+                <strong class="mini-stat-val text-emerald">${{ datosTopHabAlta()[0].ingresos_hospedaje | number }} COP</strong>
+              </div>
+              <div class="mini-stat">
+                <span class="mini-stat-label">ID Habitación</span>
+                <strong class="mini-stat-val font-mono">#{{ datosTopHabAlta()[0].id_habitacion }}</strong>
+              </div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-header-flex">
+              <div>
+                <h3 class="card-title">Top 10 Habitaciones más Reservadas en Temporada Alta</h3>
+                <p class="card-subtitle">Habitaciones con mayor demanda acumulada durante períodos de temporada alta (+40%)</p>
+              </div>
+            </div>
+            <div class="table-wrap">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Puesto</th>
+                    <th>Habitación</th>
+                    <th>Alojamiento y Municipio</th>
+                    <th>Acomodación</th>
+                    <th>Reservas Temp. Alta</th>
+                    <th>Ingresos Hospedaje</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr *ngFor="let h of datosTopHabAlta()" [class.row-highlight]="h.ranking === 1">
+                    <td>
+                      <span class="badge" [ngClass]="h.ranking === 1 ? 'badge-amber' : 'badge-neutral'">
+                        #{{ h.ranking }}
+                      </span>
+                    </td>
+                    <td>
+                      <div class="font-semibold">{{ h.habitacion }}</div>
+                      <small class="text-muted">ID #{{ h.id_habitacion }}</small>
+                    </td>
+                    <td>
+                      <div class="font-semibold">{{ h.alojamiento }}</div>
+                      <small class="text-muted">📍 {{ h.municipio }}</small>
+                    </td>
+                    <td>{{ h.tipo_cama }} ({{ h.capacidad }} pers.)</td>
+                    <td class="font-bold text-amber">{{ h.reservas_temporada_alta | number }}</td>
+                    <td class="font-bold text-emerald">${{ h.ingresos_hospedaje | number }}</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- SUBVISTA 10: LISTADO DE CLIENTES CON MÁS MUNICIPIOS VISITADOS -->
+        <div *ngIf="analiticaSubTab() === 'clientes_mun'" class="card fade-in">
+          <div class="card-header-flex">
+            <div>
+              <h3 class="card-title">Clientes con Mayor Recorrido por Municipios del Quindío</h3>
+              <p class="card-subtitle">Ranking de huéspedes ordenados por cantidad de municipios distintos visitados y el detalle de cada destino</p>
+            </div>
+            <button class="btn-outline btn-sm" (click)="cargarClientesPorMunicipios()" [disabled]="cargando()">
+              Actualizar
+            </button>
+          </div>
+
+          <div class="table-wrap">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th>Cliente</th>
+                  <th>Documento</th>
+                  <th>Municipios Distintos</th>
+                  <th>Total Reservas</th>
+                  <th>Gasto Total</th>
+                  <th>Listado de Municipios Visitados</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let c of datosClientesMun(); let idx = index" [class.row-highlight]="idx === 0">
+                  <td>
+                    <span class="badge" [ngClass]="idx < 3 ? 'badge-amber' : 'badge-neutral'">
+                      #{{ idx + 1 }}
+                    </span>
+                  </td>
+                  <td class="font-semibold">{{ c.cliente }}</td>
+                  <td class="font-mono text-xs text-muted">{{ c.documento }}</td>
+                  <td>
+                    <span class="badge badge-success">{{ c.total_municipios }} / 12 municipios</span>
+                  </td>
+                  <td>{{ c.total_reservas | number }}</td>
+                  <td class="font-bold text-emerald">${{ c.gasto_total | number }}</td>
+                  <td class="text-xs">{{ c.municipios_visitados }}</td>
                 </tr>
               </tbody>
             </table>

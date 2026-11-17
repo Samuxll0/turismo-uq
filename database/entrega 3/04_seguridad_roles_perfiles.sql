@@ -129,6 +129,12 @@ BEGIN
     pr_crear_rol_seguro('ROL_GERENTE');
     pr_crear_rol_seguro('ROL_AUDITOR');
 
+    -- Permitir inicio de sesion a los 4 roles operativos
+    pr_grant_seguro('GRANT CREATE SESSION TO ROL_RECEPCION');
+    pr_grant_seguro('GRANT CREATE SESSION TO ROL_ADMIN_ALOJAMIENTO');
+    pr_grant_seguro('GRANT CREATE SESSION TO ROL_GERENTE');
+    pr_grant_seguro('GRANT CREATE SESSION TO ROL_AUDITOR');
+
     -- ------------------------------------------------------------------------
     -- A) ROL_RECEPCION: Acceso EXCLUSIVO a traves de vistas (0 tablas directas)
     -- ------------------------------------------------------------------------
@@ -214,6 +220,65 @@ EXCEPTION
         ELSE
             DBMS_OUTPUT.PUT_LINE('Nota sobre perfil PERFIL_TURISMO_OPERATIVO: ' || SQLERRM);
         END IF;
+END;
+/
+
+-- Habilitar la aplicacion efectiva de limites de sesion del perfil en Oracle XE
+BEGIN
+    EXECUTE IMMEDIATE 'ALTER SYSTEM SET RESOURCE_LIMIT = TRUE SCOPE = BOTH';
+    DBMS_OUTPUT.PUT_LINE('RESOURCE_LIMIT = TRUE habilitado en Oracle XE.');
+EXCEPTION
+    WHEN OTHERS THEN
+        DBMS_OUTPUT.PUT_LINE('Nota sobre RESOURCE_LIMIT: ' || SQLERRM);
+END;
+/
+
+-- ============================================================================
+-- 3.1 CREACION DE 4 USUARIOS REALES EN ORACLE CON PERFIL Y ROLES ASIGNADOS
+-- ============================================================================
+DECLARE
+    PROCEDURE pr_asegurar_usuario_bd(
+        p_username VARCHAR2,
+        p_password VARCHAR2
+    ) IS
+    BEGIN
+        EXECUTE IMMEDIATE 'CREATE USER ' || p_username ||
+            ' IDENTIFIED BY "' || p_password || '"' ||
+            ' DEFAULT TABLESPACE USERS' ||
+            ' TEMPORARY TABLESPACE TEMP' ||
+            ' PROFILE PERFIL_TURISMO_OPERATIVO' ||
+            ' ACCOUNT UNLOCK';
+        DBMS_OUTPUT.PUT_LINE('Usuario Oracle creado: ' || p_username);
+    EXCEPTION
+        WHEN OTHERS THEN
+            IF SQLCODE = -1920 THEN -- ORA-01920: user already exists
+                EXECUTE IMMEDIATE 'ALTER USER ' || p_username ||
+                    ' IDENTIFIED BY "' || p_password || '"' ||
+                    ' PROFILE PERFIL_TURISMO_OPERATIVO' ||
+                    ' ACCOUNT UNLOCK';
+                DBMS_OUTPUT.PUT_LINE('Usuario Oracle actualizado: ' || p_username);
+            ELSE
+                RAISE;
+            END IF;
+    END;
+BEGIN
+    pr_asegurar_usuario_bd('USR_RECEPCION',  'RecepcionUq2026#');
+    EXECUTE IMMEDIATE 'GRANT ROL_RECEPCION TO USR_RECEPCION';
+    EXECUTE IMMEDIATE 'ALTER USER USR_RECEPCION DEFAULT ROLE ALL';
+
+    pr_asegurar_usuario_bd('USR_ADMIN_ALOJ', 'AdminAlojUq2026#');
+    EXECUTE IMMEDIATE 'GRANT ROL_ADMIN_ALOJAMIENTO TO USR_ADMIN_ALOJ';
+    EXECUTE IMMEDIATE 'ALTER USER USR_ADMIN_ALOJ DEFAULT ROLE ALL';
+
+    pr_asegurar_usuario_bd('USR_GERENTE',    'GerenteUq2026#');
+    EXECUTE IMMEDIATE 'GRANT ROL_GERENTE TO USR_GERENTE';
+    EXECUTE IMMEDIATE 'ALTER USER USR_GERENTE DEFAULT ROLE ALL';
+
+    pr_asegurar_usuario_bd('USR_AUDITOR',    'AuditorUq2026#');
+    EXECUTE IMMEDIATE 'GRANT ROL_AUDITOR TO USR_AUDITOR';
+    EXECUTE IMMEDIATE 'ALTER USER USR_AUDITOR DEFAULT ROLE ALL';
+
+    DBMS_OUTPUT.PUT_LINE('4 Usuarios de BD Oracle configurados con PERFIL_TURISMO_OPERATIVO y sus roles.');
 END;
 /
 

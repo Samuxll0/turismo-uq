@@ -8,6 +8,8 @@ import com.turismouq.app.dto.response.AnaliticaRangoFechasDto;
 import com.turismouq.app.dto.response.AnaliticaMaterializadaDto;
 import com.turismouq.app.dto.response.AnaliticaUnpivotDto;
 import com.turismouq.app.dto.response.AnaliticaClienteClvDto;
+import com.turismouq.app.dto.response.AnaliticaHabitacionTempAltaDto;
+import com.turismouq.app.dto.response.AnaliticaClienteMunicipiosDto;
 import com.turismouq.app.repository.AnaliticaRepository;
 import org.springframework.stereotype.Service;
 
@@ -52,5 +54,13 @@ public class AnaliticaService {
 
     public List<AnaliticaClienteClvDto> obtenerTopClientesClv() {
         return analiticaRepository.getTopClientesClv();
+    }
+
+    public List<AnaliticaHabitacionTempAltaDto> obtenerTopHabitacionTemporadaAlta() {
+        return analiticaRepository.getTopHabitacionTemporadaAlta();
+    }
+
+    public List<AnaliticaClienteMunicipiosDto> obtenerClientesPorMunicipios() {
+        return analiticaRepository.getClientesPorMunicipios();
     }
 }

@@ -1,0 +1,610 @@
+%PDF-1.4
+%âãÏÓ
+1 0 obj
+<< /Type /Catalog /Pages 2 0 R >>
+endobj
+2 0 obj
+<< /Type /Pages /Kids [6 0 R 8 0 R 10 0 R 12 0 R 14 0 R 16 0 R] /Count 6 >>
+endobj
+3 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica /Encoding /WinAnsiEncoding >>
+endobj
+4 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold /Encoding /WinAnsiEncoding >>
+endobj
+5 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Courier /Encoding /WinAnsiEncoding >>
+endobj
+6 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595.28 841.89] /Resources << /Font << /F1 3 0 R /F2 4 0 R /F3 5 0 R >> >> /Contents 7 0 R >>
+endobj
+7 0 obj
+<< /Length 9773 >>
+stream
+q 0.020 0.370 0.270 rg 44.00 765.89 507.28 30.00 re f Q
+q BT /F2 12.50 Tf 1.000 1.000 1.000 rg 54.00 775.89 Td (Documento Técnico de Arquitectura, Modelo Relacional y Decisiones de Diseño) Tj ET Q
+q BT /F1 9.20 Tf 0.150 0.200 0.280 rg 44.00 753.89 Td (Universidad del Quindío - Facultad de Ingeniería) Tj ET Q
+q BT /F1 9.20 Tf 0.150 0.200 0.280 rg 44.00 738.39 Td (Programa: Ingeniería de Sistemas y Computación) Tj ET Q
+q BT /F1 9.20 Tf 0.150 0.200 0.280 rg 44.00 722.89 Td (Asignatura: Bases de Datos II \(Código 12338\) - Periodo 2026-2) Tj ET Q
+q BT /F1 9.20 Tf 0.150 0.200 0.280 rg 44.00 707.39 Td (Proyecto Integrador: TurismoUQ - Plataforma de Reservas Turísticas del Quindío) Tj ET Q
+q BT /F1 9.20 Tf 0.150 0.200 0.280 rg 44.00 691.89 Td (Estudiantes: Samuel Ortiz, Samuel Zuluaga Castaño) Tj ET Q
+q BT /F1 9.20 Tf 0.150 0.200 0.280 rg 44.00 676.39 Td (Motor: Oracle Database 21c Express Edition \(XEPDB1\) - Esquema TURISMO_UQ) Tj ET Q
+q 0.020 0.590 0.410 rg 44.00 650.89 3.50 16.00 re f Q
+q BT /F2 11.50 Tf 0.060 0.090 0.160 rg 54.00 654.89 Td (1. Contexto del Negocio y Dominio del Problema) Tj ET Q
+q 0.70 w 0.880 0.910 0.940 RG 44.00 648.89 m 551.28 648.89 l S Q
+q BT /F1 9.20 Tf 0.150 0.200 0.280 rg 44.00 634.89 Td (El departamento del Quindío sustenta su economía en el turismo cultural, de naturaleza y) Tj ET Q
+q BT /F1 9.20 Tf 0.150 0.200 0.280 rg 44.00 621.89 Td (cafetero. Su comportamiento de demanda es marcadamente estacional: experimenta picos de) Tj ET Q
+q BT /F1 9.20 Tf 0.150 0.200 0.280 rg 44.00 608.89 Td (saturación durante Semana Santa, la temporada de vacaciones de mitad de año \(junio-julio\), los) Tj ET Q
+q BT /F1 9.20 Tf 0.150 0.200 0.280 rg 44.00 595.89 Td (puentes festivos y la temporada de fin de año e inicio de año \(diciembre-enero\), mientras que el) Tj ET Q
+q BT /F1 9.20 Tf 0.150 0.200 0.280 rg 44.00 582.89 Td (resto de los meses opera bajo ocupación moderada.) Tj ET Q
+q BT /F1 9.20 Tf 0.150 0.200 0.280 rg 44.00 567.39 Td (TurismoUQ centraliza la oferta de hospedajes de los 12 municipios del departamento \(Armenia,) Tj ET Q
+q BT /F1 9.20 Tf 0.150 0.200 0.280 rg 44.00 554.39 Td (Buenavista, Calarcá, Circasia, Córdoba, Filandia, Génova, La Tebaida, Montenegro, Pijao,) Tj ET Q
+q BT /F1 9.20 Tf 0.150 0.200 0.280 rg 44.00 541.39 Td (Quimbaya y Salento\), abarcando diversas tipologías: fincas tradicionales, haciendas cafeteras,) Tj ET Q
+q BT /F1 9.20 Tf 0.150 0.200 0.280 rg 44.00 528.39 Td (eco-glampings y hoteles boutique. Asimismo, gestiona reservas concurrentes, liquidaciones) Tj ET Q
+q BT /F1 9.20 Tf 0.150 0.200 0.280 rg 44.00 515.39 Td (mensuales por alojamiento, consumos de actividades turísticas complementarias y auditoría de) Tj ET Q
+q BT /F1 9.20 Tf 0.150 0.200 0.280 rg 44.00 502.39 Td (tarifas.) Tj ET Q
+q 0.020 0.590 0.410 rg 44.00 476.89 3.50 16.00 re f Q
+q BT /F2 11.50 Tf 0.060 0.090 0.160 rg 54.00 480.89 Td (2. Diagrama Entidad-Relación del Modelo \(14 Entidades Mínimas\)) Tj ET Q
+q 0.70 w 0.880 0.910 0.940 RG 44.00 474.89 m 551.28 474.89 l S Q
+q BT /F1 9.20 Tf 0.150 0.200 0.280 rg 44.00 460.89 Td (El modelo satisface rigurosamente las 14 entidades obligatorias estipuladas en el encargo) Tj ET Q
+q BT /F1 9.20 Tf 0.150 0.200 0.280 rg 44.00 447.89 Td (académico, sin eliminar ninguna:) Tj ET Q
+q BT /F2 9.40 Tf 0.060 0.090 0.160 rg 44.00 432.39 Td (Esquema Relacional \(14 Entidades Minimas + Entidades de Soporte\):) Tj ET Q
+q 0.970 0.980 0.990 rg 0.70 w 0.780 0.830 0.880 RG 44.00 388.39 122.32 34.00 re B Q
+q BT /F2 7.10 Tf 0.060 0.090 0.160 rg 49.00 411.39 Td (MUNICIPIO \(12\)) Tj ET Q
+q BT /F1 6.20 Tf 0.300 0.350 0.420 rg 49.00 401.39 Td (PK id_municipio | nombre UK) Tj ET Q
+q 0.970 0.980 0.990 rg 0.70 w 0.780 0.830 0.880 RG 172.32 388.39 122.32 34.00 re B Q
+q BT /F2 7.10 Tf 0.060 0.090 0.160 rg 177.32 411.39 Td (TIPO_ALOJAMIENTO \(4\)) Tj ET Q
+q BT /F1 6.20 Tf 0.300 0.350 0.420 rg 177.32 401.39 Td (PK id_tipo_aloj | nombre UK) Tj ET Q
+q 0.970 0.980 0.990 rg 0.70 w 0.780 0.830 0.880 RG 300.64 388.39 122.32 34.00 re B Q
+q BT /F2 7.10 Tf 0.060 0.090 0.160 rg 305.64 411.39 Td (ALOJAMIENTO \(60\)) Tj ET Q
+q BT /F1 6.20 Tf 0.300 0.350 0.420 rg 305.64 401.39 Td (PK id_aloj | FK mun, tipo) Tj ET Q
+q 0.970 0.980 0.990 rg 0.70 w 0.780 0.830 0.880 RG 428.96 388.39 122.32 34.00 re B Q
+q BT /F2 7.10 Tf 0.060 0.090 0.160 rg 433.96 411.39 Td (HABITACION \(400\)) Tj ET Q
+q BT /F1 6.20 Tf 0.300 0.350 0.420 rg 433.96 401.39 Td (PK id_hab | FK aloj | cap) Tj ET Q
+q 0.970 0.980 0.990 rg 0.70 w 0.780 0.830 0.880 RG 44.00 348.39 122.32 34.00 re B Q
+q BT /F2 7.10 Tf 0.060 0.090 0.160 rg 49.00 371.39 Td (TEMPORADA \(2\)) Tj ET Q
+q BT /F1 6.20 Tf 0.300 0.350 0.420 rg 49.00 361.39 Td (PK id_temp \(Baja / Alta\)) Tj ET Q
+q 0.970 0.980 0.990 rg 0.70 w 0.780 0.830 0.880 RG 172.32 348.39 122.32 34.00 re B Q
+q BT /F2 7.10 Tf 0.060 0.090 0.160 rg 177.32 371.39 Td (PERIODO_TEMPORADA \(9\)) Tj ET Q
+q BT /F1 6.20 Tf 0.300 0.350 0.420 rg 177.32 361.39 Td (PK id_per | FK temp | fechas) Tj ET Q
+q 0.970 0.980 0.990 rg 0.70 w 0.780 0.830 0.880 RG 300.64 348.39 122.32 34.00 re B Q
+q BT /F2 7.10 Tf 0.060 0.090 0.160 rg 305.64 371.39 Td (TARIFA \(800\)) Tj ET Q
+q BT /F1 6.20 Tf 0.300 0.350 0.420 rg 305.64 361.39 Td (PK id_tarifa | FK hab, temp) Tj ET Q
+q 0.970 0.980 0.990 rg 0.70 w 0.780 0.830 0.880 RG 428.96 348.39 122.32 34.00 re B Q
+q BT /F2 7.10 Tf 0.060 0.090 0.160 rg 433.96 371.39 Td (CLIENTE \(3.000+\)) Tj ET Q
+q BT /F1 6.20 Tf 0.300 0.350 0.420 rg 433.96 361.39 Td (PK id_cli | doc UK | correo UK) Tj ET Q
+q 0.930 0.990 0.960 rg 0.70 w 0.060 0.720 0.500 RG 44.00 308.39 122.32 34.00 re B Q
+q BT /F2 7.10 Tf 0.040 0.350 0.250 rg 49.00 331.39 Td (RESERVA \(25.000+\)) Tj ET Q
+q BT /F1 6.20 Tf 0.300 0.350 0.420 rg 49.00 321.39 Td (PK id_res | FK cli | fechas) Tj ET Q
+q 0.930 0.990 0.960 rg 0.70 w 0.060 0.720 0.500 RG 172.32 308.39 122.32 34.00 re B Q
+q BT /F2 7.10 Tf 0.040 0.350 0.250 rg 177.32 331.39 Td (RESERVA_HABITACION) Tj ET Q
+q BT /F1 6.20 Tf 0.300 0.350 0.420 rg 177.32 321.39 Td (PK/FK \(id_res, id_hab\) | sub) Tj ET Q
+q 0.970 0.980 0.990 rg 0.70 w 0.780 0.830 0.880 RG 300.64 308.39 122.32 34.00 re B Q
+q BT /F2 7.10 Tf 0.060 0.090 0.160 rg 305.64 331.39 Td (SERVICIO \(10\)) Tj ET Q
+q BT /F1 6.20 Tf 0.300 0.350 0.420 rg 305.64 321.39 Td (PK id_serv | nombre, precio) Tj ET Q
+q 0.930 0.990 0.960 rg 0.70 w 0.060 0.720 0.500 RG 428.96 308.39 122.32 34.00 re B Q
+q BT /F2 7.10 Tf 0.040 0.350 0.250 rg 433.96 331.39 Td (RESERVA_SERVICIO \(40k\)) Tj ET Q
+q BT /F1 6.20 Tf 0.300 0.350 0.420 rg 433.96 321.39 Td (PK id_rs | FK res, serv | sub) Tj ET Q
+q 0.930 0.990 0.960 rg 0.70 w 0.060 0.720 0.500 RG 44.00 268.39 122.32 34.00 re B Q
+q BT /F2 7.10 Tf 0.040 0.350 0.250 rg 49.00 291.39 Td (PAGO \(25.000+\)) Tj ET Q
+q BT /F1 6.20 Tf 0.300 0.350 0.420 rg 49.00 281.39 Td (PK id_pago | FK res | metodo) Tj ET Q
+q 0.970 0.980 0.990 rg 0.70 w 0.780 0.830 0.880 RG 172.32 268.39 122.32 34.00 re B Q
+q BT /F2 7.10 Tf 0.060 0.090 0.160 rg 177.32 291.39 Td (RESENA) Tj ET Q
+q BT /F1 6.20 Tf 0.300 0.350 0.420 rg 177.32 281.39 Td (PK id_resena | FK res | calif) Tj ET Q
+q 0.970 0.980 0.990 rg 0.70 w 0.780 0.830 0.880 RG 300.64 268.39 122.32 34.00 re B Q
+q BT /F2 7.10 Tf 0.060 0.090 0.160 rg 305.64 291.39 Td (USUARIO_SISTEMA \(5\)) Tj ET Q
+q BT /F1 6.20 Tf 0.300 0.350 0.420 rg 305.64 281.39 Td (PK id_usr | user UK | rol) Tj ET Q
+q 0.970 0.980 0.990 rg 0.70 w 0.780 0.830 0.880 RG 428.96 268.39 122.32 34.00 re B Q
+q BT /F2 7.10 Tf 0.060 0.090 0.160 rg 433.96 291.39 Td (AUDITORIA Y HIST.) Tj ET Q
+q BT /F1 6.20 Tf 0.300 0.350 0.420 rg 433.96 281.39 Td (AUDITORIA_TARIFA, LOG_SENT,) Tj ET Q
+q BT /F1 6.20 Tf 0.300 0.350 0.420 rg 433.96 273.39 Td (LIQ_MENSUAL, PLANES_IND) Tj ET Q
+q 0.020 0.590 0.410 rg 44.00 246.39 3.50 16.00 re f Q
+q BT /F2 11.50 Tf 0.060 0.090 0.160 rg 54.00 250.39 Td (3. Defensa de las Dos Decisiones Clave de Diseño) Tj ET Q
+q 0.70 w 0.880 0.910 0.940 RG 44.00 244.39 m 551.28 244.39 l S Q
+q BT /F2 10.20 Tf 0.020 0.470 0.340 rg 44.00 226.39 Td (Decisión de Diseño 1: ¿Cómo modelar que una reserva tome varias habitaciones?) Tj ET Q
+q BT /F2 9.40 Tf 0.200 0.250 0.330 rg 44.00 211.39 Td (El dilema arquitectónico) Tj ET Q
+q BT /F1 9.20 Tf 0.150 0.200 0.280 rg 44.00 198.39 Td (En modelos relacionales simplistas, se coloca la clave foránea id_habitacion directamente dentro) Tj ET Q
+q BT /F1 9.20 Tf 0.150 0.200 0.280 rg 44.00 185.39 Td (de la tabla RESERVA. Esto introduce una restricción rígida de cardinalidad 1:1 \(una reserva =) Tj ET Q
+q BT /F1 9.20 Tf 0.150 0.200 0.280 rg 44.00 172.39 Td (exactamente una habitación\), impidiendo que familias, grupos de amigos o eventos corporativos) Tj ET Q
+q BT /F1 9.20 Tf 0.150 0.200 0.280 rg 44.00 159.39 Td (reserven dos o más habitaciones bajo un único titular, una única factura y una única transacción) Tj ET Q
+q BT /F1 9.20 Tf 0.150 0.200 0.280 rg 44.00 146.39 Td (de pago.) Tj ET Q
+q BT /F2 9.40 Tf 0.200 0.250 0.330 rg 44.00 130.89 Td (Solución implementada en TurismoUQ) Tj ET Q
+q BT /F1 9.20 Tf 0.150 0.200 0.280 rg 44.00 117.89 Td (Se desacopló la reserva de la unidad habitacional a través de la entidad asociativa) Tj ET Q
+q BT /F1 9.20 Tf 0.150 0.200 0.280 rg 44.00 104.89 Td (RESERVA_HABITACION:) Tj ET Q
+q BT /F2 9.00 Tf 0.020 0.590 0.410 rg 48.00 89.39 Td (*) Tj ET Q
+q BT /F1 9.20 Tf 0.150 0.200 0.280 rg 58.00 89.39 Td (Clave primaria compuesta: \(id_reserva, id_habitacion\).) Tj ET Q
+q BT /F2 9.00 Tf 0.020 0.590 0.410 rg 48.00 73.89 Td (*) Tj ET Q
+q BT /F1 9.20 Tf 0.150 0.200 0.280 rg 58.00 73.89 Td (Atributos históricos propios:) Tj ET Q
+q 0.6 w 0.88 0.91 0.94 RG 44.00 32.00 m 551.28 32.00 l S Q
+q BT /F1 8.00 Tf 0.45 0.50 0.58 rg 44.00 20.00 Td (Universidad del Quindio | Bases de Datos II - TurismoUQ) Tj ET Q
+q BT /F1 8.00 Tf 0.45 0.50 0.58 rg 489.28 20.00 Td (Pagina 1 de 6) Tj ET Q
+endstream
+endobj
+8 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595.28 841.89] /Resources << /Font << /F1 3 0 R /F2 4 0 R /F3 5 0 R >> >> /Contents 9 0 R >>
+endobj
+9 0 obj
+<< /Length 8205 >>
+stream
+q BT /F1 8.00 Tf 0.390 0.450 0.550 rg 44.00 813.89 Td (TurismoUQ - Bases de Datos II | Modelo Relacional y Decisiones de Diseno) Tj ET Q
+q 0.60 w 0.890 0.910 0.940 RG 44.00 808.89 m 551.28 808.89 l S Q
+q BT /F2 9.00 Tf 0.020 0.590 0.410 rg 48.00 791.89 Td (*) Tj ET Q
+q BT /F1 9.20 Tf 0.150 0.200 0.280 rg 58.00 791.89 Td (precio_unitario NUMBER\(12,2\): Tarifa congelada al momento de la confirmación.) Tj ET Q
+q BT /F2 9.00 Tf 0.020 0.590 0.410 rg 48.00 776.39 Td (*) Tj ET Q
+q BT /F1 9.20 Tf 0.150 0.200 0.280 rg 58.00 776.39 Td (subtotal NUMBER\(14,2\): Importe total atribuible a esa habitación \(precio_promedio * noches\).) Tj ET Q
+q BT /F2 9.00 Tf 0.020 0.590 0.410 rg 48.00 760.89 Td (*) Tj ET Q
+q BT /F1 9.20 Tf 0.150 0.200 0.280 rg 58.00 760.89 Td (Clave foránea con borrado en cascada controlado \(ON DELETE CASCADE\) respecto a RESERVA.) Tj ET Q
+q BT /F2 9.40 Tf 0.200 0.250 0.330 rg 44.00 745.39 Td (Ventajas técnicas y de negocio:) Tj ET Q
+q BT /F2 9.00 Tf 0.020 0.590 0.410 rg 52.00 732.39 Td (1.) Tj ET Q
+q BT /F1 9.20 Tf 0.150 0.200 0.280 rg 62.00 732.39 Td (Flexibilidad N:M: Un cliente puede apartar 1, 2, 5 o más habitaciones de un mismo alojamiento) Tj ET Q
+q BT /F1 9.20 Tf 0.150 0.200 0.280 rg 62.00 719.39 Td (en una sola reserva atómica.) Tj ET Q
+q BT /F2 9.00 Tf 0.020 0.590 0.410 rg 52.00 703.89 Td (2.) Tj ET Q
+q BT /F1 9.20 Tf 0.150 0.200 0.280 rg 62.00 703.89 Td (Inmutabilidad contable: Si las tarifas cambian en el futuro en la tabla TARIFA, el subtotal) Tj ET Q
+q BT /F1 9.20 Tf 0.150 0.200 0.280 rg 62.00 690.89 Td (pactado en RESERVA_HABITACION no se altera.) Tj ET Q
+q BT /F2 9.00 Tf 0.020 0.590 0.410 rg 52.00 675.39 Td (3.) Tj ET Q
+q BT /F1 9.20 Tf 0.150 0.200 0.280 rg 62.00 675.39 Td (Control de solapamiento granular: El trigger anti-mutante TRG_PREVENIR_SOLAPAMIENTO_RESHAB) Tj ET Q
+q BT /F1 9.20 Tf 0.150 0.200 0.280 rg 62.00 662.39 Td (opera a nivel de cada habitación individualmente, permitiendo verificar disponibilidad por) Tj ET Q
+q BT /F1 9.20 Tf 0.150 0.200 0.280 rg 62.00 649.39 Td (habitación sin bloquear al resto de unidades de la reserva.) Tj ET Q
+q BT /F2 10.20 Tf 0.020 0.470 0.340 rg 44.00 629.89 Td (Decisión de Diseño 2: ¿Cómo modelar que una estadía atraviese dos temporadas con tarifas distintas?) Tj ET Q
+q BT /F2 9.40 Tf 0.200 0.250 0.330 rg 44.00 614.89 Td (El dilema arquitectónico) Tj ET Q
+q BT /F1 9.20 Tf 0.150 0.200 0.280 rg 44.00 601.89 Td (Si una reserva inicia el 21 de marzo \(Temporada Baja\) y culmina el 26 de marzo \(Semana Santa -) Tj ET Q
+q BT /F1 9.20 Tf 0.150 0.200 0.280 rg 44.00 588.89 Td (Temporada Alta\), una simple multiplicación de tarifa * noches o asociar la reserva a una sola) Tj ET Q
+q BT /F1 9.20 Tf 0.150 0.200 0.280 rg 44.00 575.89 Td (temporada genera cobros injustos o pérdidas financieras para los propietarios hoteleros.) Tj ET Q
+q BT /F2 9.40 Tf 0.200 0.250 0.330 rg 44.00 560.39 Td (Solución implementada en TurismoUQ) Tj ET Q
+q BT /F1 9.20 Tf 0.150 0.200 0.280 rg 44.00 547.39 Td (Se diseñó un esquema desacoplado en 3 niveles:) Tj ET Q
+q BT /F2 9.00 Tf 0.020 0.590 0.410 rg 52.00 531.89 Td (1.) Tj ET Q
+q BT /F1 9.20 Tf 0.150 0.200 0.280 rg 62.00 531.89 Td (Tabla TEMPORADA: Define únicamente dos temporadas universales:) Tj ET Q
+q BT /F2 9.00 Tf 0.020 0.590 0.410 rg 48.00 516.39 Td (*) Tj ET Q
+q BT /F1 9.20 Tf 0.150 0.200 0.280 rg 58.00 516.39 Td (ID 1: Temporada Baja \(tarifa regular\).) Tj ET Q
+q BT /F2 9.00 Tf 0.020 0.590 0.410 rg 48.00 500.89 Td (*) Tj ET Q
+q BT /F1 9.20 Tf 0.150 0.200 0.280 rg 58.00 500.89 Td (ID 2: Temporada Alta \(tarifa con incremento exacto del +40% sobre la base\).) Tj ET Q
+q BT /F2 9.00 Tf 0.020 0.590 0.410 rg 52.00 485.39 Td (2.) Tj ET Q
+q BT /F1 9.20 Tf 0.150 0.200 0.280 rg 62.00 485.39 Td (Tabla PERIODO_TEMPORADA: Almacena los rangos de fechas de calendario \(Semana Santa, Mitad de) Tj ET Q
+q BT /F1 9.20 Tf 0.150 0.200 0.280 rg 62.00 472.39 Td (Año, Fin de Año\) para los años 2024, 2025 y 2026.) Tj ET Q
+q BT /F2 9.00 Tf 0.020 0.590 0.410 rg 52.00 456.89 Td (3.) Tj ET Q
+q BT /F1 9.20 Tf 0.150 0.200 0.280 rg 62.00 456.89 Td (Cálculo algorítmico noche por noche en PL/SQL \(fn_valor_estadia\):) Tj ET Q
+q BT /F1 9.20 Tf 0.150 0.200 0.280 rg 44.00 441.39 Td (La función itera noche por noche desde fecha_in hasta fecha_out - 1. Para cada noche:) Tj ET Q
+q 0.060 0.090 0.160 rg 0.50 w 0.200 0.250 0.330 RG 44.00 314.89 507.28 117.00 re B Q
+q BT /F3 7.80 Tf 0.890 0.910 0.940 rg 52.00 419.89 Td (   SELECT COUNT\(*\) INTO v_es_alta) Tj ET Q
+q BT /F3 7.80 Tf 0.890 0.910 0.940 rg 52.00 409.39 Td (   FROM TURISMO_UQ.PERIODO_TEMPORADA) Tj ET Q
+q BT /F3 7.80 Tf 0.890 0.910 0.940 rg 52.00 398.89 Td (   WHERE id_temporada = 2) Tj ET Q
+q BT /F3 7.80 Tf 0.890 0.910 0.940 rg 52.00 388.39 Td (     AND v_fecha_actual BETWEEN TRUNC\(fecha_inicio\) AND TRUNC\(fecha_fin\);) Tj ET Q
+q BT /F3 7.80 Tf 0.890 0.910 0.940 rg 52.00 377.89 Td () Tj ET Q
+q BT /F3 7.80 Tf 0.890 0.910 0.940 rg 52.00 367.39 Td (   IF v_es_alta > 0 THEN) Tj ET Q
+q BT /F3 7.80 Tf 0.890 0.910 0.940 rg 52.00 356.89 Td (       v_total := v_total + v_tarifa_alta;) Tj ET Q
+q BT /F3 7.80 Tf 0.890 0.910 0.940 rg 52.00 346.39 Td (   ELSE) Tj ET Q
+q BT /F3 7.80 Tf 0.890 0.910 0.940 rg 52.00 335.89 Td (       v_total := v_total + v_tarifa_baja;) Tj ET Q
+q BT /F3 7.80 Tf 0.890 0.910 0.940 rg 52.00 325.39 Td (   END IF;) Tj ET Q
+q BT /F2 9.40 Tf 0.200 0.250 0.330 rg 44.00 302.89 Td (Ventajas técnicas y de negocio:) Tj ET Q
+q BT /F2 9.00 Tf 0.020 0.590 0.410 rg 52.00 289.89 Td (1.) Tj ET Q
+q BT /F1 9.20 Tf 0.150 0.200 0.280 rg 62.00 289.89 Td (Precisión al milésimo: Cada noche se cobra con la tarifa que legalmente le corresponde según) Tj ET Q
+q BT /F1 9.20 Tf 0.150 0.200 0.280 rg 62.00 276.89 Td (el calendario de alta demanda.) Tj ET Q
+q BT /F2 9.00 Tf 0.020 0.590 0.410 rg 52.00 261.39 Td (2.) Tj ET Q
+q BT /F1 9.20 Tf 0.150 0.200 0.280 rg 62.00 261.39 Td (Mantenibilidad sin invalidar datos históricos: Si el próximo año cambian las fechas de Semana) Tj ET Q
+q BT /F1 9.20 Tf 0.150 0.200 0.280 rg 62.00 248.39 Td (Santa, solo se agrega una fila en PERIODO_TEMPORADA, sin alterar las tarifas de las 400) Tj ET Q
+q BT /F1 9.20 Tf 0.150 0.200 0.280 rg 62.00 235.39 Td (habitaciones.) Tj ET Q
+q BT /F2 9.00 Tf 0.020 0.590 0.410 rg 52.00 219.89 Td (3.) Tj ET Q
+q BT /F1 9.20 Tf 0.150 0.200 0.280 rg 62.00 219.89 Td (Rendimiento optimizado: La consulta se apoya en el índice B-Tree compuesto) Tj ET Q
+q BT /F1 9.20 Tf 0.150 0.200 0.280 rg 62.00 206.89 Td (idx_periodo_temp_fechas\(id_temporada, fecha_inicio, fecha_fin\), resolviendo el cálculo en) Tj ET Q
+q BT /F1 9.20 Tf 0.150 0.200 0.280 rg 62.00 193.89 Td (menos de 3 milisegundos en Oracle XE.) Tj ET Q
+q 0.020 0.590 0.410 rg 44.00 168.39 3.50 16.00 re f Q
+q BT /F2 11.50 Tf 0.060 0.090 0.160 rg 54.00 172.39 Td (4. Administración Física del Almacenamiento: Tablespace TBS_HISTORICO_RESERVAS) Tj ET Q
+q 0.70 w 0.880 0.910 0.940 RG 44.00 166.39 m 551.28 166.39 l S Q
+q BT /F2 10.20 Tf 0.020 0.470 0.340 rg 44.00 148.39 Td (Justificación Técnica DBA) Tj ET Q
+q BT /F1 9.20 Tf 0.150 0.200 0.280 rg 44.00 133.39 Td (En la base de datos coexisten tablas maestras de lectura frecuente y bajo crecimiento) Tj ET Q
+q BT /F1 9.20 Tf 0.150 0.200 0.280 rg 44.00 120.39 Td (\(MUNICIPIO, ALOJAMIENTO, HABITACION\) junto a tablas transaccionales de alto volumen y constante) Tj ET Q
+q BT /F1 9.20 Tf 0.150 0.200 0.280 rg 44.00 107.39 Td (mutación \(RESERVA, RESERVA_HABITACION, RESERVA_SERVICIO, PAGO, LIQUIDACION_MENSUAL_HISTORICO\).) Tj ET Q
+q BT /F1 9.20 Tf 0.150 0.200 0.280 rg 44.00 91.89 Td (La separación física en TBS_HISTORICO_RESERVAS garantiza:) Tj ET Q
+q BT /F2 9.00 Tf 0.020 0.590 0.410 rg 52.00 76.39 Td (1.) Tj ET Q
+q BT /F1 9.20 Tf 0.150 0.200 0.280 rg 62.00 76.39 Td (Aislamiento de I/O: Las operaciones concurrentes de reservas y liquidaciones masivas no) Tj ET Q
+q BT /F1 9.20 Tf 0.150 0.200 0.280 rg 62.00 63.39 Td (compiten por los bloques de disco del tablespace USERS.) Tj ET Q
+q 0.6 w 0.88 0.91 0.94 RG 44.00 32.00 m 551.28 32.00 l S Q
+q BT /F1 8.00 Tf 0.45 0.50 0.58 rg 44.00 20.00 Td (Universidad del Quindio | Bases de Datos II - TurismoUQ) Tj ET Q
+q BT /F1 8.00 Tf 0.45 0.50 0.58 rg 489.28 20.00 Td (Pagina 2 de 6) Tj ET Q
+endstream
+endobj
+10 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595.28 841.89] /Resources << /Font << /F1 3 0 R /F2 4 0 R /F3 5 0 R >> >> /Contents 11 0 R >>
+endobj
+11 0 obj
+<< /Length 10501 >>
+stream
+q BT /F1 8.00 Tf 0.390 0.450 0.550 rg 44.00 813.89 Td (TurismoUQ - Bases de Datos II | Modelo Relacional y Decisiones de Diseno) Tj ET Q
+q 0.60 w 0.890 0.910 0.940 RG 44.00 808.89 m 551.28 808.89 l S Q
+q BT /F2 9.00 Tf 0.020 0.590 0.410 rg 52.00 791.89 Td (2.) Tj ET Q
+q BT /F1 9.20 Tf 0.150 0.200 0.280 rg 62.00 791.89 Td (Estrategia RMAN Diferenciada: Permite respaldos incrementales diarios sobre el tablespace) Tj ET Q
+q BT /F1 9.20 Tf 0.150 0.200 0.280 rg 62.00 778.89 Td (histórico y semanales sobre catálogos.) Tj ET Q
+q BT /F2 9.00 Tf 0.020 0.590 0.410 rg 52.00 763.39 Td (3.) Tj ET Q
+q BT /F1 9.20 Tf 0.150 0.200 0.280 rg 62.00 763.39 Td (Mantenimiento sin indisponibilidad: Reorganización de segmentos \(ALTER TABLE MOVE\) y) Tj ET Q
+q BT /F1 9.20 Tf 0.150 0.200 0.280 rg 62.00 750.39 Td (reconstrucción de índices \(REBUILD\) sin afectar el catálogo maestro.) Tj ET Q
+q BT /F2 9.00 Tf 0.020 0.590 0.410 rg 52.00 734.89 Td (4.) Tj ET Q
+q BT /F1 9.20 Tf 0.150 0.200 0.280 rg 62.00 734.89 Td (Archivado histórico \(READ ONLY\): Posibilidad de congelar particiones o años fiscales cerrados) Tj ET Q
+q BT /F1 9.20 Tf 0.150 0.200 0.280 rg 62.00 721.89 Td (sin sobrecargar el backup de producción.) Tj ET Q
+q 0.020 0.590 0.410 rg 44.00 696.39 3.50 16.00 re f Q
+q BT /F2 11.50 Tf 0.060 0.090 0.160 rg 54.00 700.39 Td (5. Integridad Transaccional y Disparadores Compuestos) Tj ET Q
+q 0.70 w 0.880 0.910 0.940 RG 44.00 694.39 m 551.28 694.39 l S Q
+q BT /F2 10.20 Tf 0.020 0.470 0.340 rg 44.00 676.39 Td (5.1 Prevención de Tabla Mutante \(ORA-04091\) en TRG_PREVENIR_SOLAPAMIENTO_RESHAB) Tj ET Q
+q BT /F1 9.20 Tf 0.150 0.200 0.280 rg 44.00 661.39 Td (En Oracle, un trigger simple FOR EACH ROW sobre RESERVA_HABITACION que consulte) Tj ET Q
+q BT /F1 9.20 Tf 0.150 0.200 0.280 rg 44.00 648.39 Td (RESERVA_HABITACION o RESERVA para detectar cruces de fechas genera el error de tabla mutante) Tj ET Q
+q BT /F1 9.20 Tf 0.150 0.200 0.280 rg 44.00 635.39 Td (ORA-04091.) Tj ET Q
+q BT /F1 9.20 Tf 0.150 0.200 0.280 rg 44.00 619.89 Td (Se implementó un Compound Trigger:) Tj ET Q
+q BT /F2 9.00 Tf 0.020 0.590 0.410 rg 48.00 604.39 Td (*) Tj ET Q
+q BT /F1 9.20 Tf 0.150 0.200 0.280 rg 58.00 604.39 Td (BEFORE STATEMENT: Limpia la colección temporal en PGA.) Tj ET Q
+q BT /F2 9.00 Tf 0.020 0.590 0.410 rg 48.00 588.89 Td (*) Tj ET Q
+q BT /F1 9.20 Tf 0.150 0.200 0.280 rg 58.00 588.89 Td (AFTER EACH ROW: Captura los IDs \(id_reserva, id_habitacion\) en memoria sin realizar consultas) Tj ET Q
+q BT /F1 9.20 Tf 0.150 0.200 0.280 rg 58.00 575.89 Td (a la tabla en mutación.) Tj ET Q
+q BT /F2 9.00 Tf 0.020 0.590 0.410 rg 48.00 560.39 Td (*) Tj ET Q
+q BT /F1 9.20 Tf 0.150 0.200 0.280 rg 58.00 560.39 Td (AFTER STATEMENT: Una vez finalizada la sentencia DML y cuando la tabla ya no se encuentra en) Tj ET Q
+q BT /F1 9.20 Tf 0.150 0.200 0.280 rg 58.00 547.39 Td (estado mutante, valida la condición analítica de cruce de fechas:) Tj ET Q
+q BT /F1 9.20 Tf 0.150 0.200 0.280 rg 44.00 531.89 Td (r.fecha_check_in < v_out_date AND r.fecha_check_out > v_in_date. Si hay solapamiento, aborta la) Tj ET Q
+q BT /F1 9.20 Tf 0.150 0.200 0.280 rg 44.00 518.89 Td (transacción con RAISE_APPLICATION_ERROR\(-20003, ...\).) Tj ET Q
+q BT /F2 10.20 Tf 0.020 0.470 0.340 rg 44.00 499.39 Td (5.2 Auditoría Dual \(Fila y Sentencia\) en TRG_AUDITORIA_TARIFA) Tj ET Q
+q BT /F1 9.20 Tf 0.150 0.200 0.280 rg 44.00 484.39 Td (Para cumplir simultáneamente el requerimiento de disparador a nivel de sentencia y la captura de) Tj ET Q
+q BT /F1 9.20 Tf 0.150 0.200 0.280 rg 44.00 471.39 Td (valores anterior/nuevo:) Tj ET Q
+q BT /F2 9.00 Tf 0.020 0.590 0.410 rg 48.00 455.89 Td (*) Tj ET Q
+q BT /F1 9.20 Tf 0.150 0.200 0.280 rg 58.00 455.89 Td (AFTER EACH ROW: Inserta en AUDITORIA_TARIFA quién modificó, fecha, valor anterior) Tj ET Q
+q BT /F1 9.20 Tf 0.150 0.200 0.280 rg 58.00 442.89 Td (\(:OLD.precio_noche\), valor nuevo \(:NEW.precio_noche\) y acción \(INSERT/UPDATE/DELETE\).) Tj ET Q
+q BT /F2 9.00 Tf 0.020 0.590 0.410 rg 48.00 427.39 Td (*) Tj ET Q
+q BT /F1 9.20 Tf 0.150 0.200 0.280 rg 58.00 427.39 Td (AFTER STATEMENT: Inserta en LOG_SENTENCIA_TARIFA el resumen consolidado de la sentencia) Tj ET Q
+q BT /F1 9.20 Tf 0.150 0.200 0.280 rg 58.00 414.39 Td (ejecutada \(usuario, timestamp, acción y cantidad total de filas afectadas\).) Tj ET Q
+q 0.020 0.590 0.410 rg 44.00 388.89 3.50 16.00 re f Q
+q BT /F2 11.50 Tf 0.060 0.090 0.160 rg 54.00 392.89 Td (6. Verificación del Volumen Mínimo de Datos) Tj ET Q
+q 0.70 w 0.880 0.910 0.940 RG 44.00 386.89 m 551.28 386.89 l S Q
+q 0.930 0.990 0.960 rg 0.60 w 0.650 0.950 0.820 RG 44.00 349.89 507.28 29.00 re B Q
+q BT /F2 7.90 Tf 0.020 0.370 0.270 rg 48.00 368.89 Td (Entidad / Métrica) Tj ET Q
+q BT /F2 7.90 Tf 0.020 0.370 0.270 rg 148.87 368.89 Td (Requisito Mínimo) Tj ET Q
+q BT /F2 7.90 Tf 0.020 0.370 0.270 rg 148.87 358.39 Td (\(PDF\)) Tj ET Q
+q BT /F2 7.90 Tf 0.020 0.370 0.270 rg 229.28 368.89 Td (Cantidad Generada en Script) Tj ET Q
+q BT /F2 7.90 Tf 0.020 0.370 0.270 rg 474.88 368.89 Td (Estado) Tj ET Q
+q 1.000 1.000 1.000 rg 0.50 w 0.820 0.850 0.900 RG 44.00 332.89 507.28 17.00 re B Q
+q BT /F1 7.70 Tf 0.150 0.200 0.280 rg 48.00 339.89 Td (Municipios) Tj ET Q
+q BT /F1 7.70 Tf 0.150 0.200 0.280 rg 148.87 339.89 Td (12) Tj ET Q
+q BT /F1 7.70 Tf 0.150 0.200 0.280 rg 229.28 339.89 Td (12) Tj ET Q
+q BT /F1 7.70 Tf 0.150 0.200 0.280 rg 474.88 339.89 Td ([OK] Cumplido) Tj ET Q
+q 0.980 0.990 1.000 rg 0.50 w 0.820 0.850 0.900 RG 44.00 315.89 507.28 17.00 re B Q
+q BT /F1 7.70 Tf 0.150 0.200 0.280 rg 48.00 322.89 Td (Alojamientos) Tj ET Q
+q BT /F1 7.70 Tf 0.150 0.200 0.280 rg 148.87 322.89 Td (60) Tj ET Q
+q BT /F1 7.70 Tf 0.150 0.200 0.280 rg 229.28 322.89 Td (60 \(5 por municipio\)) Tj ET Q
+q BT /F1 7.70 Tf 0.150 0.200 0.280 rg 474.88 322.89 Td ([OK] Cumplido) Tj ET Q
+q 1.000 1.000 1.000 rg 0.50 w 0.820 0.850 0.900 RG 44.00 298.89 507.28 17.00 re B Q
+q BT /F1 7.70 Tf 0.150 0.200 0.280 rg 48.00 305.89 Td (Habitaciones) Tj ET Q
+q BT /F1 7.70 Tf 0.150 0.200 0.280 rg 148.87 305.89 Td (400) Tj ET Q
+q BT /F1 7.70 Tf 0.150 0.200 0.280 rg 229.28 305.89 Td (400 \(distribuidas en los 60 alojamientos\)) Tj ET Q
+q BT /F1 7.70 Tf 0.150 0.200 0.280 rg 474.88 305.89 Td ([OK] Cumplido) Tj ET Q
+q 0.980 0.990 1.000 rg 0.50 w 0.820 0.850 0.900 RG 44.00 281.89 507.28 17.00 re B Q
+q BT /F1 7.70 Tf 0.150 0.200 0.280 rg 48.00 288.89 Td (Clientes) Tj ET Q
+q BT /F1 7.70 Tf 0.150 0.200 0.280 rg 148.87 288.89 Td (3.000) Tj ET Q
+q BT /F1 7.70 Tf 0.150 0.200 0.280 rg 229.28 288.89 Td (3.000 \(con documentos y correos únicos\)) Tj ET Q
+q BT /F1 7.70 Tf 0.150 0.200 0.280 rg 474.88 288.89 Td ([OK] Cumplido) Tj ET Q
+q 1.000 1.000 1.000 rg 0.50 w 0.820 0.850 0.900 RG 44.00 254.89 507.28 27.00 re B Q
+q BT /F1 7.70 Tf 0.150 0.200 0.280 rg 48.00 271.89 Td (Reservas) Tj ET Q
+q BT /F1 7.70 Tf 0.150 0.200 0.280 rg 148.87 271.89 Td (25.000) Tj ET Q
+q BT /F1 7.70 Tf 0.150 0.200 0.280 rg 148.87 261.89 Td (\(2024-2026\)) Tj ET Q
+q BT /F1 7.70 Tf 0.150 0.200 0.280 rg 229.28 271.89 Td (25.000 repartidas en los 3 años) Tj ET Q
+q BT /F1 7.70 Tf 0.150 0.200 0.280 rg 474.88 271.89 Td ([OK] Cumplido) Tj ET Q
+q 0.980 0.990 1.000 rg 0.50 w 0.820 0.850 0.900 RG 44.00 237.89 507.28 17.00 re B Q
+q BT /F1 7.70 Tf 0.150 0.200 0.280 rg 48.00 244.89 Td (Líneas de Servicios) Tj ET Q
+q BT /F1 7.70 Tf 0.150 0.200 0.280 rg 148.87 244.89 Td (40.000) Tj ET Q
+q BT /F1 7.70 Tf 0.150 0.200 0.280 rg 229.28 244.89 Td (40.000 consumos en RESERVA_SERVICIO) Tj ET Q
+q BT /F1 7.70 Tf 0.150 0.200 0.280 rg 474.88 244.89 Td ([OK] Cumplido) Tj ET Q
+q 1.000 1.000 1.000 rg 0.50 w 0.820 0.850 0.900 RG 44.00 220.89 507.28 17.00 re B Q
+q BT /F1 7.70 Tf 0.150 0.200 0.280 rg 48.00 227.89 Td (Pagos) Tj ET Q
+q BT /F1 7.70 Tf 0.150 0.200 0.280 rg 148.87 227.89 Td (-) Tj ET Q
+q BT /F1 7.70 Tf 0.150 0.200 0.280 rg 229.28 227.89 Td (25.000 pagos atómicos asociados) Tj ET Q
+q BT /F1 7.70 Tf 0.150 0.200 0.280 rg 474.88 227.89 Td ([OK] Cumplido) Tj ET Q
+q 0.980 0.990 1.000 rg 0.50 w 0.820 0.850 0.900 RG 44.00 203.89 507.28 17.00 re B Q
+q BT /F1 7.70 Tf 0.150 0.200 0.280 rg 48.00 210.89 Td (Tarifas) Tj ET Q
+q BT /F1 7.70 Tf 0.150 0.200 0.280 rg 148.87 210.89 Td (-) Tj ET Q
+q BT /F1 7.70 Tf 0.150 0.200 0.280 rg 229.28 210.89 Td (800 \(400 baja + 400 alta con regla +40%\)) Tj ET Q
+q BT /F1 7.70 Tf 0.150 0.200 0.280 rg 474.88 210.89 Td ([OK] Cumplido) Tj ET Q
+q 1.000 1.000 1.000 rg 0.50 w 0.820 0.850 0.900 RG 44.00 176.89 507.28 27.00 re B Q
+q BT /F1 7.70 Tf 0.150 0.200 0.280 rg 48.00 193.89 Td (Usuarios Sistema) Tj ET Q
+q BT /F1 7.70 Tf 0.150 0.200 0.280 rg 48.00 183.89 Td (\(App\)) Tj ET Q
+q BT /F1 7.70 Tf 0.150 0.200 0.280 rg 148.87 193.89 Td (-) Tj ET Q
+q BT /F1 7.70 Tf 0.150 0.200 0.280 rg 229.28 193.89 Td (5 \(admin_uq, recepcion_uq, admin_alojamiento_uq,) Tj ET Q
+q BT /F1 7.70 Tf 0.150 0.200 0.280 rg 229.28 183.89 Td (gerente_uq, auditor_uq\)) Tj ET Q
+q BT /F1 7.70 Tf 0.150 0.200 0.280 rg 474.88 193.89 Td ([OK] Cumplido) Tj ET Q
+q 0.980 0.990 1.000 rg 0.50 w 0.820 0.850 0.900 RG 44.00 149.89 507.28 27.00 re B Q
+q BT /F1 7.70 Tf 0.150 0.200 0.280 rg 48.00 166.89 Td (Usuarios BD Oracle) Tj ET Q
+q BT /F1 7.70 Tf 0.150 0.200 0.280 rg 148.87 166.89 Td (-) Tj ET Q
+q BT /F1 7.70 Tf 0.150 0.200 0.280 rg 229.28 166.89 Td (4 \(USR_RECEPCION, USR_ADMIN_ALOJ, USR_GERENTE,) Tj ET Q
+q BT /F1 7.70 Tf 0.150 0.200 0.280 rg 229.28 156.89 Td (USR_AUDITOR\) con PERFIL_TURISMO_OPERATIVO) Tj ET Q
+q BT /F1 7.70 Tf 0.150 0.200 0.280 rg 474.88 166.89 Td ([OK] Cumplido) Tj ET Q
+q BT /F2 10.20 Tf 0.020 0.470 0.340 rg 44.00 131.89 Td (6.1 Nuevas Consultas Analíticas Adicionales \(04_consultas_analisis.sql\)) Tj ET Q
+q BT /F1 9.20 Tf 0.150 0.200 0.280 rg 44.00 116.89 Td (Además de las 8 consultas obligatorias, se incorporaron en SQL, Backend REST) Tj ET Q
+q BT /F1 9.20 Tf 0.150 0.200 0.280 rg 44.00 103.89 Td (\(/api/analitica/...\) y Frontend Angular:) Tj ET Q
+q BT /F2 9.00 Tf 0.020 0.590 0.410 rg 52.00 88.39 Td (1.) Tj ET Q
+q BT /F1 9.20 Tf 0.150 0.200 0.280 rg 62.00 88.39 Td (Consulta 9 - Habitación con más reservas en Temporada Alta:) Tj ET Q
+q BT /F2 9.00 Tf 0.020 0.590 0.410 rg 48.00 72.89 Td (*) Tj ET Q
+q BT /F1 9.20 Tf 0.150 0.200 0.280 rg 58.00 72.89 Td (Cruza RESERVA, RESERVA_HABITACION, HABITACION, ALOJAMIENTO, MUNICIPIO y verifica mediante) Tj ET Q
+q 0.6 w 0.88 0.91 0.94 RG 44.00 32.00 m 551.28 32.00 l S Q
+q BT /F1 8.00 Tf 0.45 0.50 0.58 rg 44.00 20.00 Td (Universidad del Quindio | Bases de Datos II - TurismoUQ) Tj ET Q
+q BT /F1 8.00 Tf 0.45 0.50 0.58 rg 489.28 20.00 Td (Pagina 3 de 6) Tj ET Q
+endstream
+endobj
+12 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595.28 841.89] /Resources << /Font << /F1 3 0 R /F2 4 0 R /F3 5 0 R >> >> /Contents 13 0 R >>
+endobj
+13 0 obj
+<< /Length 7994 >>
+stream
+q BT /F1 8.00 Tf 0.390 0.450 0.550 rg 44.00 813.89 Td (TurismoUQ - Bases de Datos II | Modelo Relacional y Decisiones de Diseno) Tj ET Q
+q 0.60 w 0.890 0.910 0.940 RG 44.00 808.89 m 551.28 808.89 l S Q
+q BT /F1 9.20 Tf 0.150 0.200 0.280 rg 58.00 791.89 Td (EXISTS sobre PERIODO_TEMPORADA \(id_temporada = 2\) excluyendo canceladas, aplicando) Tj ET Q
+q BT /F1 9.20 Tf 0.150 0.200 0.280 rg 58.00 778.89 Td (DENSE_RANK\(\) para identificar la líder.) Tj ET Q
+q BT /F2 9.00 Tf 0.020 0.590 0.410 rg 48.00 763.39 Td (*) Tj ET Q
+q BT /F1 9.20 Tf 0.150 0.200 0.280 rg 58.00 763.39 Td (Resultado verificado sobre los 25.035 registros del entorno local: Habitación 105 \(ID #291\) -) Tj ET Q
+q BT /F1 9.20 Tf 0.150 0.200 0.280 rg 58.00 750.39 Td (Alojamiento Turistico UQ 42 \(Montenegro\) con 23 reservas en temporada alta y $18.562.000 COP.) Tj ET Q
+q BT /F2 9.00 Tf 0.020 0.590 0.410 rg 52.00 734.89 Td (2.) Tj ET Q
+q BT /F1 9.20 Tf 0.150 0.200 0.280 rg 62.00 734.89 Td (Consulta 10 - Listado de clientes con más municipios visitados:) Tj ET Q
+q BT /F2 9.00 Tf 0.020 0.590 0.410 rg 48.00 719.39 Td (*) Tj ET Q
+q BT /F1 9.20 Tf 0.150 0.200 0.280 rg 58.00 719.39 Td (Agrupa por cliente calculando COUNT\(DISTINCT m.id_municipio\), COUNT\(DISTINCT r.id_reserva\),) Tj ET Q
+q BT /F1 9.20 Tf 0.150 0.200 0.280 rg 58.00 706.39 Td (SUM\(r.total\) y consolidando los nombres de municipios con LISTAGG\(DISTINCT m.nombre, ', '\)) Tj ET Q
+q BT /F1 9.20 Tf 0.150 0.200 0.280 rg 58.00 693.39 Td (WITHIN GROUP \(ORDER BY m.nombre\).) Tj ET Q
+q BT /F2 9.00 Tf 0.020 0.590 0.410 rg 48.00 677.89 Td (*) Tj ET Q
+q BT /F1 9.20 Tf 0.150 0.200 0.280 rg 58.00 677.89 Td (Resultado verificado en el entorno local: Carlos Perez \(ID #1902\) con 12 de 12 municipios del) Tj ET Q
+q BT /F1 9.20 Tf 0.150 0.200 0.280 rg 58.00 664.89 Td (Quindío visitados \(17 reservas\), seguido de clientes con 11 y 10 municipios.) Tj ET Q
+q 0.020 0.590 0.410 rg 44.00 639.39 3.50 16.00 re f Q
+q BT /F2 11.50 Tf 0.060 0.090 0.160 rg 54.00 643.39 Td (7. Entrega 3: Transacciones, Concurrencia, Índices \(CBO\) y Seguridad) Tj ET Q
+q 0.70 w 0.880 0.910 0.940 RG 44.00 637.39 m 551.28 637.39 l S Q
+q BT /F2 10.20 Tf 0.020 0.470 0.340 rg 44.00 619.39 Td (7.1 Transacción Atómica con SAVEPOINT y Rollback Parcial \(01_transacciones_savepoint.sql\)) Tj ET Q
+q BT /F1 9.20 Tf 0.150 0.200 0.280 rg 44.00 604.39 Td (El procedimiento TURISMO_UQ.sp_reserva_transaccional_pago registra la reserva y su pago en una) Tj ET Q
+q BT /F1 9.20 Tf 0.150 0.200 0.280 rg 44.00 591.39 Td (misma unidad lógica de trabajo:) Tj ET Q
+q BT /F2 9.00 Tf 0.020 0.590 0.410 rg 52.00 575.89 Td (1.) Tj ET Q
+q BT /F1 9.20 Tf 0.150 0.200 0.280 rg 62.00 575.89 Td (Inserta el encabezado en RESERVA \(estado inicial 'PENDIENTE'\) y el detalle en) Tj ET Q
+q BT /F1 9.20 Tf 0.150 0.200 0.280 rg 62.00 562.89 Td (RESERVA_HABITACION.) Tj ET Q
+q BT /F2 9.00 Tf 0.020 0.590 0.410 rg 52.00 547.39 Td (2.) Tj ET Q
+q BT /F1 9.20 Tf 0.150 0.200 0.280 rg 62.00 547.39 Td (Establece el punto de salvaguarda: SAVEPOINT sp_reserva_creada;.) Tj ET Q
+q BT /F2 9.00 Tf 0.020 0.590 0.410 rg 52.00 531.89 Td (3.) Tj ET Q
+q BT /F1 9.20 Tf 0.150 0.200 0.280 rg 62.00 531.89 Td (En un sub-bloque transaccional intenta registrar el pago en PAGO.) Tj ET Q
+q BT /F2 9.00 Tf 0.020 0.590 0.410 rg 52.00 516.39 Td (4.) Tj ET Q
+q BT /F1 9.20 Tf 0.150 0.200 0.280 rg 62.00 516.39 Td (Si el pago es exitoso: actualiza la reserva a 'CONFIRMADA' y ejecuta COMMIT total.) Tj ET Q
+q BT /F2 9.00 Tf 0.020 0.590 0.410 rg 52.00 500.89 Td (5.) Tj ET Q
+q BT /F1 9.20 Tf 0.150 0.200 0.280 rg 62.00 500.89 Td (Si el pago falla \(ORA-20007 o error de restricción\): captura la excepción, ejecuta ROLLBACK) Tj ET Q
+q BT /F1 9.20 Tf 0.150 0.200 0.280 rg 62.00 487.89 Td (TO SAVEPOINT sp_reserva_creada \(revirtiendo únicamente el pago\) y ejecuta COMMIT para) Tj ET Q
+q BT /F1 9.20 Tf 0.150 0.200 0.280 rg 62.00 474.89 Td (resguardar la reserva en estado 'PENDIENTE' sin que el huésped pierda su disponibilidad.) Tj ET Q
+q BT /F2 10.20 Tf 0.020 0.470 0.340 rg 44.00 455.39 Td (7.2 Concurrencia y Bloqueo Pesimista de Fila \(02_concurrencia_bloqueos.sql\)) Tj ET Q
+q BT /F1 9.20 Tf 0.150 0.200 0.280 rg 44.00 440.39 Td (El procedimiento TURISMO_UQ.sp_reservar_con_bloqueo serializa el intento concurrente de dos) Tj ET Q
+q BT /F1 9.20 Tf 0.150 0.200 0.280 rg 44.00 427.39 Td (sesiones sobre la misma habitación mediante:) Tj ET Q
+q 0.060 0.090 0.160 rg 0.50 w 0.200 0.250 0.330 RG 44.00 353.39 507.28 64.50 re B Q
+q BT /F3 7.80 Tf 0.890 0.910 0.940 rg 52.00 405.89 Td (SELECT capacidad, numero_nombre) Tj ET Q
+q BT /F3 7.80 Tf 0.890 0.910 0.940 rg 52.00 395.39 Td (INTO v_capacidad, v_numero_hab) Tj ET Q
+q BT /F3 7.80 Tf 0.890 0.910 0.940 rg 52.00 384.89 Td (FROM TURISMO_UQ.HABITACION) Tj ET Q
+q BT /F3 7.80 Tf 0.890 0.910 0.940 rg 52.00 374.39 Td (WHERE id_habitacion = p_id_habitacion) Tj ET Q
+q BT /F3 7.80 Tf 0.890 0.910 0.940 rg 52.00 363.89 Td (FOR UPDATE WAIT 5;) Tj ET Q
+q BT /F1 9.20 Tf 0.150 0.200 0.280 rg 44.00 341.39 Td (Comparativa Antes vs Después:) Tj ET Q
+q 0.930 0.990 0.960 rg 0.60 w 0.650 0.950 0.820 RG 44.00 313.39 507.28 18.50 re B Q
+q BT /F2 7.90 Tf 0.020 0.370 0.270 rg 48.00 321.89 Td (Aspecto) Tj ET Q
+q BT /F2 7.90 Tf 0.020 0.370 0.270 rg 156.99 321.89 Td (Sin SELECT ... FOR UPDATE \(Antes\)) Tj ET Q
+q BT /F2 7.90 Tf 0.020 0.370 0.270 rg 354.79 321.89 Td (Con SELECT ... FOR UPDATE \(Después\)) Tj ET Q
+q 1.000 1.000 1.000 rg 0.50 w 0.820 0.850 0.900 RG 44.00 286.39 507.28 27.00 re B Q
+q BT /F1 7.70 Tf 0.150 0.200 0.280 rg 48.00 303.39 Td (Lectura bajo READ) Tj ET Q
+q BT /F1 7.70 Tf 0.150 0.200 0.280 rg 48.00 293.39 Td (COMMITTED) Tj ET Q
+q BT /F1 7.70 Tf 0.150 0.200 0.280 rg 156.99 303.39 Td (Ambas sesiones leen 0 solapamientos antes) Tj ET Q
+q BT /F1 7.70 Tf 0.150 0.200 0.280 rg 156.99 293.39 Td (del primer COMMIT \(Race Condition\).) Tj ET Q
+q BT /F1 7.70 Tf 0.150 0.200 0.280 rg 354.79 303.39 Td (Sesión 1 toma candado exclusivo de fila) Tj ET Q
+q BT /F1 7.70 Tf 0.150 0.200 0.280 rg 354.79 293.39 Td (\(Row-X TX Lock\) sobre HABITACION.) Tj ET Q
+q 0.980 0.990 1.000 rg 0.50 w 0.820 0.850 0.900 RG 44.00 249.39 507.28 37.00 re B Q
+q BT /F1 7.70 Tf 0.150 0.200 0.280 rg 48.00 276.39 Td (Comportamiento Sesión) Tj ET Q
+q BT /F1 7.70 Tf 0.150 0.200 0.280 rg 48.00 266.39 Td (2) Tj ET Q
+q BT /F1 7.70 Tf 0.150 0.200 0.280 rg 156.99 276.39 Td (Avanza paralelamente e intenta insertar la) Tj ET Q
+q BT /F1 7.70 Tf 0.150 0.200 0.280 rg 156.99 266.39 Td (misma habitación en las mismas fechas.) Tj ET Q
+q BT /F1 7.70 Tf 0.150 0.200 0.280 rg 354.79 276.39 Td (Espera en cola \(enq: TX - row lock) Tj ET Q
+q BT /F1 7.70 Tf 0.150 0.200 0.280 rg 354.79 266.39 Td (contention\) hasta que Sesión 1 haga) Tj ET Q
+q BT /F1 7.70 Tf 0.150 0.200 0.280 rg 354.79 256.39 Td (COMMIT/ROLLBACK.) Tj ET Q
+q 1.000 1.000 1.000 rg 0.50 w 0.820 0.850 0.900 RG 44.00 212.39 507.28 37.00 re B Q
+q BT /F1 7.70 Tf 0.150 0.200 0.280 rg 48.00 239.39 Td (Resolución de) Tj ET Q
+q BT /F1 7.70 Tf 0.150 0.200 0.280 rg 48.00 229.39 Td (contención) Tj ET Q
+q BT /F1 7.70 Tf 0.150 0.200 0.280 rg 156.99 239.39 Td (Conflicto tardío en inserción /) Tj ET Q
+q BT /F1 7.70 Tf 0.150 0.200 0.280 rg 156.99 229.39 Td (inconsistencia de cupo.) Tj ET Q
+q BT /F1 7.70 Tf 0.150 0.200 0.280 rg 354.79 239.39 Td (Si Sesión 1 no libera a tiempo: ORA-20008;) Tj ET Q
+q BT /F1 7.70 Tf 0.150 0.200 0.280 rg 354.79 229.39 Td (si libera tras confirmar: ORA-20003) Tj ET Q
+q BT /F1 7.70 Tf 0.150 0.200 0.280 rg 354.79 219.39 Td (\(rechazo limpio\).) Tj ET Q
+q BT /F1 9.20 Tf 0.150 0.200 0.280 rg 44.00 198.39 Td (Comandos reproducibles del experimento en dos sesiones \(SQL*Plus / SQL Developer\) y monitoreo en) Tj ET Q
+q BT /F1 9.20 Tf 0.150 0.200 0.280 rg 44.00 185.39 Td (V$LOCK:) Tj ET Q
+q 0.6 w 0.88 0.91 0.94 RG 44.00 32.00 m 551.28 32.00 l S Q
+q BT /F1 8.00 Tf 0.45 0.50 0.58 rg 44.00 20.00 Td (Universidad del Quindio | Bases de Datos II - TurismoUQ) Tj ET Q
+q BT /F1 8.00 Tf 0.45 0.50 0.58 rg 489.28 20.00 Td (Pagina 4 de 6) Tj ET Q
+endstream
+endobj
+14 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595.28 841.89] /Resources << /Font << /F1 3 0 R /F2 4 0 R /F3 5 0 R >> >> /Contents 15 0 R >>
+endobj
+15 0 obj
+<< /Length 11103 >>
+stream
+q BT /F1 8.00 Tf 0.390 0.450 0.550 rg 44.00 813.89 Td (TurismoUQ - Bases de Datos II | Modelo Relacional y Decisiones de Diseno) Tj ET Q
+q 0.60 w 0.890 0.910 0.940 RG 44.00 808.89 m 551.28 808.89 l S Q
+q 0.060 0.090 0.160 rg 0.50 w 0.200 0.250 0.330 RG 44.00 554.89 507.28 243.00 re B Q
+q BT /F3 7.80 Tf 0.890 0.910 0.940 rg 52.00 785.89 Td (-- SESIÓN 1 \(Terminal A\): Adquiere bloqueo exclusivo de fila sin confirmar aún) Tj ET Q
+q BT /F3 7.80 Tf 0.890 0.910 0.940 rg 52.00 775.39 Td (ALTER SESSION SET CONTAINER = XEPDB1;) Tj ET Q
+q BT /F3 7.80 Tf 0.890 0.910 0.940 rg 52.00 764.89 Td (SELECT id_habitacion, numero_nombre, capacidad) Tj ET Q
+q BT /F3 7.80 Tf 0.890 0.910 0.940 rg 52.00 754.39 Td (FROM TURISMO_UQ.HABITACION WHERE id_habitacion = 1 FOR UPDATE;) Tj ET Q
+q BT /F3 7.80 Tf 0.890 0.910 0.940 rg 52.00 743.89 Td () Tj ET Q
+q BT /F3 7.80 Tf 0.890 0.910 0.940 rg 52.00 733.39 Td (-- SESIÓN 2 \(Terminal B, en paralelo\): Queda bloqueada esperando en row lock contention) Tj ET Q
+q BT /F3 7.80 Tf 0.890 0.910 0.940 rg 52.00 722.89 Td (ALTER SESSION SET CONTAINER = XEPDB1;) Tj ET Q
+q BT /F3 7.80 Tf 0.890 0.910 0.940 rg 52.00 712.39 Td (DECLARE v_id NUMBER; v_tot NUMBER; v_msg VARCHAR2\(500\);) Tj ET Q
+q BT /F3 7.80 Tf 0.890 0.910 0.940 rg 52.00 701.89 Td (BEGIN) Tj ET Q
+q BT /F3 7.80 Tf 0.890 0.910 0.940 rg 52.00 691.39 Td (    TURISMO_UQ.sp_reservar_con_bloqueo\(2, 1, DATE '2027-09-10', DATE '2027-09-14', 2, 5,) Tj ET Q
+q BT /F3 7.80 Tf 0.890 0.910 0.940 rg 52.00 680.89 Td ( v_id, v_tot, v_msg\);) Tj ET Q
+q BT /F3 7.80 Tf 0.890 0.910 0.940 rg 52.00 670.39 Td (END;) Tj ET Q
+q BT /F3 7.80 Tf 0.890 0.910 0.940 rg 52.00 659.89 Td (/) Tj ET Q
+q BT /F3 7.80 Tf 0.890 0.910 0.940 rg 52.00 649.39 Td () Tj ET Q
+q BT /F3 7.80 Tf 0.890 0.910 0.940 rg 52.00 638.89 Td (-- MONITOREO DBA \(Sesión C\): Visualizar bloqueador, bloqueado y evento de espera) Tj ET Q
+q BT /F3 7.80 Tf 0.890 0.910 0.940 rg 52.00 628.39 Td (SELECT s1.sid AS sid_bloqueador, s1.username, s2.sid AS sid_esperando,) Tj ET Q
+q BT /F3 7.80 Tf 0.890 0.910 0.940 rg 52.00 617.89 Td (       s2.event AS evento_espera, s2.seconds_in_wait) Tj ET Q
+q BT /F3 7.80 Tf 0.890 0.910 0.940 rg 52.00 607.39 Td (FROM v$lock l1) Tj ET Q
+q BT /F3 7.80 Tf 0.890 0.910 0.940 rg 52.00 596.89 Td (JOIN v$session s1 ON l1.sid = s1.sid) Tj ET Q
+q BT /F3 7.80 Tf 0.890 0.910 0.940 rg 52.00 586.39 Td (JOIN v$lock l2    ON l1.id1 = l2.id1 AND l1.id2 = l2.id2) Tj ET Q
+q BT /F3 7.80 Tf 0.890 0.910 0.940 rg 52.00 575.89 Td (JOIN v$session s2 ON l2.sid = s2.sid) Tj ET Q
+q BT /F3 7.80 Tf 0.890 0.910 0.940 rg 52.00 565.39 Td (WHERE l1.block = 1 AND l2.request > 0;) Tj ET Q
+q BT /F2 10.20 Tf 0.020 0.470 0.340 rg 44.00 538.89 Td (7.3 Optimización con Índices y Caso Negativo del CBO \(03_indices_optimizacion.sql\)) Tj ET Q
+q BT /F1 9.20 Tf 0.150 0.200 0.280 rg 44.00 523.89 Td (Se evaluaron los planes de ejecución \(EXPLAIN PLAN + DBMS_XPLAN.DISPLAY\) sobre las 25.035) Tj ET Q
+q BT /F1 9.20 Tf 0.150 0.200 0.280 rg 44.00 510.89 Td (reservas y 40.000 servicios y se incorporó medición dinámica de tiempos de ejecución con) Tj ET Q
+q BT /F1 9.20 Tf 0.150 0.200 0.280 rg 44.00 497.89 Td (DBMS_SQL + SYSTIMESTAMP:) Tj ET Q
+q 0.930 0.990 0.960 rg 0.60 w 0.650 0.950 0.820 RG 44.00 459.39 507.28 29.00 re B Q
+q BT /F2 7.90 Tf 0.020 0.370 0.270 rg 48.00 478.39 Td (Caso) Tj ET Q
+q BT /F2 7.90 Tf 0.020 0.370 0.270 rg 97.63 478.39 Td (Índice Evaluado) Tj ET Q
+q BT /F2 7.90 Tf 0.020 0.370 0.270 rg 183.41 478.39 Td (Tipo) Tj ET Q
+q BT /F2 7.90 Tf 0.020 0.370 0.270 rg 299.78 478.39 Td (Operación Antes) Tj ET Q
+q BT /F2 7.90 Tf 0.020 0.370 0.270 rg 299.78 467.89 Td (\(Costo CBO\)) Tj ET Q
+q BT /F2 7.90 Tf 0.020 0.370 0.270 rg 397.49 478.39 Td (Operación Después) Tj ET Q
+q BT /F2 7.90 Tf 0.020 0.370 0.270 rg 397.49 467.89 Td (\(Costo CBO\)) Tj ET Q
+q BT /F2 7.90 Tf 0.020 0.370 0.270 rg 505.65 478.39 Td (Impacto) Tj ET Q
+q BT /F2 7.90 Tf 0.020 0.370 0.270 rg 505.65 467.89 Td (CBO) Tj ET Q
+q 1.000 1.000 1.000 rg 0.50 w 0.820 0.850 0.900 RG 44.00 422.39 507.28 37.00 re B Q
+q BT /F1 7.70 Tf 0.150 0.200 0.280 rg 48.00 449.39 Td (Q1) Tj ET Q
+q BT /F1 7.70 Tf 0.150 0.200 0.280 rg 97.63 449.39 Td (IDX_COMP_RESERVA_) Tj ET Q
+q BT /F1 7.70 Tf 0.150 0.200 0.280 rg 97.63 439.39 Td (EST_CREA) Tj ET Q
+q BT /F1 7.70 Tf 0.150 0.200 0.280 rg 183.41 449.39 Td (Compuesto B-Tree) Tj ET Q
+q BT /F1 7.70 Tf 0.150 0.200 0.280 rg 183.41 439.39 Td (\(estado, fecha_creacion,) Tj ET Q
+q BT /F1 7.70 Tf 0.150 0.200 0.280 rg 183.41 429.39 Td (total\)) Tj ET Q
+q BT /F1 7.70 Tf 0.150 0.200 0.280 rg 299.78 449.39 Td (TABLE ACCESS \(FULL\)) Tj ET Q
+q BT /F1 7.70 Tf 0.150 0.200 0.280 rg 299.78 439.39 Td (\(73\)) Tj ET Q
+q BT /F1 7.70 Tf 0.150 0.200 0.280 rg 397.49 449.39 Td (INDEX \(RANGE SCAN) Tj ET Q
+q BT /F1 7.70 Tf 0.150 0.200 0.280 rg 397.49 439.39 Td (DESCENDING\) \(2\)) Tj ET Q
+q BT /F1 7.70 Tf 0.150 0.200 0.280 rg 505.65 449.39 Td (-97.26%) Tj ET Q
+q 0.980 0.990 1.000 rg 0.50 w 0.820 0.850 0.900 RG 44.00 375.39 507.28 47.00 re B Q
+q BT /F1 7.70 Tf 0.150 0.200 0.280 rg 48.00 412.39 Td (Q2) Tj ET Q
+q BT /F1 7.70 Tf 0.150 0.200 0.280 rg 97.63 412.39 Td (IDX_FBI_RESERVA_A) Tj ET Q
+q BT /F1 7.70 Tf 0.150 0.200 0.280 rg 97.63 402.39 Td (NIO_MES) Tj ET Q
+q BT /F1 7.70 Tf 0.150 0.200 0.280 rg 183.41 412.39 Td (Basado en Función \(TO_CH) Tj ET Q
+q BT /F1 7.70 Tf 0.150 0.200 0.280 rg 183.41 402.39 Td (AR\(fecha_check_in,'YYYY-) Tj ET Q
+q BT /F1 7.70 Tf 0.150 0.200 0.280 rg 183.41 392.39 Td (MM-DD'\),) Tj ET Q
+q BT /F1 7.70 Tf 0.150 0.200 0.280 rg 183.41 382.39 Td (UPPER\(TRIM\(estado\)\)\)) Tj ET Q
+q BT /F1 7.70 Tf 0.150 0.200 0.280 rg 299.78 412.39 Td (TABLE ACCESS \(FULL\)) Tj ET Q
+q BT /F1 7.70 Tf 0.150 0.200 0.280 rg 299.78 402.39 Td (\(72\)) Tj ET Q
+q BT /F1 7.70 Tf 0.150 0.200 0.280 rg 397.49 412.39 Td (INDEX \(RANGE SCAN\)) Tj ET Q
+q BT /F1 7.70 Tf 0.150 0.200 0.280 rg 397.49 402.39 Td (\(23\)) Tj ET Q
+q BT /F1 7.70 Tf 0.150 0.200 0.280 rg 505.65 412.39 Td (-68.06%) Tj ET Q
+q 1.000 1.000 1.000 rg 0.50 w 0.820 0.850 0.900 RG 44.00 338.39 507.28 37.00 re B Q
+q BT /F1 7.70 Tf 0.150 0.200 0.280 rg 48.00 365.39 Td (Q3) Tj ET Q
+q BT /F1 7.70 Tf 0.150 0.200 0.280 rg 97.63 365.39 Td (IDX_COMP_RESSERV_) Tj ET Q
+q BT /F1 7.70 Tf 0.150 0.200 0.280 rg 97.63 355.39 Td (SERV_CANT) Tj ET Q
+q BT /F1 7.70 Tf 0.150 0.200 0.280 rg 183.41 365.39 Td (Compuesto Cobertura) Tj ET Q
+q BT /F1 7.70 Tf 0.150 0.200 0.280 rg 183.41 355.39 Td (\(id_servicio, cantidad,) Tj ET Q
+q BT /F1 7.70 Tf 0.150 0.200 0.280 rg 183.41 345.39 Td (subtotal\)) Tj ET Q
+q BT /F1 7.70 Tf 0.150 0.200 0.280 rg 299.78 365.39 Td (TABLE ACCESS \(FULL\)) Tj ET Q
+q BT /F1 7.70 Tf 0.150 0.200 0.280 rg 299.78 355.39 Td (\(42\)) Tj ET Q
+q BT /F1 7.70 Tf 0.150 0.200 0.280 rg 397.49 365.39 Td (INDEX \(RANGE SCAN\) \(2\)) Tj ET Q
+q BT /F1 7.70 Tf 0.150 0.200 0.280 rg 505.65 365.39 Td (-95.24%) Tj ET Q
+q 0.980 0.990 1.000 rg 0.50 w 0.820 0.850 0.900 RG 44.00 291.39 507.28 47.00 re B Q
+q BT /F1 7.70 Tf 0.150 0.200 0.280 rg 48.00 328.39 Td (Q4 \(Caso) Tj ET Q
+q BT /F1 7.70 Tf 0.150 0.200 0.280 rg 48.00 318.39 Td (Negativo\)) Tj ET Q
+q BT /F1 7.70 Tf 0.150 0.200 0.280 rg 97.63 328.39 Td (IDX_COMP_RESERVA_) Tj ET Q
+q BT /F1 7.70 Tf 0.150 0.200 0.280 rg 97.63 318.39 Td (EST_CREA) Tj ET Q
+q BT /F1 7.70 Tf 0.150 0.200 0.280 rg 183.41 328.39 Td (Filtro baja selectividad) Tj ET Q
+q BT /F1 7.70 Tf 0.150 0.200 0.280 rg 183.41 318.39 Td (estado IN \('CONFIRMADA',) Tj ET Q
+q BT /F1 7.70 Tf 0.150 0.200 0.280 rg 183.41 308.39 Td ('FINALIZADA','PENDIENTE') Tj ET Q
+q BT /F1 7.70 Tf 0.150 0.200 0.280 rg 183.41 298.39 Td (\)) Tj ET Q
+q BT /F1 7.70 Tf 0.150 0.200 0.280 rg 299.78 328.39 Td (TABLE ACCESS \(FULL\)) Tj ET Q
+q BT /F1 7.70 Tf 0.150 0.200 0.280 rg 299.78 318.39 Td (Natural \(72\)) Tj ET Q
+q BT /F1 7.70 Tf 0.150 0.200 0.280 rg 397.49 328.39 Td (INDEX \(RANGE SCAN\) +) Tj ET Q
+q BT /F1 7.70 Tf 0.150 0.200 0.280 rg 397.49 318.39 Td (ROWID BATCHED Forzado) Tj ET Q
+q BT /F1 7.70 Tf 0.150 0.200 0.280 rg 397.49 308.39 Td (\(24.986\)) Tj ET Q
+q BT /F1 7.70 Tf 0.150 0.200 0.280 rg 505.65 328.39 Td (+34.602%) Tj ET Q
+q BT /F1 7.70 Tf 0.150 0.200 0.280 rg 505.65 318.39 Td (\(347x) Tj ET Q
+q BT /F1 7.70 Tf 0.150 0.200 0.280 rg 505.65 308.39 Td (peor\)) Tj ET Q
+q BT /F1 9.20 Tf 0.150 0.200 0.280 rg 44.00 277.39 Td (¿Por qué el índice NO ayuda en el Caso 4?) Tj ET Q
+q BT /F2 9.00 Tf 0.020 0.590 0.410 rg 52.00 261.89 Td (1.) Tj ET Q
+q BT /F1 9.20 Tf 0.150 0.200 0.280 rg 62.00 261.89 Td (Baja Selectividad: El predicado filtra casi el 100% de las filas de RESERVA.) Tj ET Q
+q BT /F2 9.00 Tf 0.020 0.590 0.410 rg 52.00 246.39 Td (2.) Tj ET Q
+q BT /F1 9.20 Tf 0.150 0.200 0.280 rg 62.00 246.39 Td (Lecturas Single-Block vs Multi-Block: Al forzar el índice con /*+ INDEX\(r) Tj ET Q
+q BT /F1 9.20 Tf 0.150 0.200 0.280 rg 62.00 233.39 Td (IDX_COMP_RESERVA_EST_CREA\) */, Oracle debe recorrer las hojas del índice y realizar ~25.000) Tj ET Q
+q BT /F1 9.20 Tf 0.150 0.200 0.280 rg 62.00 220.39 Td (saltos aleatorios por ROWID hacia los bloques de la tabla \(TABLE ACCESS BY INDEX ROWID) Tj ET Q
+q BT /F1 9.20 Tf 0.150 0.200 0.280 rg 62.00 207.39 Td (BATCHED\) para recuperar columnas no cubiertas \(id_cliente, fecha_check_in, fecha_check_out\).) Tj ET Q
+q BT /F2 9.00 Tf 0.020 0.590 0.410 rg 52.00 191.89 Td (3.) Tj ET Q
+q BT /F1 9.20 Tf 0.150 0.200 0.280 rg 62.00 191.89 Td (Clustering Factor: Un mismo bloque físico de la tabla es leído repetidas veces en lecturas) Tj ET Q
+q BT /F1 9.20 Tf 0.150 0.200 0.280 rg 62.00 178.89 Td (unitarias \(db file sequential read\), mientras que un TABLE ACCESS FULL lee bloques contiguos) Tj ET Q
+q BT /F1 9.20 Tf 0.150 0.200 0.280 rg 62.00 165.89 Td (en ráfagas \(db_file_multiblock_read_count\), costando 72 frente a 24.986.) Tj ET Q
+q BT /F2 10.20 Tf 0.020 0.470 0.340 rg 44.00 146.39 Td (7.4 Seguridad: 4 Roles, Aislamiento por Vistas, Perfil y Usuarios Oracle \(04_seguridad_roles_perfiles.sql\)) Tj ET Q
+q BT /F2 9.00 Tf 0.020 0.590 0.410 rg 48.00 131.39 Td (*) Tj ET Q
+q BT /F1 9.20 Tf 0.150 0.200 0.280 rg 58.00 131.39 Td (4 Roles Diferenciados:) Tj ET Q
+q BT /F2 9.00 Tf 0.020 0.590 0.410 rg 52.00 115.89 Td (1.) Tj ET Q
+q BT /F1 9.20 Tf 0.150 0.200 0.280 rg 62.00 115.89 Td (ROL_RECEPCION: 0 permisos sobre tablas directas. Opera exclusivamente sobre las vistas) Tj ET Q
+q BT /F1 9.20 Tf 0.150 0.200 0.280 rg 62.00 102.89 Td (VW_RECEPCION_RESERVAS \(con Trigger INSTEAD OF UPDATE\), VW_RECEPCION_CHECKIN y) Tj ET Q
+q BT /F1 9.20 Tf 0.150 0.200 0.280 rg 62.00 89.89 Td (VW_RECEPCION_HABITACIONES_DISP \(+ CREATE SESSION\).) Tj ET Q
+q BT /F2 9.00 Tf 0.020 0.590 0.410 rg 52.00 74.39 Td (2.) Tj ET Q
+q BT /F1 9.20 Tf 0.150 0.200 0.280 rg 62.00 74.39 Td (ROL_ADMIN_ALOJAMIENTO: Permisos SELECT, INSERT, UPDATE sobre ALOJAMIENTO, HABITACION, TARIFA,) Tj ET Q
+q BT /F1 9.20 Tf 0.150 0.200 0.280 rg 62.00 61.39 Td (SERVICIO, lectura de temporadas y ejecución de PKG_TURISMO_RESERVAS.) Tj ET Q
+q 0.6 w 0.88 0.91 0.94 RG 44.00 32.00 m 551.28 32.00 l S Q
+q BT /F1 8.00 Tf 0.45 0.50 0.58 rg 44.00 20.00 Td (Universidad del Quindio | Bases de Datos II - TurismoUQ) Tj ET Q
+q BT /F1 8.00 Tf 0.45 0.50 0.58 rg 489.28 20.00 Td (Pagina 5 de 6) Tj ET Q
+endstream
+endobj
+16 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595.28 841.89] /Resources << /Font << /F1 3 0 R /F2 4 0 R /F3 5 0 R >> >> /Contents 17 0 R >>
+endobj
+17 0 obj
+<< /Length 4553 >>
+stream
+q BT /F1 8.00 Tf 0.390 0.450 0.550 rg 44.00 813.89 Td (TurismoUQ - Bases de Datos II | Modelo Relacional y Decisiones de Diseno) Tj ET Q
+q 0.60 w 0.890 0.910 0.940 RG 44.00 808.89 m 551.28 808.89 l S Q
+q BT /F2 9.00 Tf 0.020 0.590 0.410 rg 52.00 791.89 Td (3.) Tj ET Q
+q BT /F1 9.20 Tf 0.150 0.200 0.280 rg 62.00 791.89 Td (ROL_GERENTE: Lectura sobre MV_OCUPACION_MENSUAL, LIQUIDACION_MENSUAL_HISTORICO y tablas de) Tj ET Q
+q BT /F1 9.20 Tf 0.150 0.200 0.280 rg 62.00 778.89 Td (facturación.) Tj ET Q
+q BT /F2 9.00 Tf 0.020 0.590 0.410 rg 52.00 763.39 Td (4.) Tj ET Q
+q BT /F1 9.20 Tf 0.150 0.200 0.280 rg 62.00 763.39 Td (ROL_AUDITOR: Lectura inmutable sobre AUDITORIA_TARIFA, LOG_SENTENCIA_TARIFA,) Tj ET Q
+q BT /F1 9.20 Tf 0.150 0.200 0.280 rg 62.00 750.39 Td (AUDITORIA_PLANES_INDICES, TARIFA y USUARIO_SISTEMA.) Tj ET Q
+q BT /F2 9.00 Tf 0.020 0.590 0.410 rg 48.00 734.89 Td (*) Tj ET Q
+q BT /F1 9.20 Tf 0.150 0.200 0.280 rg 58.00 734.89 Td (4 Usuarios reales en Oracle XE \(XEPDB1\) con PERFIL_TURISMO_OPERATIVO \(RESOURCE_LIMIT = TRUE\):) Tj ET Q
+q BT /F2 9.00 Tf 0.020 0.590 0.410 rg 48.00 719.39 Td (*) Tj ET Q
+q BT /F1 9.20 Tf 0.150 0.200 0.280 rg 58.00 719.39 Td (USR_RECEPCION \(ROL_RECEPCION\) · USR_ADMIN_ALOJ \(ROL_ADMIN_ALOJAMIENTO\) · USR_GERENTE) Tj ET Q
+q BT /F1 9.20 Tf 0.150 0.200 0.280 rg 58.00 706.39 Td (\(ROL_GERENTE\) · USR_AUDITOR \(ROL_AUDITOR\).) Tj ET Q
+q BT /F2 9.00 Tf 0.020 0.590 0.410 rg 48.00 690.89 Td (*) Tj ET Q
+q BT /F1 9.20 Tf 0.150 0.200 0.280 rg 58.00 690.89 Td (Perfil de Recursos \(PERFIL_TURISMO_OPERATIVO\):) Tj ET Q
+q BT /F2 9.00 Tf 0.020 0.590 0.410 rg 48.00 675.39 Td (*) Tj ET Q
+q BT /F1 9.20 Tf 0.150 0.200 0.280 rg 58.00 675.39 Td (SESSIONS_PER_USER 2, IDLE_TIME 30, CONNECT_TIME 480, FAILED_LOGIN_ATTEMPTS 3,) Tj ET Q
+q BT /F1 9.20 Tf 0.150 0.200 0.280 rg 58.00 662.39 Td (PASSWORD_LIFE_TIME 90, PASSWORD_LOCK_TIME 1, PASSWORD_GRACE_TIME 7.) Tj ET Q
+q BT /F2 9.00 Tf 0.020 0.590 0.410 rg 48.00 646.89 Td (*) Tj ET Q
+q BT /F1 9.20 Tf 0.150 0.200 0.280 rg 58.00 646.89 Td (Verificación de aislamiento de recepción en SQL*Plus \(conectando como USR_RECEPCION\):) Tj ET Q
+q BT /F2 9.00 Tf 0.020 0.590 0.410 rg 48.00 631.39 Td (*) Tj ET Q
+q BT /F1 9.20 Tf 0.150 0.200 0.280 rg 58.00 631.39 Td (SELECT * FROM TURISMO_UQ.VW_RECEPCION_RESERVAS FETCH FIRST 5 ROWS ONLY; -> Permitido.) Tj ET Q
+q BT /F2 9.00 Tf 0.020 0.590 0.410 rg 48.00 615.89 Td (*) Tj ET Q
+q BT /F1 9.20 Tf 0.150 0.200 0.280 rg 58.00 615.89 Td (SELECT * FROM TURISMO_UQ.RESERVA FETCH FIRST 5 ROWS ONLY; -> Denegado \(ORA-00942\).) Tj ET Q
+q 0.020 0.590 0.410 rg 44.00 590.39 3.50 16.00 re f Q
+q BT /F2 11.50 Tf 0.060 0.090 0.160 rg 54.00 594.39 Td (8. Instrucciones de Despliegue en Base Limpia) Tj ET Q
+q 0.70 w 0.880 0.910 0.940 RG 44.00 588.39 m 551.28 588.39 l S Q
+q BT /F1 9.20 Tf 0.150 0.200 0.280 rg 44.00 574.39 Td (Para instalar y validar el proyecto completo \(Entregas 1, 2 y 3\) en una instancia limpia de) Tj ET Q
+q BT /F1 9.20 Tf 0.150 0.200 0.280 rg 44.00 561.39 Td (Oracle Database 21c XE \(XEPDB1\):) Tj ET Q
+q 0.060 0.090 0.160 rg 0.50 w 0.200 0.250 0.330 RG 44.00 476.89 507.28 75.00 re B Q
+q BT /F3 7.80 Tf 0.890 0.910 0.940 rg 52.00 539.89 Td (# 1. Conectarse como administrador DBA \(necesario para crear esquema, tablespace, roles,) Tj ET Q
+q BT /F3 7.80 Tf 0.890 0.910 0.940 rg 52.00 529.39 Td ( perfil y usuarios\)) Tj ET Q
+q BT /F3 7.80 Tf 0.890 0.910 0.940 rg 52.00 518.89 Td (sqlplus / as sysdba) Tj ET Q
+q BT /F3 7.80 Tf 0.890 0.910 0.940 rg 52.00 508.39 Td () Tj ET Q
+q BT /F3 7.80 Tf 0.890 0.910 0.940 rg 52.00 497.89 Td (# 2. Ejecutar el script maestro único de arriba a abajo \(Pasos 0 al 14\):) Tj ET Q
+q BT /F3 7.80 Tf 0.890 0.910 0.940 rg 52.00 487.39 Td (@database/00_master_instalacion_completa.sql) Tj ET Q
+q BT /F1 9.20 Tf 0.150 0.200 0.280 rg 44.00 464.89 Td (El script creará/verificará de forma idempotente el usuario TURISMO_UQ) Tj ET Q
+q BT /F1 9.20 Tf 0.150 0.200 0.280 rg 44.00 451.89 Td (\(00_prerequisitos_dba_esquema.sql\), ejecutará del paso 1 al 14, correrá las baterías de pruebas) Tj ET Q
+q BT /F1 9.20 Tf 0.150 0.200 0.280 rg 44.00 438.89 Td (automatizadas de Entrega 2 y Entrega 3, verificará que existan 0 objetos inválidos y emitirá el) Tj ET Q
+q BT /F1 9.20 Tf 0.150 0.200 0.280 rg 44.00 425.89 Td (reporte de conteo final.) Tj ET Q
+q 0.6 w 0.88 0.91 0.94 RG 44.00 32.00 m 551.28 32.00 l S Q
+q BT /F1 8.00 Tf 0.45 0.50 0.58 rg 44.00 20.00 Td (Universidad del Quindio | Bases de Datos II - TurismoUQ) Tj ET Q
+q BT /F1 8.00 Tf 0.45 0.50 0.58 rg 489.28 20.00 Td (Pagina 6 de 6) Tj ET Q
+endstream
+endobj
+xref
+0 18
+0000000000 65535 f 
+0000000015 00000 n 
+0000000064 00000 n 
+0000000155 00000 n 
+0000000252 00000 n 
+0000000354 00000 n 
+0000000449 00000 n 
+0000000601 00000 n 
+0000010426 00000 n 
+0000010578 00000 n 
+0000018835 00000 n 
+0000018989 00000 n 
+0000029544 00000 n 
+0000029698 00000 n 
+0000037745 00000 n 
+0000037899 00000 n 
+0000049056 00000 n 
+0000049210 00000 n 
+trailer
+<< /Size 18 /Root 1 0 R >>
+startxref
+53816
+%%EOF

@@ -8,6 +8,8 @@ import com.turismouq.app.dto.response.AnaliticaRangoFechasDto;
 import com.turismouq.app.dto.response.AnaliticaMaterializadaDto;
 import com.turismouq.app.dto.response.AnaliticaUnpivotDto;
 import com.turismouq.app.dto.response.AnaliticaClienteClvDto;
+import com.turismouq.app.dto.response.AnaliticaHabitacionTempAltaDto;
+import com.turismouq.app.dto.response.AnaliticaClienteMunicipiosDto;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 
@@ -324,6 +326,90 @@ public class AnaliticaRepository {
                 rs.getBigDecimal("GASTO_HISTORICO_TOTAL"),
                 rs.getBigDecimal("TICKET_PROMEDIO"),
                 rs.getBigDecimal("PCT_FACTURACION_GLOBAL")
+        ));
+    }
+
+    /**
+     * Consulta 9: Habitación con más reservas en Temporada Alta (Top 10).
+     */
+    public List<AnaliticaHabitacionTempAltaDto> getTopHabitacionTemporadaAlta() {
+        String sql = """
+            SELECT
+                DENSE_RANK() OVER (
+                    ORDER BY COUNT(DISTINCT r.id_reserva) DESC, NVL(SUM(rh.subtotal), 0) DESC
+                ) AS ranking,
+                h.id_habitacion,
+                h.numero_nombre AS habitacion,
+                a.nombre AS alojamiento,
+                m.nombre AS municipio,
+                h.capacidad,
+                h.tipo_cama,
+                COUNT(DISTINCT r.id_reserva) AS reservas_temporada_alta,
+                NVL(SUM(rh.subtotal), 0) AS ingresos_hospedaje
+            FROM RESERVA r
+            JOIN RESERVA_HABITACION rh ON r.id_reserva = rh.id_reserva
+            JOIN HABITACION h          ON rh.id_habitacion = h.id_habitacion
+            JOIN ALOJAMIENTO a         ON h.id_alojamiento = a.id_alojamiento
+            JOIN MUNICIPIO m           ON a.id_municipio = m.id_municipio
+            WHERE r.estado != 'CANCELADA'
+              AND EXISTS (
+                  SELECT 1
+                  FROM PERIODO_TEMPORADA pt
+                  WHERE pt.id_temporada = 2
+                    AND r.fecha_check_in <= pt.fecha_fin
+                    AND (r.fecha_check_out - 1) >= pt.fecha_inicio
+              )
+            GROUP BY h.id_habitacion, h.numero_nombre, a.nombre, m.nombre, h.capacidad, h.tipo_cama
+            ORDER BY reservas_temporada_alta DESC, ingresos_hospedaje DESC
+            FETCH FIRST 10 ROWS ONLY
+        """;
+
+        return jdbcTemplate.query(sql, (rs, rowNum) -> new AnaliticaHabitacionTempAltaDto(
+                rs.getInt("RANKING"),
+                rs.getLong("ID_HABITACION"),
+                rs.getString("HABITACION"),
+                rs.getString("ALOJAMIENTO"),
+                rs.getString("MUNICIPIO"),
+                rs.getInt("CAPACIDAD"),
+                rs.getString("TIPO_CAMA"),
+                rs.getLong("RESERVAS_TEMPORADA_ALTA"),
+                rs.getBigDecimal("INGRESOS_HOSPEDAJE")
+        ));
+    }
+
+    /**
+     * Consulta 10: Listado de clientes que han reservado en más municipios distintos del Quindío.
+     */
+    public List<AnaliticaClienteMunicipiosDto> getClientesPorMunicipios() {
+        String sql = """
+            SELECT
+                c.id_cliente,
+                c.nombres || ' ' || c.apellidos AS cliente,
+                c.documento,
+                COUNT(DISTINCT m.id_municipio) AS total_municipios,
+                COUNT(DISTINCT r.id_reserva) AS total_reservas,
+                NVL(SUM(r.total), 0) AS gasto_total,
+                LISTAGG(DISTINCT m.nombre, ', ') WITHIN GROUP (ORDER BY m.nombre) AS municipios_visitados
+            FROM CLIENTE c
+            JOIN RESERVA r             ON c.id_cliente = r.id_cliente
+            JOIN RESERVA_HABITACION rh ON r.id_reserva = rh.id_reserva
+            JOIN HABITACION h          ON rh.id_habitacion = h.id_habitacion
+            JOIN ALOJAMIENTO a         ON h.id_alojamiento = a.id_alojamiento
+            JOIN MUNICIPIO m           ON a.id_municipio = m.id_municipio
+            WHERE r.estado != 'CANCELADA'
+            GROUP BY c.id_cliente, c.nombres, c.apellidos, c.documento
+            ORDER BY total_municipios DESC, total_reservas DESC, gasto_total DESC
+            FETCH FIRST 20 ROWS ONLY
+        """;
+
+        return jdbcTemplate.query(sql, (rs, rowNum) -> new AnaliticaClienteMunicipiosDto(
+                rs.getLong("ID_CLIENTE"),
+                rs.getString("CLIENTE"),
+                rs.getString("DOCUMENTO"),
+                rs.getLong("TOTAL_MUNICIPIOS"),
+                rs.getLong("TOTAL_RESERVAS"),
+                rs.getBigDecimal("GASTO_TOTAL"),
+                rs.getString("MUNICIPIOS_VISITADOS")
         ));
     }
 }

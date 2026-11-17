@@ -266,3 +266,62 @@ FROM metricas_cliente mc
 CROSS JOIN total_plataforma tp
 ORDER BY mc.gasto_historico_total DESC
 FETCH FIRST 10 ROWS ONLY;
+
+PROMPT ========================================================================
+PROMPT === CONSULTA 9: HABITACION CON MAS RESERVAS EN TEMPORADA ALTA          ===
+PROMPT ========================================================================
+-- Proposito: Identificar cual fue la habitacion con mayor demanda acumulada
+--            durante los periodos oficiales de Temporada Alta (id_temporada = 2).
+SELECT
+    DENSE_RANK() OVER (
+        ORDER BY COUNT(DISTINCT r.id_reserva) DESC, NVL(SUM(rh.subtotal), 0) DESC
+    ) AS ranking,
+    h.id_habitacion,
+    h.numero_nombre AS habitacion,
+    a.nombre AS alojamiento,
+    m.nombre AS municipio,
+    h.capacidad,
+    h.tipo_cama,
+    COUNT(DISTINCT r.id_reserva) AS reservas_temporada_alta,
+    NVL(SUM(rh.subtotal), 0) AS ingresos_hospedaje
+FROM RESERVA r
+JOIN RESERVA_HABITACION rh ON r.id_reserva = rh.id_reserva
+JOIN HABITACION h          ON rh.id_habitacion = h.id_habitacion
+JOIN ALOJAMIENTO a         ON h.id_alojamiento = a.id_alojamiento
+JOIN MUNICIPIO m           ON a.id_municipio = m.id_municipio
+WHERE r.estado != 'CANCELADA'
+  AND EXISTS (
+      SELECT 1
+      FROM PERIODO_TEMPORADA pt
+      WHERE pt.id_temporada = 2
+        AND r.fecha_check_in <= pt.fecha_fin
+        AND (r.fecha_check_out - 1) >= pt.fecha_inicio
+  )
+GROUP BY h.id_habitacion, h.numero_nombre, a.nombre, m.nombre, h.capacidad, h.tipo_cama
+ORDER BY reservas_temporada_alta DESC, ingresos_hospedaje DESC
+FETCH FIRST 10 ROWS ONLY;
+
+PROMPT ========================================================================
+PROMPT === CONSULTA 10: LISTADO DE CLIENTES CON MAS MUNICIPIOS VISITADOS      ===
+PROMPT ========================================================================
+-- Proposito: Listar a los clientes ordenados por la cantidad de municipios
+--            distintos del Quindio en los que han reservado, incluyendo el
+--            detalle consolidado de los municipios visitados.
+SELECT
+    c.id_cliente,
+    c.nombres || ' ' || c.apellidos AS cliente,
+    c.documento,
+    COUNT(DISTINCT m.id_municipio) AS total_municipios,
+    COUNT(DISTINCT r.id_reserva) AS total_reservas,
+    NVL(SUM(r.total), 0) AS gasto_total,
+    LISTAGG(DISTINCT m.nombre, ', ') WITHIN GROUP (ORDER BY m.nombre) AS municipios_visitados
+FROM CLIENTE c
+JOIN RESERVA r             ON c.id_cliente = r.id_cliente
+JOIN RESERVA_HABITACION rh ON r.id_reserva = rh.id_reserva
+JOIN HABITACION h          ON rh.id_habitacion = h.id_habitacion
+JOIN ALOJAMIENTO a         ON h.id_alojamiento = a.id_alojamiento
+JOIN MUNICIPIO m           ON a.id_municipio = m.id_municipio
+WHERE r.estado != 'CANCELADA'
+GROUP BY c.id_cliente, c.nombres, c.apellidos, c.documento
+ORDER BY total_municipios DESC, total_reservas DESC, gasto_total DESC
+FETCH FIRST 20 ROWS ONLY;

@@ -8,6 +8,8 @@ import com.turismouq.app.dto.response.AnaliticaRangoFechasDto;
 import com.turismouq.app.dto.response.AnaliticaMaterializadaDto;
 import com.turismouq.app.dto.response.AnaliticaUnpivotDto;
 import com.turismouq.app.dto.response.AnaliticaClienteClvDto;
+import com.turismouq.app.dto.response.AnaliticaHabitacionTempAltaDto;
+import com.turismouq.app.dto.response.AnaliticaClienteMunicipiosDto;
 import com.turismouq.app.service.AnaliticaService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -69,5 +71,15 @@ public class AnaliticaController {
     @GetMapping("/top-clientes-clv")
     public ResponseEntity<List<AnaliticaClienteClvDto>> getTopClientesClv() {
         return ResponseEntity.ok(analiticaService.obtenerTopClientesClv());
+    }
+
+    @GetMapping("/top-habitacion-temporada-alta")
+    public ResponseEntity<List<AnaliticaHabitacionTempAltaDto>> getTopHabitacionTemporadaAlta() {
+        return ResponseEntity.ok(analiticaService.obtenerTopHabitacionTemporadaAlta());
+    }
+
+    @GetMapping("/clientes-municipios")
+    public ResponseEntity<List<AnaliticaClienteMunicipiosDto>> getClientesPorMunicipios() {
+        return ResponseEntity.ok(analiticaService.obtenerClientesPorMunicipios());
     }
 }

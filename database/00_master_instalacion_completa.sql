@@ -4,13 +4,14 @@
 -- ARCHIVO: database/00_master_instalacion_completa.sql
 -- MOTOR: ORACLE DATABASE 21c EXPRESS EDITION (PDB: XEPDB1)
 -- ESQUEMA: TURISMO_UQ
+-- EJECUCION RECOMENDADA: Conectado como SYS AS SYSDBA (sqlplus / as sysdba)
+--                        para habilitar creacion de esquema, tablespace, roles y perfiles.
 --
 -- CUMPLE LA REGLA OFICIAL DEL CURSO:
 -- "Un script que no corre de arriba abajo en una base limpia no se califica."
 -- ============================================================================
 
 ALTER SESSION SET CONTAINER = XEPDB1;
-ALTER SESSION SET CURRENT_SCHEMA = TURISMO_UQ;
 
 SET ECHO OFF;
 SET FEEDBACK ON;
@@ -20,6 +21,13 @@ SET TIMING ON;
 PROMPT ============================================================================
 PROMPT === PROYECTO INTEGRADOR BDII: TURISMOUQ - INSTALACION COMPLETA           ===
 PROMPT ============================================================================
+
+PROMPT ----------------------------------------------------------------------------
+PROMPT [PASO 0/14] Prerrequisitos DBA y Creacion Idempotente del Esquema TURISMO_UQ
+PROMPT ----------------------------------------------------------------------------
+@@"00_prerequisitos_dba_esquema.sql";
+
+ALTER SESSION SET CURRENT_SCHEMA = TURISMO_UQ;
 
 PROMPT ----------------------------------------------------------------------------
 PROMPT [PASO 1/14] Creacion del Modelo Relacional Limpio (14 Entidades y Reglas)

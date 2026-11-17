@@ -9,20 +9,28 @@
 ```text
 turismo-uq/
 ├── database/
-│   ├── 00_master_instalacion_completa.sql  # Script maestro: corre de arriba a abajo en base limpia
-│   ├── modelo_y_decisiones_diseno.md       # Documento técnico oficial (Modelo 14 tablas y decisiones)
+│   ├── 00_prerequisitos_dba_esquema.sql     # Creación idempotente de TURISMO_UQ en XEPDB1
+│   ├── 00_master_instalacion_completa.sql   # Script maestro: corre de arriba a abajo en base limpia
+│   ├── modelo_y_decisiones_diseno.md        # Documento técnico oficial (Modelo, decisiones y evidencias)
+│   ├── Modelo_y_Decisiones_Diseno_TurismoUQ.pdf # PDF entregable oficial (Modelo y decisiones)
 │   ├── entrega 1/
-│   │   ├── 01_ddl_esquema_completo.sql    # DDL con PK, FK, CHECK, NOT NULL y UNIQUE (14 entidades)
-│   │   ├── 02_carga_datos_minimos.sql     # Población reproducible (12 mun, 60 aloj, 400 hab, 3k cli, 25k res, 40k serv)
-│   │   ├── 03_tablespace_historico.sql    # TBS_HISTORICO_RESERVAS y reubicación de tablas/índices
-│   │   ├── 04_consultas_analisis.sql      # 8 Consultas analíticas (PIVOT, ROLLUP, RANK, LAG, MV, etc.)
-│   │   └── justificacion_tablespace.md    # Sustentación técnica de separación física de I/O
-│   └── entrega 2/
-│       ├── 01_ajuste_temporadas_tarifas.sql # Estandarización a Temporada Alta y Baja (800 tarifas)
-│       ├── 02_pkg_turismo_reservas_spec.sql # Especificación del paquete PL/SQL
-│       ├── 03_pkg_turismo_reservas_body.sql # Cuerpo del paquete (fn_valor_estadia, sp_crear_reserva, etc.)
-│       ├── 04_triggers.sql                  # Triggers: auditoría a nivel de sentencia y anti-mutante
-│       └── 05_test_entrega2.sql             # Batería de pruebas automatizadas idempotente (100% exitosa)
+│   │   ├── 01_ddl_esquema_completo.sql      # DDL con PK, FK, CHECK, NOT NULL y UNIQUE (14 entidades)
+│   │   ├── 02_carga_datos_minimos.sql       # Población reproducible (12 mun, 60 aloj, 400 hab, 3k cli, 25k res, 40k serv)
+│   │   ├── 03_tablespace_historico.sql      # TBS_HISTORICO_RESERVAS y reubicación de tablas/índices
+│   │   ├── 04_consultas_analisis.sql        # 10 Consultas analíticas (8 obligatorias + 2 adicionales)
+│   │   └── justificacion_tablespace.md      # Sustentación técnica de separación física de I/O
+│   ├── entrega 2/
+│   │   ├── 01_ajuste_temporadas_tarifas.sql # Estandarización a Temporada Alta y Baja (800 tarifas)
+│   │   ├── 02_pkg_turismo_reservas_spec.sql # Especificación del paquete PL/SQL
+│   │   ├── 03_pkg_turismo_reservas_body.sql # Cuerpo del paquete (fn_valor_estadia, sp_crear_reserva, etc.)
+│   │   ├── 04_triggers.sql                  # Triggers: auditoría a nivel de sentencia y anti-mutante
+│   │   └── 05_test_entrega2.sql             # Batería de pruebas automatizadas idempotente (100% exitosa)
+│   └── entrega 3/
+│       ├── 01_transacciones_savepoint.sql   # sp_reserva_transaccional_pago + SAVEPOINT y rollback parcial
+│       ├── 02_concurrencia_bloqueos.sql     # sp_reservar_con_bloqueo (SELECT FOR UPDATE) y lab 2 sesiones
+│       ├── 03_indices_optimizacion.sql      # Índices (compuesto, FBI, cobertura) + Caso Negativo CBO
+│       ├── 04_seguridad_roles_perfiles.sql  # 4 roles, vistas de recepción, perfil y usuarios Oracle
+│       └── 05_test_entrega3.sql             # Batería automatizada e idempotente Entrega 3 (A-E)
 ├── backend/                                 # Spring Boot 3.4 + Java 21 LTS + Oracle JDBC
 │   ├── src/main/java/com/turismouq/app/
 │   │   ├── config/                          # Configuración CORS y DataSource
@@ -71,3 +79,27 @@ O arranca cada servicio manualmente:
    ```
 
 Abre tu navegador en: **`http://localhost:4200`**
+
+---
+
+## 🔐 Cuentas de Acceso
+
+### Aplicación Web (`USUARIO_SISTEMA`)
+Contraseña por defecto para todas las cuentas base: **`123456`**
+* `admin_uq` — `SUPER_ADMIN` (Acceso total a los 10 módulos)
+* `recepcion_uq` — `RECEPCION`
+* `admin_alojamiento_uq` — `ADMIN_ALOJAMIENTO`
+* `gerente_uq` — `GERENTE`
+* `auditor_uq` — `AUDITOR`
+
+### Usuarios de Base de Datos Oracle (`XEPDB1` · `PERFIL_TURISMO_OPERATIVO`)
+* `USR_RECEPCION` / `RecepcionUq2026#` (`ROL_RECEPCION` — acceso exclusivo a vistas)
+* `USR_ADMIN_ALOJ` / `AdminAlojUq2026#` (`ROL_ADMIN_ALOJAMIENTO`)
+* `USR_GERENTE` / `GerenteUq2026#` (`ROL_GERENTE`)
+* `USR_AUDITOR` / `AuditorUq2026#` (`ROL_AUDITOR`)
+
+### Instalación en Base de Datos Limpia
+```powershell
+sqlplus / as sysdba
+@database/00_master_instalacion_completa.sql
+```

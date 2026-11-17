@@ -8,7 +8,10 @@
 ALTER SESSION SET CONTAINER = XEPDB1;
 
 -- 1. Creacion del Tablespace permanente para historico de reservas
--- Nota: La ruta por defecto en Oracle XE 21c utiliza el directorio de datos estándar
+-- Nota: Si OMF (db_create_file_dest) no esta activo, resuelve automaticamente
+--       el directorio real de los datafiles desde dba_data_files (Windows/Linux).
+DECLARE
+    v_dir VARCHAR2(500);
 BEGIN
     EXECUTE IMMEDIATE '
         CREATE TABLESPACE TBS_HISTORICO_RESERVAS
@@ -24,18 +27,28 @@ EXCEPTION
         IF SQLCODE = -959 OR SQLCODE = -1543 THEN
             DBMS_OUTPUT.PUT_LINE('Tablespace TBS_HISTORICO_RESERVAS ya existe.');
         ELSE
-            -- Intentar ruta absoluta alternativa si falla por nombre de archivo relativo
             BEGIN
+                SELECT SUBSTR(file_name, 1, GREATEST(INSTR(file_name, '\', -1), INSTR(file_name, '/', -1)))
+                INTO v_dir
+                FROM dba_data_files
+                WHERE ROWNUM = 1;
+
                 EXECUTE IMMEDIATE '
                     CREATE TABLESPACE TBS_HISTORICO_RESERVAS
-                        DATAFILE ''C:\APP\SAMUEL\PRODUCT\21C\ORADATA\XE\XEPDB1\TBS_HIST_RESERVAS01.DBF''
+                        DATAFILE ''' || v_dir || 'tbs_hist_reservas01.dbf''
                         SIZE 100M
                         AUTOEXTEND ON NEXT 50M
                         MAXSIZE 2048M
                         EXTENT MANAGEMENT LOCAL
                         SEGMENT SPACE MANAGEMENT AUTO';
+                DBMS_OUTPUT.PUT_LINE('Tablespace TBS_HISTORICO_RESERVAS creado en: ' || v_dir);
             EXCEPTION
-                WHEN OTHERS THEN NULL;
+                WHEN OTHERS THEN
+                    IF SQLCODE = -959 OR SQLCODE = -1543 THEN
+                        DBMS_OUTPUT.PUT_LINE('Tablespace TBS_HISTORICO_RESERVAS ya existe.');
+                    ELSE
+                        RAISE;
+                    END IF;
             END;
         END IF;
 END;

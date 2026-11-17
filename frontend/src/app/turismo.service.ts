@@ -224,6 +224,28 @@ export interface AnaliticaClienteClv {
   pct_facturacion_global: number;
 }
 
+export interface AnaliticaHabitacionTempAlta {
+  ranking: number;
+  id_habitacion: number;
+  habitacion: string;
+  alojamiento: string;
+  municipio: string;
+  capacidad: number;
+  tipo_cama: string;
+  reservas_temporada_alta: number;
+  ingresos_hospedaje: number;
+}
+
+export interface AnaliticaClienteMunicipios {
+  id_cliente: number;
+  cliente: string;
+  documento: string;
+  total_municipios: number;
+  total_reservas: number;
+  gasto_total: number;
+  municipios_visitados: string;
+}
+
 
 export interface TablespaceTabla {
   table_name: string;
@@ -534,6 +556,14 @@ export class TurismoService {
 
   getTopClientesClv(): Observable<AnaliticaClienteClv[]> {
     return this.http.get<AnaliticaClienteClv[]>(`${this.baseUrl}/analitica/top-clientes-clv`);
+  }
+
+  getTopHabitacionTemporadaAlta(): Observable<AnaliticaHabitacionTempAlta[]> {
+    return this.http.get<AnaliticaHabitacionTempAlta[]>(`${this.baseUrl}/analitica/top-habitacion-temporada-alta`);
+  }
+
+  getClientesPorMunicipios(): Observable<AnaliticaClienteMunicipios[]> {
+    return this.http.get<AnaliticaClienteMunicipios[]>(`${this.baseUrl}/analitica/clientes-municipios`);
   }
 
   // ==========================================

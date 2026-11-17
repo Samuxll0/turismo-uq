@@ -46,6 +46,10 @@ DECLARE
     v_conteo_pagos    NUMBER;
     v_conteo_indices  NUMBER;
     v_conteo_vistas   NUMBER;
+    v_conteo_tab_rec  NUMBER := 0;
+    v_conteo_usr_perf NUMBER := 0;
+    v_conteo_rol_asig NUMBER := 0;
+    v_dba_ok          BOOLEAN := TRUE;
 BEGIN
     -- ========================================================================
     -- PRUEBA A: Transaccion Atomica Reserva + Pago (Camino Feliz - COMMIT Total)
@@ -171,10 +175,44 @@ BEGIN
     FROM TURISMO_UQ.RESERVA
     WHERE id_reserva = v_id_reserva;
 
-    IF v_conteo_vistas = 3 AND v_estado_res = 'FINALIZADA' THEN
-        DBMS_OUTPUT.PUT_LINE('  -> [RESULTADO: EXITOSO] Las 3 vistas de recepcion operan correctamente y el Trigger INSTEAD OF actualizo el estado sin tocar la tabla directa.');
+    BEGIN
+        EXECUTE IMMEDIATE '
+            SELECT COUNT(*) FROM dba_tab_privs
+            WHERE grantee = ''ROL_RECEPCION''
+              AND owner = ''TURISMO_UQ''
+              AND table_name IN (''RESERVA'', ''HABITACION'', ''CLIENTE'', ''PAGO'', ''TARIFA'')'
+        INTO v_conteo_tab_rec;
+
+        EXECUTE IMMEDIATE '
+            SELECT COUNT(*) FROM dba_users
+            WHERE username IN (''USR_RECEPCION'', ''USR_ADMIN_ALOJ'', ''USR_GERENTE'', ''USR_AUDITOR'')
+              AND profile = ''PERFIL_TURISMO_OPERATIVO'''
+        INTO v_conteo_usr_perf;
+
+        EXECUTE IMMEDIATE '
+            SELECT COUNT(*) FROM dba_role_privs
+            WHERE grantee IN (''USR_RECEPCION'', ''USR_ADMIN_ALOJ'', ''USR_GERENTE'', ''USR_AUDITOR'')
+              AND granted_role IN (''ROL_RECEPCION'', ''ROL_ADMIN_ALOJAMIENTO'', ''ROL_GERENTE'', ''ROL_AUDITOR'')'
+        INTO v_conteo_rol_asig;
+    EXCEPTION
+        WHEN OTHERS THEN
+            -- Si la sesion no posee vista DBA, validar existencia de usuarios en all_users
+            v_dba_ok := FALSE;
+            SELECT COUNT(*) INTO v_conteo_usr_perf
+            FROM all_users
+            WHERE username IN ('USR_RECEPCION', 'USR_ADMIN_ALOJ', 'USR_GERENTE', 'USR_AUDITOR');
+    END;
+
+    IF v_conteo_vistas = 3 AND v_estado_res = 'FINALIZADA'
+       AND v_conteo_tab_rec = 0 AND v_conteo_usr_perf = 4
+       AND (NOT v_dba_ok OR v_conteo_rol_asig = 4) THEN
+        DBMS_OUTPUT.PUT_LINE('  -> [RESULTADO: EXITOSO] 3 vistas + Trigger INSTEAD OF OK, 0 tablas directas para ROL_RECEPCION, 4 usuarios BD con PERFIL_TURISMO_OPERATIVO y roles asignados.');
     ELSE
-        RAISE_APPLICATION_ERROR(-20905, 'Fallo en Prueba E: Vistas de recepcion incompletas.');
+        RAISE_APPLICATION_ERROR(-20905,
+            'Fallo en Prueba E: vistas=' || v_conteo_vistas ||
+            ', tablas_rec=' || v_conteo_tab_rec ||
+            ', usr_perfil=' || v_conteo_usr_perf ||
+            ', roles_asig=' || v_conteo_rol_asig);
     END IF;
 
     DBMS_OUTPUT.PUT_LINE('------------------------------------------------------------------------');

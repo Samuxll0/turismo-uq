@@ -16,6 +16,8 @@ import {
   AnaliticaMaterializada,
   AnaliticaUnpivot,
   AnaliticaClienteClv,
+  AnaliticaHabitacionTempAlta,
+  AnaliticaClienteMunicipios,
   DesgloseNoche,
   ToastNotificacion,
   TablespaceInfo,
@@ -70,7 +72,7 @@ export class App implements OnInit, OnDestroy {
   // ==========================================
   tabActivo = signal<'analitica' | 'tablespace' | 'cotizador' | 'reservas' | 'liquidacion' | 'directorio' | 'auditoria' | 'transacciones' | 'indices' | 'seguridad'>('analitica');
   tablespaceInfo = signal<TablespaceInfo | null>(null);
-  analiticaSubTab = signal<'graficos' | 'pivot' | 'lag' | 'rollup' | 'rank' | 'bind' | 'mv' | 'unpivot' | 'clv'>('graficos');
+  analiticaSubTab = signal<'graficos' | 'pivot' | 'lag' | 'rollup' | 'rank' | 'bind' | 'mv' | 'unpivot' | 'clv' | 'top_hab_alta' | 'clientes_mun'>('graficos');
 
   // ==========================================
   // Catálogos
@@ -106,6 +108,8 @@ export class App implements OnInit, OnDestroy {
   datosMV = signal<AnaliticaMaterializada[]>([]);
   datosUnpivot = signal<AnaliticaUnpivot[]>([]);
   datosCLV = signal<AnaliticaClienteClv[]>([]);
+  datosTopHabAlta = signal<AnaliticaHabitacionTempAlta[]>([]);
+  datosClientesMun = signal<AnaliticaClienteMunicipios[]>([]);
 
   filtroBindInicio: string = '2025-06-01';
   filtroBindFin: string = '2025-08-31';
@@ -555,7 +559,7 @@ export class App implements OnInit, OnDestroy {
     }
   }
 
-  cambiarAnaliticaSubTab(subTab: 'graficos' | 'pivot' | 'lag' | 'rollup' | 'rank' | 'bind' | 'mv' | 'unpivot' | 'clv') {
+  cambiarAnaliticaSubTab(subTab: 'graficos' | 'pivot' | 'lag' | 'rollup' | 'rank' | 'bind' | 'mv' | 'unpivot' | 'clv' | 'top_hab_alta' | 'clientes_mun') {
     this.analiticaSubTab.set(subTab);
     if (subTab === 'graficos') {
       setTimeout(() => this.actualizarTodosLosGraficos(), 150);
@@ -567,6 +571,10 @@ export class App implements OnInit, OnDestroy {
       this.filtrarUnpivot();
     } else if (subTab === 'clv' && this.datosCLV().length === 0) {
       this.cargarTopClientesCLV();
+    } else if (subTab === 'top_hab_alta' && this.datosTopHabAlta().length === 0) {
+      this.cargarTopHabitacionTempAlta();
+    } else if (subTab === 'clientes_mun' && this.datosClientesMun().length === 0) {
+      this.cargarClientesPorMunicipios();
     }
   }
 
@@ -671,6 +679,16 @@ export class App implements OnInit, OnDestroy {
         console.error('Error cargando clientes CLV', err);
       }
     });
+
+    this.api.getTopHabitacionTemporadaAlta().subscribe({
+      next: d => this.datosTopHabAlta.set(d),
+      error: err => console.error('Error cargando habitación top en temporada alta', err)
+    });
+
+    this.api.getClientesPorMunicipios().subscribe({
+      next: d => this.datosClientesMun.set(d),
+      error: err => console.error('Error cargando clientes por municipios', err)
+    });
   }
 
   filtrarBind() {
@@ -731,6 +749,36 @@ export class App implements OnInit, OnDestroy {
       error: err => {
         this.cargando.set(false);
         this.mostrarToast('error', 'Error al Cargar', err.error?.message || 'Error cargando clientes frecuentes');
+      }
+    });
+  }
+
+  cargarTopHabitacionTempAlta() {
+    this.cargando.set(true);
+    this.api.getTopHabitacionTemporadaAlta().subscribe({
+      next: d => {
+        this.cargando.set(false);
+        this.datosTopHabAlta.set(d);
+        this.mostrarToast('info', 'Top Temporada Alta', 'Cargadas las ' + d.length + ' habitaciones con más reservas en temporada alta.');
+      },
+      error: err => {
+        this.cargando.set(false);
+        this.mostrarToast('error', 'Error al Cargar', err.error?.message || 'Error cargando ranking en temporada alta');
+      }
+    });
+  }
+
+  cargarClientesPorMunicipios() {
+    this.cargando.set(true);
+    this.api.getClientesPorMunicipios().subscribe({
+      next: d => {
+        this.cargando.set(false);
+        this.datosClientesMun.set(d);
+        this.mostrarToast('info', 'Clientes por Municipios', 'Listado actualizado con los ' + d.length + ' clientes con mayor cobertura de municipios.');
+      },
+      error: err => {
+        this.cargando.set(false);
+        this.mostrarToast('error', 'Error al Cargar', err.error?.message || 'Error cargando listado de clientes y municipios');
       }
     });
   }
